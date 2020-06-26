@@ -1,0 +1,545 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>使用VuePress 搭建个人博客 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="使用VuePress 搭建个人博客 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="介绍
+VuePress 是一个静态网站生成器，包含由Vue驱动的主题系统和插件API，同时还包含一个为书写技术文档而优化的默认主题。此篇文章只介绍如何使用VuePress 搭建个人博客的部分。
+安装
+
+前置条件：VuePress 需要 No..." />
+    <meta name="keywords" content="教程,tutorial" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              使用VuePress 搭建个人博客
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-06-14
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/Ez7OfGV-oL/" class="post-tag">
+                  # 教程
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+            </div>
+            
+              <img class="post-feature-image" src="http://blog.gusibi.site/post-images/vuepress-build-blog-to-github.png" alt="">
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h3 id="介绍">介绍</h3>
+<p>VuePress 是一个静态网站生成器，包含由Vue驱动的主题系统和插件API，同时还包含一个为书写技术文档而优化的默认主题。此篇文章只介绍如何使用VuePress 搭建个人博客的部分。</p>
+<h3 id="安装">安装</h3>
+<blockquote>
+<p>前置条件：VuePress 需要 Node.js &gt;= 8.6</p>
+</blockquote>
+<h5 id="安装-vuepress">安装 vuepress</h5>
+<p>VuePress 安装毕竟简单，可以使用以下命令直接安装：</p>
+<pre><code class="language-shell">yarn add -D vuepress # npm install -D vuepress
+</code></pre>
+<h4 id="验证安装">验证安装</h4>
+<p>为了验证VuePress 的效果，首先创建一篇文档</p>
+<pre><code class="language-shell">mkdir docs &amp;&amp; echo '# Hello VuePress' &gt; README.md
+</code></pre>
+<p>在当前目录下创建 <code>package.json</code> 文件，添加以下内容：</p>
+<pre><code class="language-json">{
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;vuepress dev docs&quot;,
+    &quot;build&quot;: &quot;vuepress build docs&quot;
+  }
+}
+</code></pre>
+<p>在本地启动服务器</p>
+<pre><code class="language-shell">vuepress dev .
+</code></pre>
+<p>VuePress 会在 <a href="http://localhost:8080/">http://localhost:8080</a> 启动一个热重载的开发服务器。</p>
+<p>如果没有报错，可在浏览器打开<a href="http://localhost:8080/">http://localhost:8080</a>，默认加载内容为 README.md 中内容。</p>
+<h3 id="vuepress-目录结构">VuePress 目录结构</h3>
+<p>VuePress 遵循 <strong>“约定优于配置”</strong> 的原则，推荐的目录结构如下：</p>
+<pre><code class="language-shell">.
+├── blog
+│   ├── .vuepress (可选的)
+│   │   ├── components (可选的)
+│   │   ├── theme (可选的)
+│   │   │   └── Layout.vue
+│   │   ├── public (可选的)
+│   │   ├── styles (可选的)
+│   │   │   ├── index.styl
+│   │   │   └── palette.styl
+│   │   ├── templates (可选的, 谨慎配置)
+│   │   │   ├── dev.html
+│   │   │   └── ssr.html
+│   │   ├── config.js (可选的)
+│   │   └── enhanceApp.js (可选的)
+│   │ 
+│   ├── README.md
+│   └──_post
+│       ├── about.md
+│       └── README.md 
+│ 
+└── package.json
+</code></pre>
+<p>这里<code>blog</code>目录被称作 <code>targetDir</code> ，目录下的文件都是相对于 <code>blog</code> 目录的。比如此目录下文件的路由地址如下：</p>
+<table>
+<thead>
+<tr>
+<th>文件相对路径</th>
+<th>页面路由地址</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/README.md</td>
+<td>/</td>
+</tr>
+<tr>
+<td>/_post/README.md</td>
+<td>/_post/</td>
+</tr>
+<tr>
+<td>/_post/about.md</td>
+<td>/_post/about.html</td>
+</tr>
+</tbody>
+</table>
+<h3 id="基本配置">基本配置</h3>
+<p>现在 VuePress 已经可以运行，现在添加一些基本的配置。首先在当前目录下创建 <code>.vuepress</code> 目录（所有 VuePress 相关的文件都放在此目录下），然后在 <code>.vuepress</code> 目录下创建 <code>config.js</code> 文件（也可以使用YAML (<code>.vuepress/config.yml</code>) 或是 TOML (<code>.vuepress/config.toml</code>) 格式的配置文件）。</p>
+<p>添加以下配置到config.js：</p>
+<pre><code class="language-javascript">module.exports = {
+  title: '顾斯比',  // 网站的标题，它将会被用作所有页面标题的前缀。
+  description: '顾斯比的博客', // 网站的描述，它将会以 &lt;meta&gt; 标签渲染到当前页面的 HTML 中。
+}
+</code></pre>
+<h4 id=""></h4>
+<p>其它详细配置参考官方文档：https://vuepress.vuejs.org/zh/config/</p>
+<h3 id="主题">主题</h3>
+<p>因为是使用 <code>VuePress</code> 作为静态博客使用，需要替换掉默认的主题。这里使用官方主题： <code>@vuepress/theme-blog</code> 。</p>
+<h4 id="安装-2">安装</h4>
+<pre><code class="language-shell">yarn add @vuepress/theme-blog -D
+# OR npm install @vuepress/theme-blog -D
+</code></pre>
+<h4 id="使用配置">使用&amp;配置</h4>
+<p>在config.js 中添加主题相关配置：</p>
+<pre><code class="language-javascript"> // .vuepress/config.js
+module.exports = {
+  title: '顾斯比',
+  description: '顾斯比的博客 gusibi goodspeed',
+  theme: '@vuepress/blog',
+  themeConfig: {
+     nav: [     // 导航条相关配置
+            { text: '首页', link: '/' },
+            { text: '标签', link: '/tag/'},
+            { text: '关于 ', link: '/about/' },
+            { text: 'github ', link: 'https://github.com/gusibi/', target:'_blank' },
+        ],
+        /**
+       * Ref: https://vuepress-theme-blog.ulivz.com/config/#globalpagination
+       */
+        globalPagination: {
+          lengthPerPage: 10,
+        },
+
+        /**
+         * Ref: https://vuepress-theme-blog.ulivz.com/config/#sitemap
+         */
+        sitemap: {
+            hostname: 'http://blog.gusibi.mobi/'
+        },
+  }
+}
+</code></pre>
+<h4 id="目录">目录</h4>
+<p>默认情況下，所有内容都必须放在 <code>_posts</code> 目录內，文件名为<code>标题.md</code>，例如<code>about.md</code>。</p>
+<pre><code class="language-shell">└── _posts
+    ├── ...
+    └── about.md
+</code></pre>
+<h4 id="博客内容设置">博客内容设置</h4>
+<p>Front matter 是用于指定博客文件的变量，必须放在博客文件的最上方。并且必须采用在三点划线之间书写的有效的 YAML。 这是一个基本的例子：</p>
+<pre><code class="language-yaml">---
+title: Blogging Like a Hacker # 博客标题
+date: 2020-06-14              # 博客发布日期
+tags:                         # 文章标签
+    - 前端
+  - dart
+  - flutter
+  - vue
+summary: 这里是文章的摘要
+---
+</code></pre>
+<h4 id="-2"></h4>
+<p>其它变量：https://vuepress.vuejs.org/zh/guide/frontmatter.html</p>
+<h5 id="url">URL</h5>
+<p>默认情况下，path 路径则为文件目录的相对路径，比如：</p>
+<pre><code class="language-shell">├── package.json
+└── source
+    ├── _post
+    │   └── intro-vuepress.md
+    ├── index.md
+    └── tags.md
+</code></pre>
+<p>那么你就会获得以下的可用页面：</p>
+<pre><code class="language-shell">/source/
+/source/tags.html
+/source/_post/intro-vuepress.html
+</code></pre>
+<p>推荐使用 <code>permalink</code> 指定文章的永久链接，可以使用全局配置来向所有页面应用永久链接：</p>
+<pre><code class="language-JavaScript">// .vuepress/config.js
+module.exports = {
+  permalink: &quot;/:year/:month/:day/:slug&quot;
+};
+</code></pre>
+<p>另外，你也可以只为单独一个页面去设置永久链接。这种方式比全局配置拥有更高的优先级。</p>
+<p>📝 <strong>hello.md</strong>:</p>
+<pre><code class="language-yaml">---
+title: Hello World
+permalink: /hello-world
+---
+Hello!
+</code></pre>
+<h5 id="内容">内容</h5>
+<p>博客内容格式为 markdown，markdown 语法参考：https://www.markdownguide.org/</p>
+<h3 id="插件">插件</h3>
+<h4 id="搜索">搜索</h4>
+<p><code>VuePress</code> 内置搜索，可以通过设置 <code>themeConfig.search: false</code> 来禁用默认的搜索框，或是通过 <code>themeConfig.searchMaxSuggestions</code> 来调整默认搜索框显示的搜索结果数量：</p>
+<pre><code>module.exports = {
+  themeConfig: {
+    search: false,
+    searchMaxSuggestions: 10
+  }
+}
+</code></pre>
+<p>你可以通过<a href="https://vuepress.vuejs.org/zh/guide/frontmatter.html#search">在页面的 frontmatter 中设置 <code>search</code></a> 来对单独的页面禁用内置的搜索框：</p>
+<pre><code>---
+search: false
+---
+</code></pre>
+<p><strong>⚠️提示</strong></p>
+<p><strong>内置搜索只会为页面的标题、****<code>h2</code></strong> <strong>、</strong> <strong><code>h3</code></strong> <strong>以及</strong> <strong><code>tags</code></strong> <strong>构建搜索索引。 如果你需要全文搜索，你可以使用</strong> <a href="https://vuepress.vuejs.org/zh/theme/default-theme-config.html#algolia-%E6%90%9C%E7%B4%A2"><strong>Algolia 搜索</strong></a><strong>。</strong></p>
+<h4 id="google-analytics">google-analytics</h4>
+<p>google-analytics是著名互联网公司Google为网站提供的数据统计服务。可以对目标网站进行访问数据统计和分析，并提供多种参数供网站拥有者使用。这里推荐安装：</p>
+<h5 id="安装-3">安装</h5>
+<p>使用以下命令安装</p>
+<pre><code>yarn add -D @vuepress/plugin-google-analytics
+# OR npm install -D @vuepress/plugin-google-analytics
+</code></pre>
+<h5 id="使用">使用</h5>
+<p>将ga 配置添加到配置文件</p>
+<pre><code class="language-JavaScript">module.exports = {
+  plugins: [
+    [
+      '@vuepress/google-analytics',
+      {
+        'ga': '' // UA-00000000-0
+      }
+    ]
+  ]
+}
+</code></pre>
+<p>更多配置参考文档：https://vuepress.vuejs.org/zh/theme/default-theme-config.html</p>
+<h4 id="rss">RSS</h4>
+<p><code>vuepress</code> 包含rss 插件，可以直接在配置中添加以下内容启用：</p>
+<pre><code class="language-JavaScript">module.exports = {
+    ...
+    themeConfig: {
+      ...
+      feed: {
+         canonical_base: 'http://blog.gusibi.mobi/',
+      },
+    },
+  };
+</code></pre>
+<h3 id="部署到github">部署到Github</h3>
+<ol>
+<li>在 docs/.vuepress/config.js 中设置正确的 base。</li>
+</ol>
+<blockquote>
+<p>如果你打算发布到 https://.github.io/，则可以省略这一步，因为 base 默认即是 &quot;/&quot;。</p>
+</blockquote>
+<ol>
+<li>在你的项目中，创建一个如下的 <code>deploy.sh</code> 文件:</li>
+</ol>
+<pre><code>#!/usr/bin/env sh
+
+# 确保脚本抛出遇到的错误
+set -e
+
+# 生成静态文件
+vuepress build --dest ./public
+
+# 进入生成的文件夹
+cd public
+
+# 如果是发布到自定义域名
+# echo 'blog.gusibi.mobi' &gt; CNAME
+
+git add -A
+git commit -m 'deploy'
+
+# 发布到 https://&lt;USERNAME&gt;.github.io
+git push -f git@github.com:gusibi/gusibi.github.io.git master
+
+# 如果发布到 https://&lt;USERNAME&gt;.github.io/&lt;REPO&gt;
+# git push -f git@github.com:&lt;USERNAME&gt;/&lt;REPO&gt;.git master:gh-pages
+
+cd -
+</code></pre>
+<blockquote>
+<p>也以使用github ci 在每次提交代码的时候自动部署到github.io，具体步骤可以自行搜索配置</p>
+</blockquote>
+<h3 id="-3"></h3>
+<h3 id="参考链接">参考链接</h3>
+<ol>
+<li>Intro to VuePress 1.x： https://ulivz.com/2019/06/09/intro-to-vuepress-1-x/</li>
+<li>默认主题配置： https://vuepress.vuejs.org/zh/theme/default-theme-config.html</li>
+<li>https://www.markdownguide.org/</li>
+<li>VuePress front matter 配置： https://vuepress.vuejs.org/zh/guide/frontmatter.html</li>
+<li>VuePress 配置： https://vuepress.vuejs.org/zh/config/</li>
+</ol>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/WDz3v4cU4LQq1oyKX-fYK1LxIThzZ1hK931ZaPRC8CdcB0t2oTYJciMDuAws70FY" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%BB%8B%E7%BB%8D">介绍</a></li>
+<li><a href="#%E5%AE%89%E8%A3%85">安装</a><br>
+*
+<ul>
+<li><a href="#%E5%AE%89%E8%A3%85-vuepress">安装 vuepress</a></li>
+<li><a href="#%E9%AA%8C%E8%AF%81%E5%AE%89%E8%A3%85">验证安装</a></li>
+</ul>
+</li>
+<li><a href="#vuepress-%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84">VuePress 目录结构</a></li>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE">基本配置</a><br>
+*</li>
+<li><a href="#%E4%B8%BB%E9%A2%98">主题</a>
+<ul>
+<li><a href="#%E5%AE%89%E8%A3%85-2">安装</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E9%85%8D%E7%BD%AE">使用&amp;配置</a></li>
+<li><a href="#%E7%9B%AE%E5%BD%95">目录</a></li>
+<li><a href="#%E5%8D%9A%E5%AE%A2%E5%86%85%E5%AE%B9%E8%AE%BE%E7%BD%AE">博客内容设置</a></li>
+<li>
+<ul>
+<li><a href="#url">URL</a></li>
+<li><a href="#%E5%86%85%E5%AE%B9">内容</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E6%8F%92%E4%BB%B6">插件</a>
+<ul>
+<li><a href="#%E6%90%9C%E7%B4%A2">搜索</a></li>
+<li><a href="#google-analytics">google-analytics</a>
+<ul>
+<li><a href="#%E5%AE%89%E8%A3%85-3">安装</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8">使用</a></li>
+</ul>
+</li>
+<li><a href="#rss">RSS</a></li>
+</ul>
+</li>
+<li><a href="#%E9%83%A8%E7%BD%B2%E5%88%B0github">部署到Github</a></li>
+<li></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/flutter-00-install-and-setting/">
+              <h3 class="post-title">
+                Flutter 安装配置
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

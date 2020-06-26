@@ -1,0 +1,491 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>使用腾讯云配置小程序Python开发环境 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="使用腾讯云配置小程序Python开发环境 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="最近做小程序服务器的配置，这一篇是服务器配置的记录，方便以后安装配置。
+购买服务器
+之所以选腾讯云的原因很简单，那就是便宜，选用成都区，最低配置每月只需29￥。
+在 腾讯云 官网注册登录就可以直接购买服务器了。
+服务器系统我选择的是 ubu..." />
+    <meta name="keywords" content="tutorial,后端,小程序,development" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              使用腾讯云配置小程序Python开发环境
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-10-21
+              </span>
+              <span>
+                8 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/f-Wl7DIwGU/" class="post-tag">
+                  # 后端
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/oe3pu-3GBGg/" class="post-tag">
+                  # 小程序
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/7_5AGYXh_qT/" class="post-tag">
+                  # development
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>最近做小程序服务器的配置，这一篇是服务器配置的记录，方便以后安装配置。</p>
+<h2 id="购买服务器">购买服务器</h2>
+<p>之所以选腾讯云的原因很简单，那就是便宜，<code>选用成都区</code>，最低配置每月只需29￥。<br>
+在 <a href="https://cloud.tencent.com">腾讯云</a> 官网注册登录就可以直接购买服务器了。<br>
+服务器系统我选择的是 ubuntu。</p>
+<h2 id="服务器配置">服务器配置</h2>
+<p>启动服务后使用新用户（此步骤不是必须）。</p>
+<h3 id="新建用户">新建用户</h3>
+<p>首先确认使用的是 root 用户登录如果不是使用以下命令切换</p>
+<pre><code class="language-bash">sudo su
+</code></pre>
+<p>使用 <code>adduser</code> 命令创建用户</p>
+<pre><code class="language-bash">adduser username # username替换为你自己的用户名
+</code></pre>
+<p>接下来的步骤会让你输入密码和个人信息，自己设置就好。</p>
+<p>使用<code>usermod</code> 命令将新建的用户添加到 <code>sudo</code> 组。</p>
+<pre><code class="language-go">usermod -aG sudo username
+</code></pre>
+<h3 id="关闭ssh密码登录使用密钥登录">关闭ssh密码登录使用密钥登录</h3>
+<h4 id="安装openssh">安装openssh</h4>
+<p>因为是新系统，先执行一下 apt-get update</p>
+<pre><code class="language-bash">sudo apt-get update
+sudo apt-get install openssh-server
+</code></pre>
+<h4 id="启动ssh服务">启动ssh服务</h4>
+<p>可以通过sudo su命令来临时切换到root权限(不是所有的账号都可以切换到root权限,只有在/etc/sudoers文件中符合规则的用户能切换root身份)</p>
+<pre><code class="language-bash">sudo su
+/etc/init.d/ssh start
+</code></pre>
+<h4 id="使用密钥登录">使用密钥登录</h4>
+<ul>
+<li>服务器端生成密钥对：</li>
+</ul>
+<pre><code class="language-bash">cd /home/gs # 打开新建的用户目录
+mkdir .ssh
+cd .ssh
+ssh-keygen -b 2048 -t rsa
+</code></pre>
+<blockquote>
+<p>ssh-keygen的基本用法：<br>
+-b后面是指定加密后的字符串长度<br>
+-t后面是指定加密算法，常用的加密算法有rsa,dsa等</p>
+</blockquote>
+<p>默认生成的文件如下：</p>
+<pre><code class="language-bash">id_rsa.pub  # 公钥文件
+id_rsa      # 私钥文件
+</code></pre>
+<ul>
+<li>新建 authorized_keys 文件</li>
+</ul>
+<p>将本地机器的 id_rsa.pub 文件内容复制到 authorized_keys 文件</p>
+<ul>
+<li>测试使用公钥是否可以登录</li>
+</ul>
+<pre><code class="language-bash">ssh name@host  # name 是机器的用户名 host 是机器的地址
+</code></pre>
+<h4 id="关闭ssh密码登录">关闭ssh密码登录</h4>
+<p>确认可以通过私钥进行登录后，关闭ssh密码登录。</p>
+<pre><code class="language-bash">sudo su
+vim /etc/ssh/sshd_config
+</code></pre>
+<p>将 PasswordAuthentication yes修改成PasswordAuthentication no</p>
+<p>重启系统</p>
+<pre><code class="language-bash">sudo su
+reboot
+</code></pre>
+<h2 id="搭建开发环境">搭建开发环境</h2>
+<h3 id="安装-zsh">安装 zsh</h3>
+<p>在终端中输入下面命令进行安装：</p>
+<pre><code class="language-bash">sudo apt-get install zsh
+</code></pre>
+<p>输入下面命令进行替换zsh替换为你的默认shell：</p>
+<pre><code class="language-bash">chsh -s /bin/zsh
+</code></pre>
+<p>重启终端使用 zsh</p>
+<h3 id="安装oh-my-zsh">安装oh-my-zsh</h3>
+<ul>
+<li>通过curl安装</li>
+</ul>
+<pre><code class="language-bash">curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh
+</code></pre>
+<ul>
+<li>通过wget安装</li>
+</ul>
+<pre><code class="language-bash">wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O - | sh
+</code></pre>
+<h3 id="安装-pip">安装 pip</h3>
+<pre><code class="language-bash">sudo apt-get install python-pip  # 安装 pip
+pip install --upgrade pip
+sudo apt-get install python3-pip  # 安装 pip3
+pip3 install --upgrade pip
+</code></pre>
+<h3 id="安装-virtualenv">安装 virtualenv</h3>
+<p>因为我使用 python3 作为开发环境，所以这里使用 <code>pip3</code></p>
+<pre><code class="language-bash">sudo pip3 install virtualenv
+sudo pip3 install virtualenvwrapper
+</code></pre>
+<p>在 .zshrc 添加以下内容</p>
+<pre><code class="language-bash">export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
+export WORKON_HOME=$HOME/.virtualenvs
+source /usr/local/bin/virtualenvwrapper.sh
+</code></pre>
+<p>然后执行命令：</p>
+<pre><code class="language-bash">source .zshrc
+</code></pre>
+<p>现在可以输入 <code>workon</code> 测试 virtualenvwrapper 是否已经安装成功。</p>
+<h4 id="创建虚拟环境">创建虚拟环境</h4>
+<pre><code class="language-bash">mkvirtualenv py3 -p python3  # -p 参数指定 python 版本
+</code></pre>
+<p>测试虚拟环境</p>
+<pre><code class="language-bash">workon py3
+</code></pre>
+<h3 id="安装-ipython">安装 ipython</h3>
+<p>首先进入 py3 虚拟环境</p>
+<pre><code class="language-bash">workon py3
+</code></pre>
+<p>使用 pip 安装 ipython</p>
+<pre><code class="language-bash">pip install ipython # 安装 ipython 
+</code></pre>
+<h3 id="配置-vim">配置 vim</h3>
+<p>python vim 配置使用的是 <a href="https://github.com/gusibi/py-vim">py-vim</a></p>
+<p>需要先安装 ctags和 cmake</p>
+<pre><code class="language-bash">sudo apt-get install ctags
+sudo apt-get install cmake
+</code></pre>
+<p>然后将 py-vim clone 到服务器</p>
+<pre><code class="language-bash">git clone https://github.com/gusibi/py-vim
+cd py-vim
+sh setup.sh 
+</code></pre>
+<h2 id="使用-caddy-配置-https">使用 Caddy 配置 https</h2>
+<blockquote>
+<p>Caddy是一种新的Web服务器，由 go 编写，默认使用 https 协议。caddy 配置简单，容易上手。</p>
+</blockquote>
+<h3 id="安装-caddy-二进制文件">安装 caddy 二进制文件</h3>
+<p>Caddy项目提供了一个安装脚本，可以检索和安装Caddy服务器的二进制文件。 可以执行以下命令直接安装：</p>
+<pre><code class="language-bash">curl -s https://getcaddy.com | bash
+</code></pre>
+<p>在安装过程中，脚本将使用sudo获取管理权限，以便将Caddy文件放在系统范围的目录中，因此可能会提示您输入密码。</p>
+<h3 id="配置-caddy-必要的目录">配置 caddy 必要的目录</h3>
+<p>Caddy的自动TLS支持和unit文件需要特定的目录和文件权限。 我们将在这一步中创建它们。</p>
+<p>首先，创建一个目录，该目录将容纳主要的配置文件Caddyfile 。</p>
+<pre><code class="language-bash"># 创建一个目录，该目录将容纳主要的配置文件Caddyfile
+sudo mkdir /etc/caddy
+# 将此目录的所有者更改为root用户及其组到www-data ，以便Caddy可以读取它
+sudo chown -R root:www-data /etc/caddy
+# 创建一个空的Caddyfile
+sudo touch /etc/caddy/Caddyfile
+# 在/etc/ssl创建另一个目录用来存储自动获得的SSL私钥和证书
+sudo mkdir /etc/ssl/caddy
+# 将此目录的所有者更改为root用户及其组到www-data
+sudo chown -R www-data:root /etc/ssl/caddy
+# 确保没有人可以通过删除其他人的所有访问权限来读取这些文件。
+sudo chmod 0770 /etc/ssl/caddy
+# 创建的最终目录是网站的发布目录
+sudo mkdir /var/www
+# 该目录应由www-data完全拥有。
+sudo chown www-data:www-data /var/www
+# 创建日志目录
+sudo mkdir /var/log/caddy
+# 将此目录的所有者更改为root用户及其组到www-data
+sudo chown -R www-data:root /var/log/caddy
+</code></pre>
+<h3 id="将-caddy-配置为系统服务">将 caddy 配置为系统服务</h3>
+<p>从官方的Caddy存储库下载文件。 curl命令的附加-o参数会将该文件保存在/etc/systemd/system/目录中，并使其对systemd可见。</p>
+<pre><code class="language-bash">sudo curl -s https://raw.githubusercontent.com/mholt/caddy/master/dist/init/linux-systemd/caddy.service -o /etc/systemd/system/caddy.service
+</code></pre>
+<p>reload 系统服务</p>
+<pre><code class="language-bash">sudo systemctl daemon-reload
+</code></pre>
+<p>将caddy 设置为开机启动</p>
+<pre><code class="language-bash">sudo systemctl enable caddy.service
+</code></pre>
+<p>检查 caddy 服务是否已正式加载</p>
+<pre><code class="language-bash">sudo systemctl status caddy.service
+</code></pre>
+<h3 id="允许http和https连接">允许HTTP和HTTPS连接</h3>
+<p>Caddy使用HTTP和HTTPS协议提供网站，因此我们需要允许访问相应的端口，以便使网路可以从网路获取</p>
+<pre><code class="language-bash">sudo ufw allow http
+sudo ufw allow https
+</code></pre>
+<p>现在修改caddy 配置 /etc/caddy/Caddyfile</p>
+<pre><code class="language-bash">https://your.domain {  # 启用 https
+    gzip
+    log /var/log/caddy/access.log  # 指定日志目录
+    proxy / http://127.0.0.1:8888 {
+        header_upstream Host {host}
+        header_upstream X-Real-IP {remote}
+        header_upstream X-Forwarded-For {remote}
+        header_upstream X-Forwarded-Proto {scheme}
+    }
+}
+</code></pre>
+<p>保存文件，启动 caddy</p>
+<pre><code class="language-bash">sudo systemctl start caddy    # 启动 caddy
+sudo systemctl restart caddy  # 重启 caddy
+sudo systemctl stop caddy     # 关闭 caddy
+</code></pre>
+<p>现在启动服务，访问 <code>https://your.domain</code> 应该就能看到数据。<br>
+日志文件在 <code>/var/log/caddy/</code> 目录下。</p>
+<h2 id="总结">总结</h2>
+<p>小程序开发需要 https，这里我们使用了 caddy 作为 web 服务器。服务器配置好后可以直接存储为镜像，以后可以直接从镜像开启服务，就不再需要配置环境。</p>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://www.digitalocean.com/community/tutorials/how-to-create-a-sudo-user-on-ubuntu-quickstart">How To Create a Sudo User on Ubuntu </a></li>
+<li><a href="http://blog.csdn.net/ii1245712564/article/details/45843657">zsh安装和配置</a></li>
+<li><a href="https://virtualenvwrapper.readthedocs.io/en/latest/">virtualenvwrapper</a></li>
+<li><a href="https://github.com/gusibi/py-vim">py-vim</a></li>
+<li><a href="https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/">Install MongoDB Community Edition on Ubuntu</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/26839519">使用 Caddy 替代 Nginx，全站升级 https，配置更加简单</a></li>
+<li><a href="https://www.digitalocean.com/community/tutorials/how-to-host-a-website-with-caddy-on-ubuntu-16-04">how-to-host-a-website-with-caddy-on-ubuntu-16-04</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E8%B4%AD%E4%B9%B0%E6%9C%8D%E5%8A%A1%E5%99%A8">购买服务器</a></li>
+<li><a href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AE">服务器配置</a>
+<ul>
+<li><a href="#%E6%96%B0%E5%BB%BA%E7%94%A8%E6%88%B7">新建用户</a></li>
+<li><a href="#%E5%85%B3%E9%97%ADssh%E5%AF%86%E7%A0%81%E7%99%BB%E5%BD%95%E4%BD%BF%E7%94%A8%E5%AF%86%E9%92%A5%E7%99%BB%E5%BD%95">关闭ssh密码登录使用密钥登录</a>
+<ul>
+<li><a href="#%E5%AE%89%E8%A3%85openssh">安装openssh</a></li>
+<li><a href="#%E5%90%AF%E5%8A%A8ssh%E6%9C%8D%E5%8A%A1">启动ssh服务</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E5%AF%86%E9%92%A5%E7%99%BB%E5%BD%95">使用密钥登录</a></li>
+<li><a href="#%E5%85%B3%E9%97%ADssh%E5%AF%86%E7%A0%81%E7%99%BB%E5%BD%95">关闭ssh密码登录</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E6%90%AD%E5%BB%BA%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83">搭建开发环境</a>
+<ul>
+<li><a href="#%E5%AE%89%E8%A3%85-zsh">安装 zsh</a></li>
+<li><a href="#%E5%AE%89%E8%A3%85oh-my-zsh">安装oh-my-zsh</a></li>
+<li><a href="#%E5%AE%89%E8%A3%85-pip">安装 pip</a></li>
+<li><a href="#%E5%AE%89%E8%A3%85-virtualenv">安装 virtualenv</a>
+<ul>
+<li><a href="#%E5%88%9B%E5%BB%BA%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83">创建虚拟环境</a></li>
+</ul>
+</li>
+<li><a href="#%E5%AE%89%E8%A3%85-ipython">安装 ipython</a></li>
+<li><a href="#%E9%85%8D%E7%BD%AE-vim">配置 vim</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BD%BF%E7%94%A8-caddy-%E9%85%8D%E7%BD%AE-https">使用 Caddy 配置 https</a>
+<ul>
+<li><a href="#%E5%AE%89%E8%A3%85-caddy-%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6">安装 caddy 二进制文件</a></li>
+<li><a href="#%E9%85%8D%E7%BD%AE-caddy-%E5%BF%85%E8%A6%81%E7%9A%84%E7%9B%AE%E5%BD%95">配置 caddy 必要的目录</a></li>
+<li><a href="#%E5%B0%86-caddy-%E9%85%8D%E7%BD%AE%E4%B8%BA%E7%B3%BB%E7%BB%9F%E6%9C%8D%E5%8A%A1">将 caddy 配置为系统服务</a></li>
+<li><a href="#%E5%85%81%E8%AE%B8http%E5%92%8Chttps%E8%BF%9E%E6%8E%A5">允许HTTP和HTTPS连接</a></li>
+</ul>
+</li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/python-design-pattern-observer/">
+              <h3 class="post-title">
+                python设计模式-观察者模式
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,413 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>自定义 Sanic Exception | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="自定义 Sanic Exception | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+Sanic 是一个和类Flask 的基于Python3.5+的web框架，它使用了 Python3 异步特性，有远超 flask 的性能。
+
+编写 RESTful API 的时候，我们会定义特定的异常错误类型，比如我定义的错误返回值格式为..." />
+    <meta name="keywords" content="tutorial,python,sanic" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              自定义 Sanic Exception
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-08-05
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/YU9hgQCxb6T/" class="post-tag">
+                  # sanic
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p><code>Sanic</code> 是一个和类Flask 的基于Python3.5+的web框架，它使用了 Python3 异步特性，有远超 flask 的性能。</p>
+</blockquote>
+<p>编写 RESTful API 的时候，我们会定义特定的异常错误类型，比如我定义的错误返回值格式为：</p>
+<pre><code class="language-json">{
+  &quot;error_code&quot;: 0,
+  &quot;message&quot;: &quot;string&quot;,
+  &quot;text&quot;: &quot;string&quot;
+}
+</code></pre>
+<p>不同的错误信息指定不同的 http 状态码。</p>
+<p>sanic 提供了几种常用的 exception：</p>
+<ul>
+<li>NotFound(404)</li>
+<li>Forbidden(403)</li>
+<li>ServerError(500)</li>
+<li>InvalidUsage(400)</li>
+<li>Unauthorized(401)</li>
+<li>RequestTimeout(408)</li>
+<li>PayloadTooLarge(413)</li>
+</ul>
+<p>这些 exception 继承自 SanicException 类：</p>
+<pre><code class="language-python">class SanicException(Exception):
+
+    def __init__(self, message, status_code=None):
+        super().__init__(message)
+
+        if status_code is not None:
+            self.status_code = status_code
+</code></pre>
+<p>从上述代码可以看出，这些异常只能指定 message 和 status_code 参数，那我们可不可以自定义 exception 然后在自定义的 exception 中增加参数呢？下面的代码是按照这个思路修改后的代码：</p>
+<pre><code class="language-python">class ApiException(SanicException):
+
+    def __init__(self, code, message=None, text=None, status_code=None):
+        super().__init__(message)
+        self.error_code = code
+        self.message = message
+        self.text = text
+
+        if status_code is not None:
+            self.status_code = status_code
+</code></pre>
+<p>使用后我得到一个结果如下：</p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/2VpVk8OPGxBl7oZ4qzyU7pBroeXXUslZ5vWiHRPnq0cZ1fFUsGDd23o5Gk7knIUa" alt="错误结果示例" loading="lazy"></figure>
+<p>从结果可以发现，除了 http 状态码使我想要的其它全错，连 <code>content-type</code> 都是 <code>text/plain; charset=utf-8</code>，为什么会这样呢，我们定义的参数code 和 text 去了哪里？</p>
+<p>翻开 sanic handler 的代码<a href="https://github.com/channelcat/sanic/blob/master/sanic/handlers.py">https://github.com/channelcat/sanic/blob/master/sanic/handlers.py</a>我找到了答案：</p>
+<pre><code class="language-python">def default(self, request, exception):
+        self.log(format_exc())
+        if issubclass(type(exception), SanicException):
+            # 如果是 SanicException 类，返回格式是定义好的，
+            # response 处理方法用的是 text
+            return text(
+                'Error: {}'.format(exception),
+                status=getattr(exception, 'status_code', 500),
+                headers=getattr(exception, 'headers', dict())
+            )
+        elif self.debug:
+            html_output = self._render_traceback_html(exception, request)
+
+            response_message = (
+                'Exception occurred while handling uri: &quot;{}&quot;\n{}'.format(
+                    request.url, format_exc()))
+            log.error(response_message)
+            return html(html_output, status=500)
+        else:
+            return html(INTERNAL_SERVER_ERROR_HTML, status=500)
+</code></pre>
+<blockquote>
+<p>从源码可以看出，如果response 结果是 SanicException 类，response 处理方法会改用text，响应内容格式为 <code>Error: status_code</code>。</p>
+</blockquote>
+<p>看来直接使用自定义异常类的方法不能满足我们上边定义的 json 格式（需要有 error_code、message 和 text）数据的要求。那我们能不能自定义 异常处理方法呢？<code>答案当然是可以。</code></p>
+<p>下面介绍两种自定义异常处理的方法：</p>
+<h2 id="使用-responsejson">使用 response.json</h2>
+<p>这种方法比较简单，既然 sanic 异常处理是把错误信息使用 response.text() 方法返回，那我们改成 response.json() 不就可以了么。sanic response 提供了 json 的响应对象。可以使用 response.json 定义一个错误处理方法：</p>
+<pre><code class="language-python">def json_error(error_code, message, text, status_code):
+    return json(
+        {
+            'error_code': error_code,
+            'message': message,
+            'text': text
+        },
+        status=status_code)
+</code></pre>
+<p>这样我们只需要在需要抛出异常的地方 <code>return json_error(code, msg, text, status_code)</code>。</p>
+<p>使用这种方法有一点需要注意：</p>
+<pre><code class="language-python">
+def get_account():
+    ...
+    if account:
+        return account
+    else:
+        # 如果用户没找到 返回错误信息
+        return json_error(code, msg, text, status_code)
+    
+@app.route(&quot;/&quot;)
+async def test(request):
+    account = get_account()
+    return text('Hello world!')
+</code></pre>
+<p>这段代码中，如果我们没有找到用户信息，json_error 的返回结果会赋值给 account，并不会抛出异常，如果需要抛出异常，我们需要在 test 方法中检查 account 的结果，如果包含 account 是 response.json 对象， 直接 return， 更正后的代码如下：</p>
+<pre><code class="language-python">@app.route(&quot;/&quot;)
+async def test(request):
+    account = get_account()
+    if isinstance(account, response.json):
+        return account
+    return text('Hello world!')
+</code></pre>
+<p>这样虽然简单，但是会增加很多不必要的判断，那有没有方法可以直接抛出异常呢？这时就可以使用 sanic 提供的 <code>@app.exception</code> 装饰器了。</p>
+<h2 id="使用-handling-exceptions">使用 Handling exceptions</h2>
+<p>sanic 提供了一个 <code>@app.exception</code>装饰器，使用它可以覆盖默认的异常处理方法。它的使用方法也很简单：</p>
+<pre><code class="language-python">from sanic.response import text
+from sanic.exceptions import NotFound
+
+@app.exception(NotFound)
+def ignore_404s(request, exception):
+    return text(&quot;Yep, I totally found the page: {}&quot;.format(request.url))
+</code></pre>
+<p>这个装饰器允许我们传入一个需要捕获的异常的列表，然后，就可以在自定义方法中返回任意的响应数据了。</p>
+<p>以下自定义的异常处理类：</p>
+<pre><code class="language-python">error_codes = {
+    'invalid_token': ('Invalid token', '无效的token'),
+}
+
+def add_status_code(code):
+    &quot;&quot;&quot;
+    Decorator used for adding exceptions to _sanic_exceptions.
+    &quot;&quot;&quot;
+    def class_decorator(cls):
+        cls.status_code = code
+        return cls
+    return class_decorator
+
+
+class MetisException(SanicException):
+
+    def __init__(self, code, message=None, text=None, status_code=None):
+        super().__init__(message)
+        self.error_code = code
+        _message, _text = error_codes.get(code, (None, None))
+        self.message = message or _message
+        self.text = text or _text
+
+        if status_code is not None:
+            self.status_code = status_code
+
+@add_status_code(404)
+class NotFound(MetisException):
+    pass
+
+@add_status_code(400)
+class BadRequest(MetisException):
+    pass
+
+# 使用 app.exception 捕获异常，返回自定义响应数据
+@app.exception(Unauthorized, NotFound, BadRequest)
+def json_error(request, exception):
+    return json(
+        {
+            'error_code': exception.error_code,
+            'message': exception.message,
+            'text': exception.text
+        },
+        status=exception.status_code)
+</code></pre>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="http://sanic.readthedocs.io/en/latest/sanic/exceptions.html">Sanic Exceptions：http://sanic.readthedocs.io/en/latest/sanic/exceptions.html</a></li>
+<li><a href="https://github.com/gusibi/Metis">Metis：https://github.com/gusibi/Metis</a></li>
+</ul>
+<hr>
+<p>最后，感谢女朋友支持。</p>
+<table>
+<thead>
+<tr>
+<th>欢迎关注(April_Louisa)</th>
+<th>请我喝芬达</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="http://media.gusibi.mobi/Hy8XHexmzppNKuekLuGxWy8LjdGrQAzZA3mH_e9xltoiYgTFWdvlpZwGWxZESrbK" alt="欢迎关注" loading="lazy"></td>
+<td><img src="http://media.gusibi.mobi/CO9DwU6ZHnXHD5xuG3GqTsY_IYPl-JdpQrDaOo6tl6PiAGEBDeYFHO7sGQi_VVFc" alt="请我喝芬达" loading="lazy"></td>
+</tr>
+</tbody>
+</table>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E4%BD%BF%E7%94%A8-responsejson">使用 response.json</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8-handling-exceptions">使用 Handling exceptions</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/metis-1-wxapp-login/">
+              <h3 class="post-title">
+                小程序开发：python sanic 实现小程序登录注册
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

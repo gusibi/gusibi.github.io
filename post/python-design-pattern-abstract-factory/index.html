@@ -1,0 +1,502 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>python设计模式-抽象工厂模式 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="python设计模式-抽象工厂模式 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+问题：在上一篇 python设计模式：工厂方法模式我们尝试使用工厂方法创建了披萨店，现在为了保证披萨加盟店也能有良好的声誉，我们需要统一原材料，这个该如何做呢？
+
+为了确保每家加盟店都是用高质量的原材料，我们打算建造一加原材料工厂，并将原..." />
+    <meta name="keywords" content="读书笔记,python,设计模式" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              python设计模式-抽象工厂模式
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-10-28
+              </span>
+              <span>
+                8 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/tWtXVJcNMyg/" class="post-tag">
+                  # 设计模式
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p><code>问题：</code>在上一篇 <a href="https://mp.weixin.qq.com/s/3HtKVCzPOmuk5uFpfoBsqA">python设计模式：工厂方法模式</a>我们尝试使用工厂方法创建了披萨店，现在为了保证披萨加盟店也能有良好的声誉，我们需要<code>统一原材料</code>，这个该如何做呢？</p>
+</blockquote>
+<p>为了确保每家加盟店都是用高质量的原材料，我们打算建造一加原材料工厂，并将原材料运送到各个加盟店。<code>每个加盟店会对原材料有不同的需求</code>，这里我们就可以用上上一篇介绍的工厂方法模式了。</p>
+<ol>
+<li>首先，建造原料工厂</li>
+<li>然后建造区域的原料工厂（继承自原料工厂）</li>
+<li>在区域的原料工厂中实现原料的创建方法。</li>
+<li>将原料工厂组合起来，加入到 PizzaStore（上一篇中由工厂方法实现）代码中。</li>
+</ol>
+<p>按照这个思路，我们先创建原料工厂</p>
+<h2 id="创建原料工厂">创建原料工厂</h2>
+<p>创建原料工厂的实现代码如下：</p>
+<pre><code class="language-python"># 原料
+class FreshClams:
+
+    def __str__(self):
+        return 'Fresh Clams'
+
+class MarinaraSauce:
+
+    def __str__(self):
+        return &quot;Marinara Sauce&quot;
+
+class ThickCrustDough:
+
+    def __str__(self):
+        return &quot;Thick Crust Dough&quot;
+
+class ReggianoCheese:
+
+    def __str__(self):
+        return &quot;Reggiano Cheese&quot;
+
+class SlicedPepperoni:
+
+    def __str__(self):
+        return &quot;Sliced Pepperoni&quot;
+
+class Garlic:
+
+    def __str__(self):
+        return &quot;Garlic&quot;
+
+class Onion:
+
+    def __str__(self):
+        return &quot;Onion&quot;
+
+class RedPepper:
+
+    def __str__(self):
+        return &quot;Red Pepper&quot;
+
+# 披萨店原料工厂
+class PizzaIngredientFactory:
+
+    '''
+    定义原料工厂
+    '''
+
+    def create_dough(self):
+        raise NotImplementedError()
+
+    def create_sauce(self):
+        raise NotImplementedError()
+
+    def create_cheese(self):
+        raise NotImplementedError()
+
+    def create_pepperoni(self):
+        raise NotImplementedError()
+
+    def create_clam(self):
+        raise NotImplementedError()
+
+    def create_veggies(self):
+        raise NotImplementedError()
+</code></pre>
+<p>在这个工厂中，每个原料都是一个方法，原料的实现需要在具体的原料工厂中实现。<br>
+这里每个原料方法没有做任何工作，只是抛出了<code>NotImplementedError</code> 这样做是为了强制子类重新实现相应的方法，如果不重新实现用到时就会抛出 NotImplementedError。</p>
+<blockquote>
+<p>当然也可以把 PizzaIngredientFactory 的 metaclass 设置成 abc.ABCMeta 这样的话，这个类就是真正的抽象基类。</p>
+</blockquote>
+<h3 id="创建纽约原料工厂">创建纽约原料工厂</h3>
+<pre><code class="language-python">class NYPizzaIngredientFactory(PizzaIngredientFactory):
+    def create_dough(self):
+        print(&quot;Tossing %s&quot; % ThickCrustDough())
+        return ThickCrustDough()
+
+    def create_sauce(self):
+        print(&quot;Adding %s...&quot; % MarinaraSauce())
+        return MarinaraSauce()
+
+    def create_cheese(self):
+        print(&quot;Adding %s...&quot; % ReggianoCheese())
+        return ReggianoCheese()
+
+    def create_pepperoni(self):
+        print(&quot;Adding %s...&quot; % SlicedPepperoni())
+        return SlicedPepperoni()
+
+    def create_clam(self):
+        print(&quot;Adding %s...&quot; % FreshClams())
+        return FreshClams()
+
+    def create_veggies(self):
+        # 蔬菜可能有多种，这里使用列表
+        veggies = [Garlic(), Onion(), RedPepper()]
+        for veggie in veggies:
+            print(&quot;  %s&quot; % veggie)
+        return veggies
+</code></pre>
+<p>对于原料家族的每一种原料，我们都提供了原料的纽约版本。</p>
+<h3 id="重做-pizza-类">重做 Pizza 类</h3>
+<pre><code class="language-python">class Pizza:
+    
+    name = None
+    dough = None
+    sauce = None
+    cheese = None
+    veggies = []
+    pepperoni = None
+    clam = None
+
+    def prepare(self):
+        raise NotImplementedError()
+
+    def bake(self):
+        print(&quot;Bake for 25 minutes at 350&quot;)
+
+    def cut(self):
+        print(&quot;Cutting the pizza into diagonal slices&quot;)
+
+    def box(self):
+        print(&quot;Place pizza in official PizzaStore box&quot;)
+
+    def __str__(self):
+        return self.name
+</code></pre>
+<p>上述代码和工厂方法的代码相比，只是把 <code>prepare()</code> 方法抽象出来，需要相应的 具体的 pizza 类来实现 <code>prepare()</code>。</p>
+<h3 id="实现-芝加哥芝士披萨">实现 芝加哥芝士披萨</h3>
+<pre><code class="language-python">class NYStyleCheesePizza(Pizza):
+
+    def prepare(self):
+        dough = self.ingredient_factory.create_dough()
+        sauce = self.ingredient_factory.create_sauce()
+        cheese = self.ingredient_factory.create_cheese()
+        clam = self.ingredient_factory.create_clam()
+        veggies = self.ingredient_factory.create_veggies()
+</code></pre>
+<p>从上述代码可以发现，Pizza 的原料也是从原料工厂直接获取，现在我们控制了原料。</p>
+<blockquote>
+<p>现在，Pizza 类不需要关心原料，只需要负责制作 pizza 就好。Pizza 和原料被解耦。</p>
+</blockquote>
+<h3 id="重新实现-pizzastore">重新实现 PizzaStore</h3>
+<pre><code class="language-python">class PizzaStore:
+    
+    # 需要声明原料工厂
+    ingredient_factory = None
+
+    def create_pizza(self, pizza_type):
+        # 每个需要子类实现的方法都会抛出NotImplementedError
+        # 我们也可以把 PizzaStore 的 metaclass 设置成 abc.ABCMeta
+        # 这样的话，这个类就是真正的抽象基类
+        raise NotImplementedError()
+
+    def order_pizza(self, pizza_type):  # 现在把 pizza 的类型传入 order_pizza()
+
+        pizza = self.create_pizza(pizza_type)
+
+        #  一旦我们有了一个 pizza，需要做一些准备（擀面皮、加佐料），然后烘烤、切片、装盒
+        pizza.prepare()
+        pizza.bake()
+        pizza.cut()
+        pizza.box()
+        return pizza
+
+class NYStylePizzStore(PizzaStore):
+    
+    # 将需要用到的原料工厂赋值给变量 ingredient_factory
+    ingredient_factory = NYPizzaIngredientFactory()
+
+    def create_pizza(self, pizza_type):
+        # 根据 pizza 类型，我们实例化正确的具体类，然后将其赋值给 pizza 实例变量
+        if pizza_type == 'cheese':
+            pizza = NYStyleCheesePizza('NY Style Sauce and Cheese Pizza',
+                                       self.ingredient_factory)
+        elif pizza_type == 'clam':
+            pizza = NYStyleClamPizza('NY Style Clam Pizza',
+                                     self.ingredient_factory)
+        return pizza
+</code></pre>
+<p>通过上述代码可以看到我们做了以下工作：</p>
+<ol>
+<li>引入了新类型的工厂（抽象工厂）来创建原料家族</li>
+<li>通过抽象工厂提供的接口，我们创建了原料家族。</li>
+<li>我们的原料代码从实际的 Pizza 工厂中成功解耦，可以应用到不同地方，响应的，我们可以方便的替换原料工厂来生产不同的 pizza。</li>
+</ol>
+<h3 id="来看下下单的代码">来看下下单的代码</h3>
+<pre><code class="language-python">def main():
+    nystore = NYStylePizzStore()
+    pizza = nystore.order_pizza('cheese')
+    print('*' * 10)
+    print(&quot;goodspeed ordered a %s&quot; % pizza)
+    print('*' * 10)
+</code></pre>
+<p>和工厂方法的代码相比，没有任何改变。</p>
+<p><code>[源码参考python-design-patter-abstract-factory.py](https://gist.github.com/gusibi/5e0797f5458678322486f999ca87a180)</code></p>
+<h2 id="抽象工厂模式">抽象工厂模式</h2>
+<blockquote>
+<p><code>抽象工厂模式</code>提供一个接口，用于创建相关或依赖对象的家族，而不需要指定具体类。</p>
+</blockquote>
+<p>也就是说，抽象工厂允许客户使用抽象的接口来创建一组相关的产品，而不需要知道实际产出的具体产品是什么，这样依赖，客户就从具体产品中被解耦。</p>
+<p>概括来说就是，抽象工厂是逻辑上的一组工厂方法，每个工厂方法各司其职，负责生产不同种类的对象。</p>
+<p>我们来看下 抽象工厂模式 的类图：</p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/WXTX-aCeU8DaFhBXBHy1D8pqiLDUJggw-XqCGgYTmigQOdi8dly0Z-ujsJVgq7T5" alt="抽象工厂模式类图" loading="lazy"></figure>
+<p>抽象工厂在 django_factory 中应用比较多，有兴趣的可以看下源码。</p>
+<h2 id="抽象工厂模式-和-工厂方法模式-的比较">抽象工厂模式 和 工厂方法模式 的比较</h2>
+<p>抽象工厂模式 和 工厂方法模式 都是负责创建对象，但</p>
+<ul>
+<li><code>工厂方法模式使用的是继承</code></li>
+<li><code>抽象工厂模式使用的是对象的组合</code></li>
+</ul>
+<p>这也就意味着利用<code>工厂方法</code>创建对象需要扩展一个类，并覆盖它的工厂方法（负责将客户从具体类中解耦）。<br>
+<code>抽象工厂</code>提供一个用来创建产品家族的抽象类型，这个类型的子类定义了产品被产生的方法。要想使用这个工厂（<code>NYPizzaIngredientFactory</code>），必须先实例化它（<code>ingredient_factory = NYPizzaIngredientFactory()</code>），然后将它传入一些针对抽象类型所写的代码中（也做到了将客户从具体产品中解耦），同时还把一群相关的产品集合起来。</p>
+<h4 id="工厂方法模式和抽象工厂模式如何选择">工厂方法模式和抽象工厂模式如何选择</h4>
+<p>开始的时候，可以选择工厂方法模式，因为他很简单（只需要继承，并实现工厂方法即可）。如果后来发现应用需要用到多个工厂方法，那么是时候使用<code>抽象工厂模式</code>了，它可以把相关的工厂方法组合起来。</p>
+<h3 id="抽象工厂模式优点和缺点">抽象工厂模式优点和缺点</h3>
+<h4 id="优点">优点</h4>
+<ul>
+<li>可以将客户从具体产品中解耦</li>
+<li>抽象工厂可以让对象创建更容易被追踪</li>
+<li>同时将对象创建与使用解耦</li>
+<li>也可以优化内存占用提升应用性能</li>
+</ul>
+<h4 id="缺点">缺点</h4>
+<p>因为抽象工厂是将一组相关的产品集合起来，如果需要扩展这组产品，就需要<code>改变接口</code>，而改变接口则意味着需要改变<code>每个子类的接口</code></p>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/3HtKVCzPOmuk5uFpfoBsqA">python设计模式：工厂方法模式</a></li>
+<li><a href="https://gist.github.com/gusibi/5e0797f5458678322486f999ca87a180">python-design-patter-abstract-factory.py https://gist.github.com/gusibi/5e0797f5458678322486f999ca87a180</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%88%9B%E5%BB%BA%E5%8E%9F%E6%96%99%E5%B7%A5%E5%8E%82">创建原料工厂</a>
+<ul>
+<li><a href="#%E5%88%9B%E5%BB%BA%E7%BA%BD%E7%BA%A6%E5%8E%9F%E6%96%99%E5%B7%A5%E5%8E%82">创建纽约原料工厂</a></li>
+<li><a href="#%E9%87%8D%E5%81%9A-pizza-%E7%B1%BB">重做 Pizza 类</a></li>
+<li><a href="#%E5%AE%9E%E7%8E%B0-%E8%8A%9D%E5%8A%A0%E5%93%A5%E8%8A%9D%E5%A3%AB%E6%8A%AB%E8%90%A8">实现 芝加哥芝士披萨</a></li>
+<li><a href="#%E9%87%8D%E6%96%B0%E5%AE%9E%E7%8E%B0-pizzastore">重新实现 PizzaStore</a></li>
+<li><a href="#%E6%9D%A5%E7%9C%8B%E4%B8%8B%E4%B8%8B%E5%8D%95%E7%9A%84%E4%BB%A3%E7%A0%81">来看下下单的代码</a></li>
+</ul>
+</li>
+<li><a href="#%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F">抽象工厂模式</a></li>
+<li><a href="#%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F-%E5%92%8C-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F-%E7%9A%84%E6%AF%94%E8%BE%83">抽象工厂模式 和 工厂方法模式 的比较</a><br>
+*
+<ul>
+<li><a href="#%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%E5%92%8C%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9">工厂方法模式和抽象工厂模式如何选择</a></li>
+<li><a href="#%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%E4%BC%98%E7%82%B9%E5%92%8C%E7%BC%BA%E7%82%B9">抽象工厂模式优点和缺点</a>
+<ul>
+<li><a href="#%E4%BC%98%E7%82%B9">优点</a></li>
+<li><a href="#%E7%BC%BA%E7%82%B9">缺点</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/wxapp-server-config/">
+              <h3 class="post-title">
+                使用腾讯云配置小程序Python开发环境
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

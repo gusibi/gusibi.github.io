@@ -1,0 +1,704 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>创建高质量的代码--软件构建中的设计 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="创建高质量的代码--软件构建中的设计 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+《代码大全》读书笔记
+
+
+太长不看版
+
+
+软件构建中的设计
+
+软件设计是一项明确的活动
+
+设计中的挑战
+
+软件设计一词意味着去构思、创造或发明一套方案，把一份计算机软件的规格说明书要求转变为可实际运行的软件。
+设计就是把需求分析和编码调试..." />
+    <meta name="keywords" content="tutorial,后端" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              创建高质量的代码--软件构建中的设计
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-05-29
+              </span>
+              <span>
+                20 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/f-Wl7DIwGU/" class="post-tag">
+                  # 后端
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>《代码大全》读书笔记</p>
+</blockquote>
+<blockquote>
+<p>太长不看版<br>
+<img src="http://media.gusibi.mobi/2nqKmJp5tMClypa0WqnJXl8sI9Tv4hwo3Zs6oEp4U4nwV9dV1XWqmFjvQNxRrggg" alt="" loading="lazy"></p>
+</blockquote>
+<h2 id="软件构建中的设计">软件构建中的设计</h2>
+<blockquote>
+<p>软件设计是一项明确的活动</p>
+</blockquote>
+<h3 id="设计中的挑战">设计中的挑战</h3>
+<blockquote>
+<p><code>软件设计</code>一词意味着去构思、创造或发明一套方案，把一份计算机软件的规格说明书要求转变为可实际运行的软件。<br>
+设计就是把需求分析和编码调试连接在一起的活动。<br>
+好的高层词设计能够提供一个可以稳妥容纳多个较低层次设计的结构。</p>
+</blockquote>
+<h4 id="设计是一个险恶的问题">设计是一个险恶的问题</h4>
+<blockquote>
+<p>险恶（wicked）的问题就是那种只有通过解决或部分解决才能被明确的问题。</p>
+</blockquote>
+<p>Tacoma Narrows 大桥是一个险恶问题的好例子，因为直到这座桥坍塌，工程师才知道不应该只考虑桥的负荷，还需要充分的考虑空气动力学因素（只有建造大桥，才能从中学到需要考虑额外的环节）。</p>
+<h4 id="设计是一个了无章法的过程即使它能得处清爽的成果">设计是一个了无章法的过程（即使它能得处清爽的成果）</h4>
+<ul>
+<li>是因为在设计的过程中可能会采用很多错误的步骤，多次出错</li>
+<li>因为设计的优劣差异往往非常微妙</li>
+<li>因为不能判断设计是否足够好</li>
+</ul>
+<h4 id="设计就是确定取舍和调整顺序的过程">设计就是确定取舍和调整顺序的过程</h4>
+<p>现实世界中，设计者工作的一个关键内容就是衡量彼此冲突的各项设计特性，并尽力在其中寻求平衡。响应速度优先和开发时间短优先得出的设计结果可能是不同的。</p>
+<h4 id="设计受到诸多限制">设计受到诸多限制</h4>
+<p>设计的要点一部分是在创造可能发生的事情，另一部分是在限制可能发生的事情。</p>
+<blockquote>
+<p>如果一个人有无限空间和资源来建造房子，可能会建造出无法控制的建筑。正是因为有了限制，才得出了简单的结果。软件设计也是一样。</p>
+</blockquote>
+<h4 id="设计是不确定的">设计是不确定的</h4>
+<p>每个人设计的结果可能是不同的，并且可能用起来都不错。设计没有标准答案。</p>
+<h4 id="设计是一个启发式的过程">设计是一个启发式的过程</h4>
+<p>设计过程中充满了不确定性，因此设计技术也趋于具有探索性--“经验法则”或者“试试没准能行”--而不是保证能产生预期结果的可重复的过程。</p>
+<h4 id="设计是自然而然形成的">设计是自然而然形成的</h4>
+<p>设计不是在谁的头脑中直接跳出来的，它是在不断的设计评估、非正式讨论、写试经验以及修改试验代码中演化和完善的。</p>
+<h3 id="关键的设计概念">关键的设计概念</h3>
+<h4 id="软件的首要技术使命管理复杂度">软件的首要技术使命：管理复杂度</h4>
+<h5 id="本质的难题和偶然的难题">本质的难题和偶然的难题</h5>
+<p>偶然的难题可以理解为bug，编程语言笨拙的语法，等易于发现容易解决的问题。<br>
+本质的难题则比较复杂，本质上说，软件开发就是不断去发掘错综复杂，相互关连的整套概念的所有细节。本质困难就是：</p>
+<ol>
+<li>要面对复杂、无序的现实世界；</li>
+<li>精确而完成的识别出各种依赖关系和外部情况</li>
+<li>设计出完全正确而不是大致正确的解决方案<br>
+。。。</li>
+</ol>
+<h5 id="管理复杂度的重要性">管理复杂度的重要性</h5>
+<p>一个失败的项目如果是由于技术原因而失败，通常都是因为软件复杂度失控了。如果复杂度失控，那么软件就会变得极端复杂，没有人知道它能做什么，它出了问题如何解决。</p>
+<p><strong>管理复杂度是软件开发中最为重要的技术话题。</strong></p>
+<p>在软件架构层次上，可以通过把大的系统分解为多个子系统来降低问题的复杂度，多个简单的问题比一个复杂的大问题更容易理解。</p>
+<p>子系统相互间应该减少依赖；<br>
+子系统的关注点应该是相互分离的。</p>
+<h5 id="如何应对复杂度">如何应对复杂度</h5>
+<p><strong>高代价、低效率的设计源于下面三种根源：</strong></p>
+<ol>
+<li>用复杂的方法解决简单的问题</li>
+<li>用简单但错误的方法解决复杂的问题</li>
+<li>用不恰当的复杂的方法解决复杂的问题</li>
+</ol>
+<p><strong>用下面的方法管理复杂度</strong></p>
+<ul>
+<li>把任何人在同一时间需要处理的本质复杂度降到最低</li>
+<li>不要让偶然性的复杂度无谓的增长</li>
+</ul>
+<h4 id="理想的设计特征">理想的设计特征</h4>
+<ul>
+<li>
+<p>最小的复杂度</p>
+</li>
+<li>
+<p>易于维护</p>
+</li>
+<li>
+<p>松散耦合</p>
+</li>
+<li>
+<p>可扩展性</p>
+</li>
+<li>
+<p>可重用性</p>
+</li>
+<li>
+<p>高扇入：让大量的类使用某个给定的类。（意味着设计出的系统很好的利用了在较低层次上的工具类</p>
+</li>
+<li>
+<p>低扇出：让一个类少量或始终的使用其他类。（高扇出（7个）意味着一个类过多的使用了其他类，可能会变得过于复杂</p>
+</li>
+<li>
+<p>可移植性</p>
+</li>
+<li>
+<p>精简性：没有多余的部分</p>
+</li>
+<li>
+<p>层次性：比如一个新系统会用到很多设计不佳的旧系统，这时就应该为新系统编写一个负责同就代码交互的层（代理模式）</p>
+<ul>
+<li>层次性能把低劣的代码紧闭起来</li>
+<li>如果能最终抛弃或重构旧代码，旧不必修改处交互层之外的任何新代码。</li>
+</ul>
+</li>
+<li>
+<p>标准技术：用到的外来的、古怪的东西越多，也越难理解。</p>
+</li>
+</ul>
+<h4 id="设计的层次">设计的层次</h4>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/f_5cYtiP6KGYRSvnhNwgU0Oij5su1slnjVMk40DsRdmSvUJBJRdIhccBmgyWa5yW" alt="设计的层次" loading="lazy"></figure>
+<h5 id="1-软件系统software-system">1. 软件系统（Software System）</h5>
+<h5 id="2-分解为子系统或包division-into-subsystems-or-packages">2. 分解为子系统或包（Division into Subsystems or Packages）</h5>
+<p>这一层的主要目的是确定如何把程序分为主要的子系统，并定义清楚允许各子系统如何使用其他子系统。</p>
+<blockquote>
+<p>对于任何需要几周时间才能完成的项目，在这一层上进行划分都是必须的。</p>
+</blockquote>
+<p>这里有个特别重要的点，即不同子系统之间相互通信的原则。如果不同子系统间都可以相互通信，就失去了拆分子系统的意义。</p>
+<ul>
+<li>如果拿不准改如何设计，就应该先对子系统之间的通信加以限制，等以后需要时再放开。</li>
+<li>有一个很好的基本原则是，程序之间不应该有环形关系，比如A类调用B类，B类调用C类，C类又调用A类这种情况，系统设计也应遵守这个原则</li>
+</ul>
+<h6 id="一些常用的子系统">一些常用的子系统</h6>
+<ul>
+<li>业务规则：这个是指哪些再计算机系统中编入的规则、策略以及过程。比如开发一个薪资系统，可能就需要把税务局关于允许提扣的金额以及估算的税率编写到系统中。</li>
+<li>用户界面：这应该是一个子系统，把用户界面组件同其它组件隔离开。</li>
+<li>数据库访问：需要把数据库的访问细节隐藏起来，让程序的绝大部份不需要关心底层实现细节。</li>
+<li>对系统的依赖性：把对操作系统的依赖因素归类到一个子系统，就如同把对硬件的依赖因素封装起来一样。
+<ul>
+<li>这里的操作系统也可以是外部系统，比如微信小程序开发中对微信的依赖。</li>
+</ul>
+</li>
+</ul>
+<h5 id="3-分解为类division-into-classes">3. 分解为类（Division into Classes）</h5>
+<p>这一层次上的设计包括识别出系统中所有的类。例如：数据库接口子系统可能会分为数据库访问类、持久化框架类以及数据库元数据类。</p>
+<p><strong>类与对象的比较</strong></p>
+<ol>
+<li>对象是指运行期间在程序中实际存在的具体实体</li>
+<li>类是指在程序源码中存在的静态事物</li>
+</ol>
+<h5 id="4-分解为子程序division-into-routines">4. 分解为子程序（Division into Routines）</h5>
+<p>完整的定义出类内部的子程序，常常会有助于更好的理解类的接口，反过来也有助于对类的接口进行进一步的修改。</p>
+<blockquote>
+<p>这一层的分解和设计通常由程序员个人来完成，对于用时超过几个小时的项目就有做的必要了。</p>
+</blockquote>
+<h5 id="5-子程序内部的设计internal-routine-design">5. 子程序内部的设计（Internal Routine Design）</h5>
+<h3 id="设计构造块启发式方法">设计构造块：启发式方法</h3>
+<blockquote>
+<p>由于软件设计是非确定性的，因此灵活熟练的运用一组有效的启发式方法，就成了一件特别重要的工作</p>
+</blockquote>
+<h4 id="找出现实世界中的对象">找出现实世界中的对象</h4>
+<p>在确定设计方案时，首选且最流行的一种做法便是“常规的”面向对象设计方法，此方法的要点是要鞭尸现实世界中的对象以及人造的对象。具体步骤为：</p>
+<ol>
+<li>便是对象及其属性</li>
+<li>确定可以对各个对象进行的操作</li>
+<li>确定各个对象能对其他对象进行的操作</li>
+<li>确定对象的哪些部分对其他对象可见--哪些部分可以是公用的，哪些部分应该是私用的。</li>
+<li>定义每个对象的公开接口</li>
+</ol>
+<p>经过上述步骤得到一个高层次的、面向对象的系统组织结构之后，你可以用这两种方式来迭代；在高层次的系统组织结构上进行迭代，以便更好的组织类的结构；或者在每一个已经定义好的类上进行迭代，把每个类的设计细化。</p>
+<h4 id="形成一致的抽象">形成一致的抽象</h4>
+<p>抽象是一个能让你在关注某一概念的同时可以放心的忽略其中一些细节的能力---在不同的层次上处理不同的细节。</p>
+<blockquote>
+<p>以复杂度的观点看，抽象的主要好处就在于它使你能忽略相关的细节。</p>
+</blockquote>
+<p>好的设计会在子程序接口的层次上、在类接口的层次上以及包接口的层次上（在门把手上、门的层次上以及房屋的层次上）进行抽象。</p>
+<h4 id="封装实现细节">封装实现细节</h4>
+<p>抽象是说“让你从高层的细节来看待一个对象”，而封装则说：“初次之外，你不能看到对象的任何其他细节层次”。</p>
+<blockquote>
+<p>封装管理复杂度的方式是不让你看到那些复杂度。</p>
+</blockquote>
+<h4 id="当继承能简化设计时就继承">当继承能简化设计时就继承</h4>
+<p>继承能简化编程工作</p>
+<h4 id="隐藏秘密信息隐藏">隐藏秘密（信息隐藏）</h4>
+<p>信息隐藏是结构化程序设计与面向对象设计的基础之一。</p>
+<h5 id="秘密和隐私权">秘密和隐私权</h5>
+<p>在设计一个类的时候，一项关键性的决策就是确定类的那些特性应该对外可见，哪些应该被隐藏起来。<br>
+类的接口应该尽可能少的暴露其内部工作机制。</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/EI-c5Qdo2Wr453L_jakhC222GtL7R7PUYSpzq4EceNkSBtXhzTyIQ039yQHmBY8J" alt="好的类接口就像是冰山的尖一样，让大部分内容都不暴露出来" loading="lazy"></figure>
+<h5 id="信息隐藏的一个例子">信息隐藏的一个例子</h5>
+<p>比如有一个程序，没个对象都有一个名为id的成员变量来保存唯一的ID。</p>
+<ol>
+<li>一种设计方法是用一个整数来表示ID，同时有一个名为 max_id 的全局变量来保存当前的最大值，新的id 使用 ++max_id 来生成。这种设计是不合适的设计
+<ul>
+<li>不是线程安全</li>
+<li>++max_id 可能遍布代码的各个位置，修改id 的生成规则需要改动太大</li>
+</ul>
+</li>
+<li>一个好的设计方式是，使用一个NewId() 方法来生成id，具体的实现逻辑在 NewId() 方法中，id 的类型也使用自定义的 IdType 类型，而不是指定 int 类型。</li>
+</ol>
+<h5 id="两种秘密">两种秘密</h5>
+<p>信息隐藏中所说的秘密主要分为两大类：</p>
+<ul>
+<li>隐藏复杂度，这样你就不用再去应付它，除非你要特别关注的时候</li>
+<li>隐藏变化源，这样当变化发生时，其影响就能被限制在局部范围内。</li>
+</ul>
+<h5 id="信息隐藏的障碍">信息隐藏的障碍</h5>
+<p>少数情况下，信息隐藏会变的不可能，通常这种情况是由以下障碍造成的：</p>
+<ul>
+<li>信息过度分散 比如一个变量 数字<code>42</code>被写入了代码中（写死了），这样就会造成对它的引用过于分散。最好是把这个信息隐藏起来，比如写入常量中：THE_ANSWER = 42，代码中使用的时候引用 THE_ANSWER 这个常量就可以了。</li>
+<li>循环依赖：比如 A 类的子程序引用了B 类中的子程序，而B类中的子程序又引用了A 类中的子程序。这样会造成难以测试，需要保证两个类都正常才可以。</li>
+<li>类内数据设置成了全局数据：使用全局数据通常会遇到两个问题：一种是子程序执行时可能有另一个子程序也对它进行了操作，另一种是子程序知道有其他子程序在使用但不知道具体是哪个。这时应该使用只有少数子类可访问的类内数据。</li>
+<li>可以察觉的性能损耗：有的开发者为了减少调用关系试图在系统架构层和编码层进行优化。认为额外的层次调用会影响性能（事实上这种担心可能太早了，等以后遇到问题再优化是更好的选择）。</li>
+</ul>
+<h5 id="信息隐藏的价值">信息隐藏的价值</h5>
+<blockquote>
+<p>信息隐藏是少数几个得到公认的、在实践中证明了其自身价值的理论技术、并且已经有很长一段时间了（Boehm 1987a）。</p>
+</blockquote>
+<ol>
+<li>大型项目修改起来更容易</li>
+<li>有助于公开接口的设计（使开发者更容易理解什么样的数据应该隐藏、什么样的数据应该公开</li>
+</ol>
+<h4 id="找出容易改变的区域">找出容易改变的区域</h4>
+<blockquote>
+<p>对优秀的设计师的一份研究表明，他们所共有的一项特质就是都有对变化的预期能力（Glass 1995）<br>
+看起来非常可信</p>
+</blockquote>
+<p>以下是应对变动的措施：</p>
+<ol>
+<li>找出看起来容易变化的项目</li>
+<li>把容易变化的项目分离出来</li>
+<li>把看起来容易变化的项目隔离出来。</li>
+</ol>
+<p>以下是容易变化的区域：</p>
+<ol>
+<li>业务规则</li>
+<li>对硬件的依赖性：屏幕，打印机、键盘、鼠标等设备之间的接口</li>
+<li>输入和输出</li>
+<li>非标准的语言特性</li>
+<li>困难的设计区域和构建区域</li>
+<li>状态变量：可以在使用状态变量是增加至少两层的灵活性和可读性</li>
+</ol>
+<ul>
+<li>不要使用布尔变量作为状态变量</li>
+<li>使用防蚊器子程序取代对状态变量的直接检查</li>
+</ul>
+<ol start="7">
+<li>数据量的限制：当你定义了一个具有100个元素数据的时候，实际上也向外界透露了一些不必要的信息。用全局变量代替100 是一个好的选择。</li>
+</ol>
+<p><strong>预料不同程度的变化</strong></p>
+<p>当考虑系统的潜在变化时，你认为越有可能发生变化的区域，越要做好应对变化的准备。<br>
+找出容易变化的区域的一个好的办法是：受限找出程序中可能对用户有用的最小子集。这一子集构成了系统的核心，不容易变化，然后扩充系统。</p>
+<blockquote>
+<p><code>通过首先定义清楚核心，来认清哪些组件是附属功能，这时就容易把它们提取出来，并且这些内容也容易改进优化。</code></p>
+</blockquote>
+<h4 id="保持松散耦合">保持松散耦合</h4>
+<p>模块之间好的耦合关系会松散到恰好能使一个模块能够很容易地被其他模块使用。</p>
+<blockquote>
+<p>请尽量使你创建的模块不依赖或者很少依赖其他模块。<br>
+如果模块是微服务中的一个服务，那么一个好的耦合关系是一个服务可以在其它服务挂掉的情况下可以正常提供基础服务。</p>
+</blockquote>
+<h5 id="耦合标准">耦合标准</h5>
+<ul>
+<li>规模：这里的规模指的是模块之间的连接数。对于耦合度来说，小就是美。</li>
+<li>可见性：可见性指的是两个模块之间的连接显著程度。通过参数传递数据是一种明显的连接，值得提倡，而通过修改全局数据而使另一模块能够使用该数据则是一种 鬼鬼祟祟的做法，不值得提倡。</li>
+<li>灵活性：灵活性指的是模块之间的连接是否容易改动。模块越灵活，越容易被其它模块调用（耦合越松散）越好。</li>
+</ul>
+<h5 id="耦合的种类">耦合的种类</h5>
+<ul>
+<li>简单数据参数耦合，两个模块之间通过参数传递数据，这种耦合关系正常，可以接受</li>
+<li>简单对象耦合，如果一个模块实例化一个对象，那么它们之间的耦合关系就是简单对象耦合。这种耦合关系也能接受</li>
+<li>对象耦合 如果object1 要求object2传递给他一个object3，那么这两个模块就是对象参数耦合。这种耦合更紧密，因为它要求object1 了解object3。</li>
+<li>语义耦合，如果一个模块不仅使用了另一模块的语法元素，而且还是用了那个模块内部工作细节的语义知识。这种耦合就非常危险，因为更改被调用模块，会影响调用者。</li>
+</ul>
+<h4 id="查阅常用的设计模式">查阅常用的设计模式</h4>
+<p>设计模式其实是一些现成精炼的解决方案，可用于解决很多软件开发中常见的问题。</p>
+<p>设计模式提供了如下好处：</p>
+<ol>
+<li>设计模式通过提供现成的抽象来减少复杂度</li>
+<li>设计模式通过把常见解决方案的细节予以制度化来减少出错</li>
+<li>设计模式通过提供多种设计方案儿带来启发性的价值。</li>
+<li>设计模式通过把设计对话提升到一个更高的层次上来简化交流。比如你和其它开发者讨论问题时说：我用来Factory Method。其实已经传递了很多有效信息。</li>
+</ol>
+<p>常见的设计模式请参考百科介绍：<a href="https://baike.baidu.com/item/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/1212549">设计模式 （设计模式概念）</a></p>
+<p><a href="https://mp.weixin.qq.com/mp/homepage?__biz=MzAwNjI5MjAzNw==&amp;hid=2&amp;sn=c32f7371e7df2e2282e2bdba080aa9c2">常用设计模式Python实现</a></p>
+<h4 id="其它的启发式方法">其它的启发式方法</h4>
+<ul>
+<li>高内聚性</li>
+<li>构造分层结构</li>
+<li>严格描述类契约
+<ul>
+<li>把没个类的接口看作是与程序的其余部分之间的一项契约会更有助于更好的洞察程序。这种契约类似于“如果你承诺提供数据x、y 和 z，并且答应让这些数据具有特征 a、b 和 c，我就承诺基于约束8、9和10来执行操作1、2和3</li>
+</ul>
+</li>
+<li>分配职责</li>
+<li>为测试而设计
+<ul>
+<li>如果为了便于测试儿设计这个系统，那么这个系统会是什么样子？</li>
+</ul>
+</li>
+<li>避免失误</li>
+<li>有意识的绑定时间
+<ul>
+<li>绑定时间是指的是吧特定的值绑定到某一变量的时间。早绑定会比较简单但不灵活</li>
+</ul>
+</li>
+<li>创建中央控制点
+<ul>
+<li>唯一一个正确位置的原则：为了找到某个事物，需要查找的地方越少，该起来就越容易越简单</li>
+</ul>
+</li>
+<li>考虑使用蛮力突破
+<ul>
+<li>一个可行的蛮力解决方案要好于一个优雅但不能用的解决方案</li>
+</ul>
+</li>
+<li>画一个图
+<ul>
+<li>一幅图顶的上一千句话--鲁迅说的。</li>
+</ul>
+</li>
+<li>保持设计的模块化</li>
+</ul>
+<h4 id="使用启发方式的原则">使用启发方式的原则</h4>
+<ol>
+<li>理解问题</li>
+<li>设计一个计划。找出现有数据和未知量之间的联系。</li>
+<li>执行这一计划</li>
+<li>回顾。检视整个解决方案。</li>
+</ol>
+<h3 id="设计实践">设计实践</h3>
+<h4 id="迭代iterate">迭代（Iterate）</h4>
+<p>设计是个迭代的过程，并非只是从A点到B点，也可以从A点到B点，再从B点到A点。在设计方案中尝试不同的做法时，会同时从不同层次取审视问题。更有助于找出相关细节。</p>
+<blockquote>
+<p>当你首次尝试得出一个看上去足够好的设计方案后，不要停下来，第二次尝试肯定会好于第一个。</p>
+</blockquote>
+<h4 id="分而治之divide-and-conquer">分而治之（Divide and Conquer）</h4>
+<p>没有人的头脑能大到装下一个复杂程序的全部细节-- Edsger Dijkstra</p>
+<h4 id="自上而下和自下而上的设计方法">自上而下和自下而上的设计方法</h4>
+<p>自上而下和自下而上策略最关键的区别在于，前者是一种分解（decomposition）策略而后者是一种合成（composition）策略。</p>
+<ul>
+<li>自上而下的设计很简单，因为人们善于把一些大的事物分解成小的组件。</li>
+<li>自上而下另一个强项是可以推迟构建的细节</li>
+<li>自下而上的一个优点是通常能够焦躁的找出所需的功能，从而带来紧凑合理的设计</li>
+<li>自下而上的一个缺点是很难完全独立的使用它。大多数人擅长把大的概念分解成小概念，而不擅长从小概念中得出大的概念。</li>
+<li>自下而上设计的另一个缺点是，有时候会发现自己无法使用手头已有的零件来构建整个系统。</li>
+<li>自上而下和自下而上设计并不互斥，两者可以协作。</li>
+</ul>
+<blockquote>
+<p>设计是一个启发式的过程，没有任何方案能保证万无一失，需要在设计的过程中需要不停的迭代，改进。需要多尝试来找出最佳方案。</p>
+</blockquote>
+<h4 id="建立试验性原型">建立试验性原型</h4>
+<p>有些时候，判断一种设计是否合适，只有用过才能知道。创建一个试验性原型（写出用于回答特定设计问题、量最少且能够随时扔掉的代码），来验证设计的可行性，通常可以找出设计中遇到的问题以及需要改进的方向。</p>
+<h4 id="合作设计">合作设计</h4>
+<p>三个臭皮匠，顶个诸葛亮。</p>
+<ol>
+<li>随便找个同事，向他征求意见</li>
+<li>坐在会议室，在白板上画出可选设计方案</li>
+<li>结对编程</li>
+<li>和多名同事一起过设计想法</li>
+</ol>
+<h4 id="要做多少设计才够">要做多少设计才够</h4>
+<p>对于正式编码前的设计工作量和设计文档的正规程度，很难有个准确的定论。下图总结了设计文档的正规化以及所需的设计层次：</p>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/hFeM_4EYd9btf0y09WRKh6M57Hqc6VNLnpUC8vVUOo28T1cqTy-pMNAvigkzT6HL" alt="设计的层次" loading="lazy"></figure>
+<blockquote>
+<p>如果在编码前判断不了应该做多深入的设计，那么详细的设计是一个好的选择。</p>
+</blockquote>
+<h4 id="记录设计成果">记录设计成果</h4>
+<ul>
+<li>把设计文档加入到代码中
+<ul>
+<li>合适的注释非常关键，特别是某些特定的设计决策</li>
+</ul>
+</li>
+<li>用Wiki 来记录设计讨论和决策</li>
+<li>写总结邮件</li>
+<li>保留设计图</li>
+</ul>
+<h3 id="总结">总结</h3>
+<ul>
+<li>软件的首要技术使命就是管理复杂度。以简单性为努力目标的设计方案对此最有帮助</li>
+<li>简单性可以通过两种方式来获取：轶事减少在同一时间所关注的本质性复杂度的量，二是避免生成不必要的偶然的复杂度</li>
+<li>设计是一个启发式的过程。固执于某一种单一方法会损害创新能力，从而损害程序</li>
+<li>好的设计都是迭代的，尝试的越多，最终方案会越好</li>
+<li>信息隐藏是一个非常有价值的概念。通过询问“我应该隐藏什么？&quot;能够解决很多设计问题</li>
+</ul>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://mp.weixin.qq.com/mp/homepage?__biz=MzAwNjI5MjAzNw==&amp;hid=2&amp;sn=c32f7371e7df2e2282e2bdba080aa9c2">常用设计模式Python实现</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="5"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E8%BD%AF%E4%BB%B6%E6%9E%84%E5%BB%BA%E4%B8%AD%E7%9A%84%E8%AE%BE%E8%AE%A1">软件构建中的设计</a>
+<ul>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E4%B8%AD%E7%9A%84%E6%8C%91%E6%88%98">设计中的挑战</a>
+<ul>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E6%98%AF%E4%B8%80%E4%B8%AA%E9%99%A9%E6%81%B6%E7%9A%84%E9%97%AE%E9%A2%98">设计是一个险恶的问题</a></li>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E6%98%AF%E4%B8%80%E4%B8%AA%E4%BA%86%E6%97%A0%E7%AB%A0%E6%B3%95%E7%9A%84%E8%BF%87%E7%A8%8B%E5%8D%B3%E4%BD%BF%E5%AE%83%E8%83%BD%E5%BE%97%E5%A4%84%E6%B8%85%E7%88%BD%E7%9A%84%E6%88%90%E6%9E%9C">设计是一个了无章法的过程（即使它能得处清爽的成果）</a></li>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E5%B0%B1%E6%98%AF%E7%A1%AE%E5%AE%9A%E5%8F%96%E8%88%8D%E5%92%8C%E8%B0%83%E6%95%B4%E9%A1%BA%E5%BA%8F%E7%9A%84%E8%BF%87%E7%A8%8B">设计就是确定取舍和调整顺序的过程</a></li>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E5%8F%97%E5%88%B0%E8%AF%B8%E5%A4%9A%E9%99%90%E5%88%B6">设计受到诸多限制</a></li>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E6%98%AF%E4%B8%8D%E7%A1%AE%E5%AE%9A%E7%9A%84">设计是不确定的</a></li>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E6%98%AF%E4%B8%80%E4%B8%AA%E5%90%AF%E5%8F%91%E5%BC%8F%E7%9A%84%E8%BF%87%E7%A8%8B">设计是一个启发式的过程</a></li>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E6%98%AF%E8%87%AA%E7%84%B6%E8%80%8C%E7%84%B6%E5%BD%A2%E6%88%90%E7%9A%84">设计是自然而然形成的</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%B3%E9%94%AE%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A6%82%E5%BF%B5">关键的设计概念</a>
+<ul>
+<li><a href="#%E8%BD%AF%E4%BB%B6%E7%9A%84%E9%A6%96%E8%A6%81%E6%8A%80%E6%9C%AF%E4%BD%BF%E5%91%BD%E7%AE%A1%E7%90%86%E5%A4%8D%E6%9D%82%E5%BA%A6">软件的首要技术使命：管理复杂度</a>
+<ul>
+<li><a href="#%E6%9C%AC%E8%B4%A8%E7%9A%84%E9%9A%BE%E9%A2%98%E5%92%8C%E5%81%B6%E7%84%B6%E7%9A%84%E9%9A%BE%E9%A2%98">本质的难题和偶然的难题</a></li>
+<li><a href="#%E7%AE%A1%E7%90%86%E5%A4%8D%E6%9D%82%E5%BA%A6%E7%9A%84%E9%87%8D%E8%A6%81%E6%80%A7">管理复杂度的重要性</a></li>
+<li><a href="#%E5%A6%82%E4%BD%95%E5%BA%94%E5%AF%B9%E5%A4%8D%E6%9D%82%E5%BA%A6">如何应对复杂度</a></li>
+</ul>
+</li>
+<li><a href="#%E7%90%86%E6%83%B3%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%89%B9%E5%BE%81">理想的设计特征</a></li>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E7%9A%84%E5%B1%82%E6%AC%A1">设计的层次</a>
+<ul>
+<li><a href="#1-%E8%BD%AF%E4%BB%B6%E7%B3%BB%E7%BB%9Fsoftware-system">1. 软件系统（Software System）</a></li>
+<li><a href="#2-%E5%88%86%E8%A7%A3%E4%B8%BA%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%88%96%E5%8C%85division-into-subsystems-or-packages">2. 分解为子系统或包（Division into Subsystems or Packages）</a>
+<ul>
+<li><a href="#%E4%B8%80%E4%BA%9B%E5%B8%B8%E7%94%A8%E7%9A%84%E5%AD%90%E7%B3%BB%E7%BB%9F">一些常用的子系统</a></li>
+</ul>
+</li>
+<li><a href="#3-%E5%88%86%E8%A7%A3%E4%B8%BA%E7%B1%BBdivision-into-classes">3. 分解为类（Division into Classes）</a></li>
+<li><a href="#4-%E5%88%86%E8%A7%A3%E4%B8%BA%E5%AD%90%E7%A8%8B%E5%BA%8Fdivision-into-routines">4. 分解为子程序（Division into Routines）</a></li>
+<li><a href="#5-%E5%AD%90%E7%A8%8B%E5%BA%8F%E5%86%85%E9%83%A8%E7%9A%84%E8%AE%BE%E8%AE%A1internal-routine-design">5. 子程序内部的设计（Internal Routine Design）</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E6%9E%84%E9%80%A0%E5%9D%97%E5%90%AF%E5%8F%91%E5%BC%8F%E6%96%B9%E6%B3%95">设计构造块：启发式方法</a>
+<ul>
+<li><a href="#%E6%89%BE%E5%87%BA%E7%8E%B0%E5%AE%9E%E4%B8%96%E7%95%8C%E4%B8%AD%E7%9A%84%E5%AF%B9%E8%B1%A1">找出现实世界中的对象</a></li>
+<li><a href="#%E5%BD%A2%E6%88%90%E4%B8%80%E8%87%B4%E7%9A%84%E6%8A%BD%E8%B1%A1">形成一致的抽象</a></li>
+<li><a href="#%E5%B0%81%E8%A3%85%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82">封装实现细节</a></li>
+<li><a href="#%E5%BD%93%E7%BB%A7%E6%89%BF%E8%83%BD%E7%AE%80%E5%8C%96%E8%AE%BE%E8%AE%A1%E6%97%B6%E5%B0%B1%E7%BB%A7%E6%89%BF">当继承能简化设计时就继承</a></li>
+<li><a href="#%E9%9A%90%E8%97%8F%E7%A7%98%E5%AF%86%E4%BF%A1%E6%81%AF%E9%9A%90%E8%97%8F">隐藏秘密（信息隐藏）</a>
+<ul>
+<li><a href="#%E7%A7%98%E5%AF%86%E5%92%8C%E9%9A%90%E7%A7%81%E6%9D%83">秘密和隐私权</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E9%9A%90%E8%97%8F%E7%9A%84%E4%B8%80%E4%B8%AA%E4%BE%8B%E5%AD%90">信息隐藏的一个例子</a></li>
+<li><a href="#%E4%B8%A4%E7%A7%8D%E7%A7%98%E5%AF%86">两种秘密</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E9%9A%90%E8%97%8F%E7%9A%84%E9%9A%9C%E7%A2%8D">信息隐藏的障碍</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E9%9A%90%E8%97%8F%E7%9A%84%E4%BB%B7%E5%80%BC">信息隐藏的价值</a></li>
+</ul>
+</li>
+<li><a href="#%E6%89%BE%E5%87%BA%E5%AE%B9%E6%98%93%E6%94%B9%E5%8F%98%E7%9A%84%E5%8C%BA%E5%9F%9F">找出容易改变的区域</a></li>
+<li><a href="#%E4%BF%9D%E6%8C%81%E6%9D%BE%E6%95%A3%E8%80%A6%E5%90%88">保持松散耦合</a>
+<ul>
+<li><a href="#%E8%80%A6%E5%90%88%E6%A0%87%E5%87%86">耦合标准</a></li>
+<li><a href="#%E8%80%A6%E5%90%88%E7%9A%84%E7%A7%8D%E7%B1%BB">耦合的种类</a></li>
+</ul>
+</li>
+<li><a href="#%E6%9F%A5%E9%98%85%E5%B8%B8%E7%94%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F">查阅常用的设计模式</a></li>
+<li><a href="#%E5%85%B6%E5%AE%83%E7%9A%84%E5%90%AF%E5%8F%91%E5%BC%8F%E6%96%B9%E6%B3%95">其它的启发式方法</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E5%90%AF%E5%8F%91%E6%96%B9%E5%BC%8F%E7%9A%84%E5%8E%9F%E5%88%99">使用启发方式的原则</a></li>
+</ul>
+</li>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5">设计实践</a>
+<ul>
+<li><a href="#%E8%BF%AD%E4%BB%A3iterate">迭代（Iterate）</a></li>
+<li><a href="#%E5%88%86%E8%80%8C%E6%B2%BB%E4%B9%8Bdivide-and-conquer">分而治之（Divide and Conquer）</a></li>
+<li><a href="#%E8%87%AA%E4%B8%8A%E8%80%8C%E4%B8%8B%E5%92%8C%E8%87%AA%E4%B8%8B%E8%80%8C%E4%B8%8A%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%B3%95">自上而下和自下而上的设计方法</a></li>
+<li><a href="#%E5%BB%BA%E7%AB%8B%E8%AF%95%E9%AA%8C%E6%80%A7%E5%8E%9F%E5%9E%8B">建立试验性原型</a></li>
+<li><a href="#%E5%90%88%E4%BD%9C%E8%AE%BE%E8%AE%A1">合作设计</a></li>
+<li><a href="#%E8%A6%81%E5%81%9A%E5%A4%9A%E5%B0%91%E8%AE%BE%E8%AE%A1%E6%89%8D%E5%A4%9F">要做多少设计才够</a></li>
+<li><a href="#%E8%AE%B0%E5%BD%95%E8%AE%BE%E8%AE%A1%E6%88%90%E6%9E%9C">记录设计成果</a></li>
+</ul>
+</li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/concurrency-models-thread-and-lock/">
+              <h3 class="post-title">
+                并发模型：线程与锁
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

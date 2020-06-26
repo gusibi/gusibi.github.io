@@ -1,0 +1,661 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>跟着代码学go 002 -- 控制流 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="跟着代码学go 002 -- 控制流 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="控制流
+上一篇我们了解了golang 的变量、函数和基本类型，这一篇将介绍一下控制流
+现在我们看一个复杂点的例子:
+HUGOMORE42
+fibonacci(递归版)
+    01 package main
+    02
+    03 im..." />
+    <meta name="keywords" content="读书笔记,golang" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              跟着代码学go 002 -- 控制流
+            </h2>
+            <div class="post-info">
+              <span>
+                2016-04-26
+              </span>
+              <span>
+                9 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/dE3Sy1WOcy/" class="post-tag">
+                  # golang
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h2 id="控制流">控制流</h2>
+<p>上一篇我们了解了golang 的变量、函数和基本类型，这一篇将介绍一下控制流</p>
+<p>现在我们看一个复杂点的例子:</p>
+<p>HUGOMORE42</p>
+<h3 id="fibonacci递归版">fibonacci(递归版)</h3>
+<pre><code class="language-go">    01 package main
+    02
+    03 import &quot;fmt&quot;
+    04
+    05 func main() {
+    06     result := 0
+    07     for i := 0; i &lt;= 10; i++ {
+    08	     result = fibonacci(i)
+    09	     fmt.Printf(&quot;fibonacci(%d) is: %d\n&quot;, i, result)
+    10	  }
+    11 }
+    12
+    13 func fibonacci(n int) (res int) {
+    14     if n &lt;= 1 {
+    15         res = 1
+    16 	   } else {
+    17 	       res = fibonacci(n-1) + fibonacci(n-2)
+    18 	   }
+    19 	return
+    20 }
+
+    // outputs
+
+    fibonacci(0) is: 1
+    fibonacci(1) is: 1
+    fibonacci(2) is: 2
+    fibonacci(3) is: 3
+    fibonacci(4) is: 5
+    fibonacci(5) is: 8
+    fibonacci(6) is: 13
+    fibonacci(7) is: 21
+    fibonacci(8) is: 34
+    fibonacci(9) is: 55
+    fibonacci(10) is: 89
+</code></pre>
+<ul>
+<li>for i := 0; i &lt;= 10; i++ {} 第7行是一个循环结构 这里for 循环是一个控制流</li>
+</ul>
+<h3 id="控制流-2">控制流</h3>
+<h4 id="for">For</h4>
+<p>Go 只有一种循环接口-- for 循环</p>
+<p>For 支持三种循环方式,包括类 while 语法</p>
+<h4 id="1-基本for循环-支持初始化语句">1 基本for循环 支持初始化语句</h4>
+<pre><code class="language-go">    s := &quot;abc&quot;
+    for i, n := 0, len(s); i &lt; n; i++ {
+    	// i, n 为定义的变量 只在for 循环内作用
+        println(s[i])
+    }
+</code></pre>
+<p><em>基本的 for 循环包含三个由分号分开的组成部分：</em></p>
+<ul>
+<li>初始化语句：在第一次循环执行前被执行</li>
+<li>循环条件表达式：每轮迭代开始前被求值</li>
+<li>后置语句：每轮迭代后被执行</li>
+</ul>
+<h4 id="2-替代-while-n-0">2 替代 while (n &gt; 0) {}</h4>
+<p>C 的 while 在 Go 中叫做 for</p>
+<pre><code class="language-go">    n := len(s)
+	// 循环初始化语句和后置语句都是可选的。
+    for n &gt; 0 { // 等同于 for (; n &gt; 0;) {}
+        println(s[n])
+        n--
+    }
+</code></pre>
+<h4 id="3-死循环">3 死循环</h4>
+<pre><code class="language-go">    for { // while true
+        println(s)
+    }
+</code></pre>
+<h4 id="if">IF</h4>
+<blockquote>
+<p>就像 for 循环一样，Go 的 if 语句也不要求用 ( ) 将条件括起来，同时， { } 还是必须有的</p>
+</blockquote>
+<ul>
+<li>可省略条件表达式括号</li>
+<li>支持初始化语句,可定义代码块局部变量</li>
+<li>代码块左大括号必须在条件表达式尾部</li>
+</ul>
+<pre><code class="language-go">    x := 0
+
+    // if x &gt; 10  // Error: missing condition in if statement(左大括号必须在条件表达式尾部)
+    // {
+    // }
+
+    if n := &quot;abc&quot;; x &gt; 0 {  // 初始化语句(在这里是定义变量)
+    	println(n[2])
+    } else if x &lt; 0 {
+    	println(n[1])
+    } else {
+    	println(n[0])
+    }
+</code></pre>
+<blockquote>
+<p>if 语句定义的变量作用域仅在if范围之内(包含else语句)<br>
+不支持三元操作符 &quot;a &gt; b ? a : b&quot;</p>
+</blockquote>
+<p>以上是上段代码出现的两个控制流，剩下的控制流还有</p>
+<ul>
+<li>Switch</li>
+<li>Range</li>
+<li>Goto, Break, Continue, defer</li>
+</ul>
+<h4 id="switch">Switch</h4>
+<p>switch 语法如下：</p>
+<pre><code class="language-go">    switch optionalStatement; optionalExpression{
+		case expressionList1: block1
+		...
+		case expressionListN: blockN
+		default: blockD
+	}
+</code></pre>
+<p>先看一个例子:</p>
+<pre><code class="language-go">package main
+
+import (
+	&quot;fmt&quot;
+	&quot;runtime&quot;
+)
+
+func main() {
+	fmt.Print(&quot;Go runs on &quot;)
+	switch os := runtime.GOOS; os {
+		case &quot;darwin&quot;:
+			fmt.Println(&quot;OS X.&quot;)
+		case &quot;linux&quot;:
+			fmt.Println(&quot;Linux.&quot;)
+		default:
+			// freebsd, openbsd,
+			// plan9, windows...
+			fmt.Printf(&quot;%s.&quot;, os)
+		}
+}
+</code></pre>
+<ul>
+<li>如果有可选语句声明, 分号是必要的, 无论后边的可选表达式语句是否出现(如果可选语句没有出现默认为true)</li>
+<li>每一个case 语句必须要有一个表达式列表，多个用分号隔开</li>
+<li>switch 语句自上而下执行，当匹配成功后执行case分支的代码块，执行结束后退出switch</li>
+</ul>
+<pre><code class="language-go">    switch i {
+        case 0: // 空分支，只有当 i == 0 时才会进入分支
+        case 1:
+            f() // 当 i == 0 时函数不会被调用
+    }
+</code></pre>
+<ul>
+<li>如果想要在执行完每个分支的代码后还继续执行后续的分支代码，可以使用fallthrough 关键字达到目的</li>
+</ul>
+<pre><code class="language-go">    package main
+
+    import &quot;fmt&quot;
+
+    func switch1(n int) {
+    	switch { // 这里用的是没有条件的switch 语句会直接执行
+    	case n == 0:
+    		fmt.Println(0)
+    		fallthrough
+    	case n == 1: // 如果匹配到0 这里会继续执行
+    		fmt.Println(1)
+    	case n == 2: // fallthrough 不会对这里有作用
+    		fmt.Println(2)
+    	default:
+    		fmt.Println(&quot;default&quot;)
+    	}
+    }
+
+    func main() {
+    	switch1(0)
+    }
+    # output
+    0
+	1
+</code></pre>
+<ul>
+<li>用 default 可以指定当其他所有分支都不匹配的时候的行为</li>
+</ul>
+<pre><code class="language-go">    switch i {
+    	case 0:
+    	case 1:
+    		f()
+    	default:
+    		g()  // 当i不等于0 或 1 时调用
+    }
+</code></pre>
+<h4 id="range">Range</h4>
+<blockquote>
+<p>Range 类似迭代器的操作，返回(索引，值)或(健，值)</p>
+</blockquote>
+<p>它可以迭代任何一个集合（包括数组和 map）</p>
+<p>基本语法如下:</p>
+<pre><code class="language-go">for ix, val := range coll {
+...
+}
+
+</code></pre>
+<p>val 始终为集合中对应索引的值拷贝，因此它一般只具有只读性质，对它所做的任何修改都不会影响到集合中原有的值（译者注：如果 val 为指针，则会产生指针的拷贝，依旧可以修改集合中的原值<br>
+一个字符串是 Unicode 编码的字符（或称之为 rune）集合，因此您也可以用它迭代字符串</p>
+<p>下面是每种数据类型使用range时 ix和val 的值</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left"></th>
+<th style="text-align:left">ix</th>
+<th style="text-align:left">val</th>
+<th style="text-align:left">值类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">string</td>
+<td style="text-align:left">index</td>
+<td style="text-align:left">s[index]</td>
+<td style="text-align:left">unicode, rune</td>
+</tr>
+<tr>
+<td style="text-align:left">array/slice</td>
+<td style="text-align:left">index</td>
+<td style="text-align:left">s[index]</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">map</td>
+<td style="text-align:left">key</td>
+<td style="text-align:left">m[index]</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">channel</td>
+<td style="text-align:left">element</td>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+</tr>
+</tbody>
+</table>
+<h4 id="break-continue">Break continue</h4>
+<p>break 和 continue 都可在多级嵌套循环中跳出 (和python中的用法基本一致)</p>
+<blockquote>
+<p>break 可用于 for、switch、select,  continue 仅能 于 for 循环</p>
+</blockquote>
+<h4 id="defer">defer</h4>
+<p>defer 语句会延迟函数的执行直到上层函数返回</p>
+<p>延迟调用的参数会立刻生成，但是在上层函数返回前函数都不会被调用</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+	defer fmt.Println(&quot;world&quot;)
+
+	fmt.Println(&quot;hello&quot;)
+}
+
+// output
+hello
+world
+</code></pre>
+<p><em>defer 栈</em></p>
+<p>延迟的函数调用被压入一个栈中。当函数返回时， 会按照后进先出的顺序调用被延迟的函数调用。<br>
+defer 常用来定义简单的方法</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+	fmt.Println(&quot;counting&quot;)
+
+	for i := 0; i &lt; 10; i++ {
+			defer fmt.Println(i)
+		}
+
+		fmt.Println(&quot;done&quot;)
+}
+// 可以想一下会输出什么
+// 代码执行 https://tour.go-zh.org/flowcontrol/13
+</code></pre>
+<p><em>关键字 defer 允许我们进行一些函数执行完成后的收尾工作，例如：</em></p>
+<ul>
+<li>
+<p>关闭文件流：</p>
+<p>// open a file defer file.Close()</p>
+</li>
+<li>
+<p>解锁一个加锁的资源</p>
+<p>mu.Lock() defer mu.Unlock()</p>
+</li>
+<li>
+<p>打印最终报告</p>
+<p>printHeader() defer printFooter()</p>
+</li>
+<li>
+<p>关闭数据库链接</p>
+<p>// open a database connection defer disconnectFromDB()</p>
+</li>
+</ul>
+<p>合理使用 defer 语句能够使得代码更加简洁。</p>
+<p>下面的代码展示了在调试时使用 defer 语句的手法</p>
+<pre><code class="language-go">package main
+
+import (
+	&quot;io&quot;
+    &quot;log&quot;
+)
+
+func func1(s string) (n int, err error) {
+    defer func() {
+	        log.Printf(&quot;func1(%q) = %d, %v&quot;, s, n, err)
+	    }()
+    return 7, io.EOF
+}
+
+func main() {
+    func1(&quot;Go&quot;)
+}
+
+// 输出
+Output: 2016/04/25 10:46:11 func1(&quot;Go&quot;) = 7, EOF
+</code></pre>
+<p><a href="https://blog.go-zh.org/defer-panic-and-recover">更多defer 的用法</a></p>
+<h4 id="goto">goto</h4>
+<p>goto 语句可以配合标签（label）形式的标识符使用，即某一行第一个以冒号（:）结尾的单词</p>
+<pre><code class="language-go">package main
+
+func main() {
+    i:=0
+    HERE:
+	    print(i)
+		i++
+        if i==5 {
+	        return
+	    }
+        goto HERE
+}
+# output 01234
+</code></pre>
+<blockquote>
+<p>使用标签和 goto 语句是不被鼓励的：它们会很快导致非常糟糕的程序设计，而且总有更加可读的替代方案来实现相同的需求。</p>
+</blockquote>
+<p>for、switch 或 select 语句都可以配合标签（label）形式的标识符使用</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+
+LABEL1:
+    for i := 0; i &lt;= 5; i++ {
+		for j := 0; j &lt;= 5; j++ {
+			if j == 4 {
+				continue LABEL1
+			}
+			fmt.Printf(&quot;i is: %d, and j is: %d\n&quot;, i, j)
+		}
+	}
+}
+
+</code></pre>
+<blockquote>
+<p>continue 语句指向 LABEL1，当执行到该语句的时候，就会跳转到 LABEL1 标签的位置</p>
+</blockquote>
+<h3 id="参考链接">参考链接</h3>
+<p><a href="https://tour.go-zh.org/flowcontrol/1">Go 指南</a><br>
+<a href="https://github.com/Unknwon/the-way-to-go_ZH_CN/blob/master/eBook/05.0.md">The way to go -- 控制结构</a><br>
+<a href="https://golang.org/doc/effective_go.html">Effective Go</a></p>
+<p>到这里简单的控制流用法讲解就结束了</p>
+<p>下节将会是golang 数据结构部分, 会用到的代码为</p>
+<h3 id="fibonacci内存版">fibonacci(内存版)</h3>
+<pre><code class="language-go">    package main
+
+    import (
+        &quot;fmt&quot;
+        &quot;time&quot;
+    )
+
+    const LIM = 41
+
+    var fibs [LIM]uint64
+
+    func main() {
+        var result uint64 = 0
+        start := time.Now()
+        for i := 0; i &lt; LIM; i++ {
+    		result = fibonacci(i)
+    		fmt.Printf(&quot;fibonacci(%d) is: %d\n&quot;, i, result)
+        }
+        end := time.Now()
+        delta := end.Sub(start)
+        fmt.Printf(&quot;longCalculation took this amount of time: %s\n&quot;, delta)
+    }
+    func fibonacci(n int) (res uint64) {
+        // memoization: check if fibonacci(n) is already known in array:
+        if fibs[n] != 0 {
+    		res = fibs[n]
+    		return
+        }
+        if n &lt;= 1 {
+    		res = 1
+        } else {
+    		res = fibonacci(n-1) + fibonacci(n-2)
+        }
+        fibs[n] = res
+        return
+    }
+</code></pre>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E6%8E%A7%E5%88%B6%E6%B5%81">控制流</a>
+<ul>
+<li><a href="#fibonacci%E9%80%92%E5%BD%92%E7%89%88">fibonacci(递归版)</a></li>
+<li><a href="#%E6%8E%A7%E5%88%B6%E6%B5%81-2">控制流</a>
+<ul>
+<li><a href="#for">For</a></li>
+<li><a href="#1-%E5%9F%BA%E6%9C%ACfor%E5%BE%AA%E7%8E%AF-%E6%94%AF%E6%8C%81%E5%88%9D%E5%A7%8B%E5%8C%96%E8%AF%AD%E5%8F%A5">1 基本for循环 支持初始化语句</a></li>
+<li><a href="#2-%E6%9B%BF%E4%BB%A3-while-n-0">2 替代 while (n &gt; 0) {}</a></li>
+<li><a href="#3-%E6%AD%BB%E5%BE%AA%E7%8E%AF">3 死循环</a></li>
+<li><a href="#if">IF</a></li>
+<li><a href="#switch">Switch</a></li>
+<li><a href="#range">Range</a></li>
+<li><a href="#break-continue">Break continue</a></li>
+<li><a href="#defer">defer</a></li>
+<li><a href="#goto">goto</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+<li><a href="#fibonacci%E5%86%85%E5%AD%98%E7%89%88">fibonacci(内存版)</a></li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/golang-learning-by-code-001/">
+              <h3 class="post-title">
+                跟着代码学go 001 -- 变量&amp;函数
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

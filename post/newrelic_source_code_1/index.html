@@ -1,0 +1,438 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>newrelic python agent 源码分析-1 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="newrelic python agent 源码分析-1 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+Newrelic 是APM（Application Performance Management）（应用性能管理/监控）解决方案提供商。项目中，通常用它来追踪应用的性能。最近看了一下 newrelic-python-agent 源码，这是..." />
+    <meta name="keywords" content="python,后端,weixin,development" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              newrelic python agent 源码分析-1
+            </h2>
+            <div class="post-info">
+              <span>
+                2018-05-16
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/f-Wl7DIwGU/" class="post-tag">
+                  # 后端
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/hHHzJqiTzdW/" class="post-tag">
+                  # weixin
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/7_5AGYXh_qT/" class="post-tag">
+                  # development
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>Newrelic 是APM（Application Performance Management）（应用性能管理/监控）解决方案提供商。项目中，通常用它来追踪应用的性能。最近看了一下 newrelic-python-agent 源码，这是查看源码过程中的一些记录。</p>
+</blockquote>
+<h3 id="目录结构">目录结构</h3>
+<p>newrelic 目录结构如下：</p>
+<pre><code class="language-bash">newrelic
+├── admin  # 常用命令
+├── api    # 探针
+├── bootstrap
+├── common  
+├── core
+├── extras
+│   └── framework_django
+│       └── templatetags
+├── hooks   # 数据库 web 各个库的一些探针
+│   ├── framework_tornado
+│   ├── framework_tornado_r3
+│   └── framework_tornado_r4
+├── network
+├── packages
+│   ├── requests
+│   │   └── packages
+│   │       ├── chardet
+│   │       └── urllib3
+│   │           ├── packages
+│   │           │   └── ssl_match_hostname
+│   │           └── util
+│   └── wrapt
+└── samplers
+</code></pre>
+<h3 id="命令">命令</h3>
+<p>使用 <code>newrelic-admin help</code> 可以列出所有命令：</p>
+<pre><code class="language-bash">$ newrelic-admin help
+
+Usage: newrelic-admin command [options]
+
+Type 'newrelic-admin help &lt;command&gt;'for help on a specific command.
+
+Available commands are:
+  generate-config
+  license-info
+  license-key
+  local-config
+  network-config
+  record-deploy
+  run-program
+  run-python
+  server-config
+  validate-config
+</code></pre>
+<p>通过 setup.py 代码可以知道：</p>
+<pre><code class="language-python">if with_setuptools:
+    kwargs['entry_points'] = {
+            'console_scripts': ['newrelic-admin = newrelic.admin:main'],
+            }
+</code></pre>
+<p><code>newrelic-admin</code> 命令调用的是 <code>newrelic.admin:main</code>，这是代码的入口。首先看一下 <code>newrelic/admin/</code>目录。</p>
+<h4 id="admin">admin</h4>
+<blockquote>
+<p>admin 目录是 newrelic-admin help 列出的命令脚本所在目录。</p>
+</blockquote>
+<p>包含文件如下：</p>
+<pre><code class="language-bash">$ tree
+admin
+├── __init__.py
+├── __main__.py
+├── debug_console.py
+├── generate_config.py
+├── license_info.py
+├── license_key.py
+├── local_config.py
+├── network_config.py
+├── record_deploy.py
+├── run_program.py
+├── run_python.py
+├── server_config.py
+└── validate_config.py
+</code></pre>
+<p><code>__init__.py</code> 的 main 函数 是命令执行的入口。</p>
+<p><code>__init__.py</code> 文件中代码</p>
+<pre><code class="language-python">load_internal_plugins()
+load_external_plugins()
+</code></pre>
+<p>用来加载 <code>_builtin_plugins</code> 中定义的命令。</p>
+<h4 id="run_program">run_program</h4>
+<p>首先看下 run_program 命令，这个命令使用方式如下：</p>
+<pre><code class="language-bash">newrelic-admin run-program your command
+</code></pre>
+<p><code>newrelic/admin/run_program.py</code> 中 <code>run_program</code> 函数有装饰器 command，用来定义将命令以及相关说明添加到字典 <code>_commands</code>。</p>
+<p>在 <code>run_program</code> 中代码：</p>
+<pre><code class="language-python">root_directory = os.path.dirname(root_directory)
+boot_directory = os.path.join(root_directory, 'bootstrap')
+
+if 'PYTHONPATH' in os.environ:
+    path = os.environ['PYTHONPATH'].split(os.path.pathsep)
+    if not boot_directory in path:
+        python_path = &quot;%s%s%s&quot; % (boot_directory, os.path.pathsep, os.environ['PYTHONPATH'])
+
+os.environ['PYTHONPATH'] = python_path
+</code></pre>
+<p>可以发现<code>newrelic/bootstrap/sitecustomize.py</code> 文件被加入到了 PYTHONPATH。</p>
+<blockquote>
+<p>python 解释器初始化的时候会自动 import <code>PYTHONPATH</code> 下存在的 <code>sitecustomize</code> 和 <code>usercustomize</code> 模块。</p>
+</blockquote>
+<p>之后的功能比较简单，就是调用 os 模块执行命令。</p>
+<p>现在看下<code>newrelic/bootstrap/sitecustomize.py</code> 代码。</p>
+<p>在 这个文件的最后一行：</p>
+<pre><code class="language-python">newrelic.config.initialize(config_file, environment)
+</code></pre>
+<p>这里用来初始化newrelic，具体代码在 <code>newrelic/config.py</code>文件。</p>
+<p>以下是initialize函数：</p>
+<pre><code class="language-python">def initialize(config_file=None, environment=None, ignore_errors=None,
+            log_file=None, log_level=None):
+
+    if config_file is None:
+        config_file = os.environ.get('NEW_RELIC_CONFIG_FILE', None)
+
+    if environment is None:
+        environment = os.environ.get('NEW_RELIC_ENVIRONMENT', None)
+
+    if ignore_errors is None:
+        ignore_errors = newrelic.core.config._environ_as_bool(
+                'NEW_RELIC_IGNORE_STARTUP_ERRORS', True)
+
+    _load_configuration(config_file, environment, ignore_errors,
+            log_file, log_level)  # 加载配置
+
+    if _settings.monitor_mode or _settings.developer_mode:
+        _settings.enabled = True
+        _setup_instrumentation()  # 设置探针
+        _setup_data_source()  # TODO
+        _setup_extensions()   # TODO
+        _setup_agent_console()   # TODO
+    else:
+        _settings.enabled = False
+</code></pre>
+<p>其中第14行 <code>_load_configuration</code> 是用来加载 newrelic 的相关配置。比如：日志目录、各种环境变量、秘钥、newrelic host 地址等等。</p>
+<p>`_setup_instrumentation() 中 _process_module_builtin() 用来设置探针。</p>
+<p>数据库、外部请求 等监控模块都位于 hook 目录下，通过 <code>_process_module_builtin</code> 函数将进程与监控模块进行绑定，包括 django 的主要模块以及常用的数据库等。在核心模块执行的时候触发监控，将数据回传到 <code>api.time_trace</code> 模块进行处理。</p>
+<p>而对于硬件信息的检测则由 <code>commo.system_info</code> 进行。</p>
+<h3 id="newrelic-run_program-初始化过程">newrelic run_program 初始化过程</h3>
+<p>以下为 flask 应用初始化过程，其它应用类似：</p>
+<ol>
+<li><code>newrelic/admin/__init__.py main()</code></li>
+<li><code>newrelic/admin/run_program.py</code> 代码中会把 <code>newrelic/bootstrap/sitecustomize.py</code> 添加到 <code>PYTHONPATH</code>,python 解释器初始化的时候会自动 import <code>PYTHONPATH</code> 下存在的 <code>sitecustomize</code> 和 <code>usercustomize</code> 模块</li>
+<li><code>newrelic/bootstrap/sitecustomize.py</code> 调用 <code>newrelic.config.initialize()</code>，<code>_setup_instrumentation()</code> 函数被调用，<code>_process_module_builtin</code>会把需要 wrap 的包先添加到_import_hooks。</li>
+<li><code>newrelic/config.py</code> 中  <code>sys.meta_path.insert(0, newrelic.api.import_hook.ImportHookFinder())</code> 执行</li>
+<li><code>newrelic/api/import_hook.py ImportHookFinder().find_model()</code></li>
+<li><code>newrelic/api/import_hook.py _ImportHookLoader() or _ImportHookChainedLoader()</code></li>
+<li><code>newrelic/api/import_hook.py _notify_import_hooks</code>  <code>callable</code> 为 <code>newrelic/config _module_import_hook _instrument</code></li>
+<li><code>newrelic/hooks/framework_flask.py instrument_flask_app</code></li>
+<li><code>newrelic/api/web_transaction.py wrap_wsgi_application</code></li>
+<li><code>newrelic/common/object_wrapper.py wrap_object</code></li>
+</ol>
+<p>在代码中，使用到了第三方包 <code>wrapt</code>，以下是 wrapt 的官方描述（<a href="https://wrapt.readthedocs.io/en/latest/index.html">文档地址</a>)。</p>
+<blockquote>
+<p>wrapt模块的目的是为Python提供一个透明的对象代理，它可以作为构建函数包装器和装饰函数的基础。wrapt 提供了一个简单易用的decorator工厂，利用它你可以简单地创建decorator，并且在任何情况下都可以正确地使用它们。</p>
+</blockquote>
+<p><code>wrapt</code>简单示例如下：</p>
+<pre><code class="language-python">import wrapt
+# 普通装饰器
+@wrapt.decorator
+def pass_through(wrapped, instance, args, kwargs):
+    return wrapped(*args, **kwargs)
+
+@pass_through
+def function():
+    pass
+
+# 带参数的装饰器
+import wrapt
+
+def with_arguments(myarg1, myarg2):
+    @wrapt.decorator
+    def wrapper(wrapped, instance, args, kwargs):
+        return wrapped(*args, **kwargs)
+    return wrapper
+
+@with_arguments(1, 2)
+def function():
+    pass
+</code></pre>
+<p>要实现decorator，需要首先定义一个装饰器函数。这将在每次调用修饰函数时调用。装饰器函数需要使用四个位置参数:</p>
+<ul>
+<li>wrapped - The wrapped function which in turns needs to be called by your wrapper function.</li>
+<li>instance - The object to which the wrapped function was bound when it was called.</li>
+<li>args - The list of positional arguments supplied when the decorated function was called.</li>
+<li>kwargs - The dictionary of keyword arguments supplied when the decorated function was called.</li>
+</ul>
+<p>具体使用参考文档吧。 <a href="https://wrapt.readthedocs.io/en/latest/index.html">文档地址</a></p>
+<hr>
+<p>newrelic 源码仔细看下去，太...复杂了。下一篇再分析一个 flask 请求到结束探针工作的完整过程吧。</p>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84">目录结构</a></li>
+<li><a href="#%E5%91%BD%E4%BB%A4">命令</a>
+<ul>
+<li><a href="#admin">admin</a></li>
+<li><a href="#run_program">run_program</a></li>
+</ul>
+</li>
+<li><a href="#newrelic-run_program-%E5%88%9D%E5%A7%8B%E5%8C%96%E8%BF%87%E7%A8%8B">newrelic run_program 初始化过程</a></li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/golang-learning-note-2/">
+              <h3 class="post-title">
+                Golang 学习笔记-2：控制流
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

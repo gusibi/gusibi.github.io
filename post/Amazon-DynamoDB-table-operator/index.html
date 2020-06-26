@@ -1,0 +1,598 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Amazon DynamoDB 入门3： 表的基本操作 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Amazon DynamoDB 入门3： 表的基本操作 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+之前两篇文章介绍了DynamoDB如何在本地安装以及基本的工作原理和API，这一节主要介绍如何使用DynamoDB。
+
+基本的DynamoDB 操作包括表操作、项目操作和索引管理。
+首先是链接数据库。和关系型数据库不同，DynamoDB ..." />
+    <meta name="keywords" content="python,DynamoDB,nosql,database,AWS" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Amazon DynamoDB 入门3： 表的基本操作
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-01-14
+              </span>
+              <span>
+                9 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/BG0jvEzhDF/" class="post-tag">
+                  # DynamoDB
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/vnysOkbn9w/" class="post-tag">
+                  # nosql
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/SS95MaqZ5J/" class="post-tag">
+                  # database
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/8Np8k9SC3Nz/" class="post-tag">
+                  # AWS
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>之前两篇文章介绍了DynamoDB如何在本地安装以及基本的工作原理和API，这一节主要介绍如何使用DynamoDB。</p>
+</blockquote>
+<p>基本的DynamoDB 操作包括表操作、项目操作和索引管理。</p>
+<p>首先是链接数据库。和关系型数据库不同，<strong>DynamoDB 是一项 Web 服务，与其进行的交互是无状态的。应用程序不需要维护持久性网络连接。相反，与 DynamoDB 的交互是通过 HTTP(S) 请求和响应进行的。</strong></p>
+<p>HUGOMORE42</p>
+<p>执行某项操作的步骤为：</p>
+<ol>
+<li><strong>应用程序将 HTTP(S) 请求发送到 DynamoDB。该请求包含要执行的 DynamoDB 操作的名称和参数。DynamoDB 将立即执行请求。</strong></li>
+<li><strong>DynamoDB 返回一个包含操作结果的 HTTP(S) 响应。如果出错，DynamoDB 将返回 HTTP 错误状态和消息。</strong></li>
+</ol>
+<p>大多数情况下，我们编写应用程序代码访问DynamoDB。同时还可以使用 AWS 管理控制台或 AWS Command Line Interface (AWS CLI) 向 DynamoDB 发送临时请求并查看结果。</p>
+<p>剩下的就让我们用代码展示吧！</p>
+<h2 id="表操作">表操作</h2>
+<p>我们知道，关系模型需要一个明确定义的架构，其中，数据将标准化为表、列和行。此外，在表、列、索引和其他数据库元素之间定义所有关系。但 DynamoDB 不同，<strong>DynamoDB 没有架构。每个表必须具有一个用来唯一标识每个数据项目的主键，但对其他非键属性没有类似的约束。DynamoDB 可以管理结构化或半结构化的数据，包括 JSON 文档。</strong></p>
+<p>表是关系数据库和 DynamoDB 中的基本数据结构。关系数据库管理系统 (RDBMS) 要求在创建表时定义表的架构。相比之下，DynamoDB 表没有架构 - 与主键不同，我们在创建表时无需定义任何属性或数据类型。</p>
+<h3 id="新建表">新建表</h3>
+<p>DynamoDB 使用 CreateTable 操作创建表，并指定参数，请求语法如下所示：</p>
+<pre><code>{
+   &quot;AttributeDefinitions&quot;: [
+      {
+         &quot;AttributeName&quot;: &quot;string&quot;,
+         &quot;AttributeType&quot;: &quot;string&quot;
+      }
+   ],
+   &quot;GlobalSecondaryIndexes&quot;: [
+      {
+         &quot;IndexName&quot;: &quot;string&quot;,
+         &quot;KeySchema&quot;: [
+            {
+               &quot;AttributeName&quot;: &quot;string&quot;,
+               &quot;KeyType&quot;: &quot;string&quot;
+            }
+         ],
+         &quot;Projection&quot;: {
+            &quot;NonKeyAttributes&quot;: [ &quot;string&quot; ],
+            &quot;ProjectionType&quot;: &quot;string&quot;
+         },
+         &quot;ProvisionedThroughput&quot;: {
+            &quot;ReadCapacityUnits&quot;: number,
+            &quot;WriteCapacityUnits&quot;: number
+         }
+      }
+   ],
+   &quot;KeySchema&quot;: [
+      {
+         &quot;AttributeName&quot;: &quot;string&quot;,
+         &quot;KeyType&quot;: &quot;string&quot;
+      }
+   ],
+   &quot;LocalSecondaryIndexes&quot;: [
+      {
+         &quot;IndexName&quot;: &quot;string&quot;,
+         &quot;KeySchema&quot;: [
+            {
+               &quot;AttributeName&quot;: &quot;string&quot;,
+               &quot;KeyType&quot;: &quot;string&quot;
+            }
+         ],
+         &quot;Projection&quot;: {
+            &quot;NonKeyAttributes&quot;: [ &quot;string&quot; ],
+            &quot;ProjectionType&quot;: &quot;string&quot;
+         }
+      }
+   ],
+   &quot;ProvisionedThroughput&quot;: {
+      &quot;ReadCapacityUnits&quot;: number,
+      &quot;WriteCapacityUnits&quot;: number
+   },
+   &quot;StreamSpecification&quot;: {
+      &quot;StreamEnabled&quot;: boolean,
+      &quot;StreamViewType&quot;: &quot;string&quot;
+   },
+   &quot;TableName&quot;: &quot;string&quot;
+}
+
+
+</code></pre>
+<p>必须向 CreateTable 提供以下参数：</p>
+<ul>
+<li>TableName – 表名称。</li>
+<li>KeySchema – 用于主键的属性。有关更多信息，请参阅 表、项目和属性 和 主键。</li>
+<li>AttributeDefinitions – 键架构属性的数据类型。</li>
+<li>ProvisionedThroughput – 每秒需对此表执行的读取和写入次数。DynamoDB 将保留足量的存储和系统资源，以便始终满足吞吐量要求。也可在创建之后使用 UpdateTable 操作后更改这些设置。存储分配完全由 DynamoDB 管理，我们无需指定表的存储要求。</li>
+</ul>
+<p>AttributeType 的定义中：</p>
+<ul>
+<li>S - 字符串类型</li>
+<li>N - 数字类型</li>
+<li>B - 二进制类型</li>
+</ul>
+<h4 id="python-example">Python Example</h4>
+<p>boto3</p>
+<pre><code>import boto3
+db3 = boto3.resource('dynamodb', endpoint_url='http://localhost:8000',  region_name='us-west-2')
+
+
+table = db3.create_table(
+    TableName='Music',
+    KeySchema=[
+        {
+            'AttributeName': &quot;Artist&quot;,
+            'KeyType': &quot;HASH&quot;
+        },
+        {
+            'AttributeName': &quot;SongTitle&quot;,
+            'KeyType': &quot;RANGE&quot;
+        }
+    ],
+    AttributeDefinitions=[
+        {
+            'AttributeName': &quot;Artist&quot;,
+            'AttributeType': &quot;S&quot;
+        },
+        {
+            'AttributeName': &quot;SongTitle&quot;,
+            'AttributeType': &quot;S&quot;
+        }
+    ],
+    ProvisionedThroughput={       
+        'ReadCapacityUnits': 1,
+        'WriteCapacityUnits': 1
+    }
+)
+
+
+# Wait until the table exists.
+table.meta.client.get_waiter('table_exists').wait(TableName='Music')
+
+# Print out some data about the table.
+print(table.item_count)
+
+</code></pre>
+<p>此表的主键包括 Artist（分区键）和 SongTitle（排序键）。</p>
+<h3 id="获取有关表的信息">获取有关表的信息</h3>
+<p>表建好后，我们可以使用 DescribeTable 命令查看表的信息。<br>
+唯一的参数是表名称，如下所示：</p>
+<pre><code>{
+    TableName : &quot;Music&quot;
+}
+</code></pre>
+<p>来自 DescribeTable 回复如下所示：</p>
+<pre><code>{
+  &quot;Table&quot;: {
+    &quot;AttributeDefinitions&quot;: [
+      {
+        &quot;AttributeName&quot;: &quot;Artist&quot;,
+        &quot;AttributeType&quot;: &quot;S&quot;
+      },
+      {
+        &quot;AttributeName&quot;: &quot;SongTitle&quot;,
+        &quot;AttributeType&quot;: &quot;S&quot;
+      }
+    ],
+    &quot;TableName&quot;: &quot;Music&quot;,
+    &quot;KeySchema&quot;: [
+      {
+        &quot;AttributeName&quot;: &quot;Artist&quot;,
+        &quot;KeyType&quot;: &quot;HASH&quot;  //Partition key
+      },
+      {
+        &quot;AttributeName&quot;: &quot;SongTitle&quot;,
+        &quot;KeyType&quot;: &quot;RANGE&quot;  //Sort key
+      }
+    ],
+
+    ...remaining output omitted...
+</code></pre>
+<p>DescribeTable 还将返回有关表中的索引、预配置的吞吐量设置、大约项目数和其他元数据的信息。</p>
+<h4 id="python-example-2">Python Example</h4>
+<p>boto3</p>
+<pre><code>import boto3
+db3 = boto3.resource('dynamodb', endpoint_url='http://localhost:8000',  region_name='us-west-2')
+
+db3.meta.client.describe_table(TableName='Music')
+</code></pre>
+<pre><code># 返回结果如下
+
+{'ResponseMetadata': {'HTTPHeaders': {'content-length': '569',
+   'content-type': 'application/x-amz-json-1.0',
+   'server': 'Jetty(8.1.12.v20130726)',
+   'x-amz-crc32': '2801025854',
+   'x-amzn-requestid': '2dafeeab-8d79-4b32-ad1f-03983624ab41'},
+  'HTTPStatusCode': 200,
+  'RequestId': '2dafeeab-8d79-4b32-ad1f-03983624ab41',
+  'RetryAttempts': 0},
+ u'Table': {u'AttributeDefinitions': [{u'AttributeName': u'Artist',
+    u'AttributeType': u'S'},
+   {u'AttributeName': u'SongTitle', u'AttributeType': u'S'}],
+  u'CreationDateTime': datetime.datetime(2016, 12, 28, 11, 25, 12, 657000, tzinfo=tzlocal()),
+  u'ItemCount': 0,
+  u'KeySchema': [{u'AttributeName': u'Artist', u'KeyType': u'HASH'},
+   {u'AttributeName': u'SongTitle', u'KeyType': u'RANGE'}],
+  u'ProvisionedThroughput': {u'LastDecreaseDateTime': datetime.datetime(1970, 1, 1, 8, 0, tzinfo=tzlocal()),
+   u'LastIncreaseDateTime': datetime.datetime(1970, 1, 1, 8, 0, tzinfo=tzlocal()),
+   u'NumberOfDecreasesToday': 0,
+   u'ReadCapacityUnits': 1,
+   u'WriteCapacityUnits': 1},
+  u'TableArn': u'arn:aws:dynamodb:ddblocal:000000000000:table/Music',
+  u'TableName': u'Music',
+  u'TableSizeBytes': 0,
+  u'TableStatus': u'ACTIVE'}}
+</code></pre>
+<h3 id="删除表">删除表</h3>
+<p>当不再需要一个表并希望将它永久性丢弃时，可使用 DeleteTable：</p>
+<p>表一经删除便无法恢复。（一些关系数据库允许撤消 DROP TABLE 操作）</p>
+<pre><code>{
+    TableName: &quot;Music&quot;
+}
+</code></pre>
+<h4 id="python-example-3">Python Example</h4>
+<p>boto3</p>
+<pre><code>from __future__ import print_function # Python 2/3 compatibility
+import boto3
+
+dynamodb = boto3.resource('dynamodb', region_name='us-west-2', endpoint_url=&quot;http://localhost:8000&quot;)
+
+table = dynamodb.Table('Music')
+
+table.delete()
+
+## output
+
+{'ResponseMetadata': {
+   'HTTPHeaders': {
+       'content-length': '1012',
+       'content-type': 'application/x-amz-json-1.0',
+       'server': 'Jetty(8.1.12.v20130726)',
+       'x-amz-crc32': '2473676771',
+       'x-amzn-requestid': '84938373-870f-420f-b19e-4de2c6301743'},
+   'HTTPStatusCode': 200,
+   'RequestId': '84938373-870f-420f-b19e-4de2c6301743',
+   'RetryAttempts': 0},
+   u'TableDescription': {
+   ...
+   }
+}
+</code></pre>
+<h3 id="修改表">修改表</h3>
+<p>当一个表创建好之后如果想要调整，可以使用UpdateTable命令</p>
+<p>修改表时我们一次只可以做一个操作:</p>
+<pre><code>* 修改预设的吞吐量。
+* 开启或者停止使用Streams。
+* 删除一个全局耳机索引。
+* 创建一个全局的二级索引。当索引开始后台执行时，可以使用UpdateTable进行下一个操作。
+</code></pre>
+<blockquote>
+<p>UpdateTable 是一个异步操作; 当它开始执行时，表的状态将由 ACTIVE 变为 UPDATING。</p>
+</blockquote>
+<p>请求语法为：</p>
+<pre><code>{
+   &quot;AttributeDefinitions&quot;: [
+      {
+         &quot;AttributeName&quot;: &quot;string&quot;,
+         &quot;AttributeType&quot;: &quot;string&quot;
+      }
+   ],
+   &quot;GlobalSecondaryIndexUpdates&quot;: [
+      {
+         &quot;Create&quot;: {
+            &quot;IndexName&quot;: &quot;string&quot;,
+            &quot;KeySchema&quot;: [
+               {
+                  &quot;AttributeName&quot;: &quot;string&quot;,
+                  &quot;KeyType&quot;: &quot;string&quot;
+               }
+            ],
+            &quot;Projection&quot;: {
+               &quot;NonKeyAttributes&quot;: [ &quot;string&quot; ],
+               &quot;ProjectionType&quot;: &quot;string&quot;
+            },
+            &quot;ProvisionedThroughput&quot;: {
+               &quot;ReadCapacityUnits&quot;: number,
+               &quot;WriteCapacityUnits&quot;: number
+            }
+         },
+         &quot;Delete&quot;: {
+            &quot;IndexName&quot;: &quot;string&quot;
+         },
+         &quot;Update&quot;: {
+            &quot;IndexName&quot;: &quot;string&quot;,
+            &quot;ProvisionedThroughput&quot;: {
+               &quot;ReadCapacityUnits&quot;: number,
+               &quot;WriteCapacityUnits&quot;: number
+            }
+         }
+      }
+   ],
+   &quot;ProvisionedThroughput&quot;: {
+      &quot;ReadCapacityUnits&quot;: number,
+      &quot;WriteCapacityUnits&quot;: number
+   },
+   &quot;StreamSpecification&quot;: {
+      &quot;StreamEnabled&quot;: boolean,
+      &quot;StreamViewType&quot;: &quot;string&quot;
+   },
+   &quot;TableName&quot;: &quot;string&quot;
+}
+
+</code></pre>
+<h4 id="python-example-4">Python Example</h4>
+<p>boto3</p>
+<pre><code>import boto3
+db3 = boto3.resource('dynamodb', endpoint_url='http://localhost:8000',  region_name='us-west-2')
+
+
+table = db3.meta.client.update_table(
+    TableName='Music',
+    AttributeDefinitions=[
+        {
+            'AttributeName': &quot;Artist&quot;,
+            'AttributeType': &quot;S&quot;
+        },
+        {
+            'AttributeName': &quot;SongTitle&quot;,
+            'AttributeType': &quot;S&quot;
+        }
+    ],
+    ProvisionedThroughput={       
+        'ReadCapacityUnits': 10,
+        'WriteCapacityUnits': 10
+    }
+)
+
+db3.meta.client.describe_table(TableName='Music')
+
+</code></pre>
+<p>现在查看Music 表会发现预设的吞吐量都已经修改为了10</p>
+<p><a href="http://docs.aws.amazon.com/zh_cn/amazondynamodb/latest/APIReference/API_UpdateTable.html">DynamoDB UpdateTable 操作</a></p>
+<blockquote>
+<p>下一篇我们将要结束DynamoDB 最常用的部分，<strong>项目的基本操作（CRUD）</strong>。</p>
+</blockquote>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzAwNjI5MjAzNw==&amp;mid=2655751935&amp;idx=3&amp;sn=7dac29e441ebaabfbf70600fee042bd3&amp;chksm=80b0b9d5b7c730c390dd96fc1c4853219fd8d39a634506081631b41e147faaee38f0e8d35730#rd">原文链接</a></p>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E8%A1%A8%E6%93%8D%E4%BD%9C">表操作</a>
+<ul>
+<li><a href="#%E6%96%B0%E5%BB%BA%E8%A1%A8">新建表</a>
+<ul>
+<li><a href="#python-example">Python Example</a></li>
+</ul>
+</li>
+<li><a href="#%E8%8E%B7%E5%8F%96%E6%9C%89%E5%85%B3%E8%A1%A8%E7%9A%84%E4%BF%A1%E6%81%AF">获取有关表的信息</a>
+<ul>
+<li><a href="#python-example-2">Python Example</a></li>
+</ul>
+</li>
+<li><a href="#%E5%88%A0%E9%99%A4%E8%A1%A8">删除表</a>
+<ul>
+<li><a href="#python-example-3">Python Example</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BF%AE%E6%94%B9%E8%A1%A8">修改表</a>
+<ul>
+<li><a href="#python-example-4">Python Example</a></li>
+</ul>
+</li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/Amazon-DynamoDB-how-it-works/">
+              <h3 class="post-title">
+                Amazon DynamoDB 入门2： 工作原理、API和数据类型介绍
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

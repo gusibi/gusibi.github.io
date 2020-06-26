@@ -1,0 +1,435 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Python 生成便签图片 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Python 生成便签图片 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="最近有文字转图片的需求，但是不太想下载 APP，就使用 Python Pillow 实现了一个，效果如下：
+
+PIL 提供了 PIL.ImageDraw.ImageDraw.text 方法，可以方便的把文字写到图片上，简单示例如下：
+fro..." />
+    <meta name="keywords" content="tutorial,python,公众号,weixin" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Python 生成便签图片
+            </h2>
+            <div class="post-info">
+              <span>
+                2018-07-08
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/Vo0Pk96Rxe/" class="post-tag">
+                  # 公众号
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/hHHzJqiTzdW/" class="post-tag">
+                  # weixin
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>最近有文字转图片的需求，但是不太想下载 APP，就使用 Python <strong>Pillow</strong> 实现了一个，效果如下：</p>
+<figure data-type="image" tabindex="1"><img src="http://note.gusibi.mobi/oRWAws7M4TDPnm7I8nt6Rp9dbAO8_1531017842.png" alt="文字转图片步骤" loading="lazy"></figure>
+<p>PIL 提供了 <code>PIL.ImageDraw.ImageDraw.text</code> 方法，可以方便的把文字写到图片上，简单示例如下：</p>
+<pre><code class="language-python">from PIL import Image, ImageDraw, ImageFont
+# get an image
+base = Image.open('Pillow/Tests/images/hopper.png').convert('RGBA')
+
+# make a blank image for the text, initialized to transparent text color
+txt = Image.new('RGBA', base.size, (255,255,255,0))
+
+# get a font
+fnt = ImageFont.truetype('Pillow/Tests/fonts/FreeMono.ttf', 40)
+# get a drawing context
+d = ImageDraw.Draw(txt)
+
+# draw text, half opacity
+d.text((10,10), &quot;Hello&quot;, font=fnt, fill=(255,255,255,128))
+# draw text, full opacity
+d.text((10,60), &quot;World&quot;, font=fnt, fill=(255,255,255,255))
+
+out = Image.alpha_composite(base, txt)
+
+out.show()
+</code></pre>
+<blockquote>
+<p>为什么要计算文字的宽高呢？把文字直接写到背景图不可以么？</p>
+</blockquote>
+<p><strong>Pillow</strong> <code>PIL.ImageDraw.ImageDraw.text</code>写文字是按换行符<code>\n</code>换行的，如果个字符串特别长，文字部分就会超出背景图的宽度，所以第一步我们需要先把文本按固定的宽度计算出高度。</p>
+<p>像图上写的这样，文字转图片分三步：</p>
+<ol>
+<li>计算文字宽高</li>
+<li>生成响应尺寸背景图</li>
+<li>把文字写到图片上</li>
+</ol>
+<h3 id="计算文字宽高">计算文字宽高</h3>
+<p>这里背景图宽度是固定的，所以文字的宽可以不用计算。<code>PIL.ImageDraw.ImageDraw.text</code> 是通过<code>\n</code>来换行的，那我们只需要在文字合适的位置加上<code>\n</code>就可以了。</p>
+<p>第一个想到的是 <code>textwrap</code> 方法，textwrap 可以实现通过调整换行符的位置来格式化文本。但 textwrap 还有一个问题就是它是根据字符长度来分隔的，但文本中的字符并不是等宽的，通过<code>textwrap</code>格式化后的文字写到图片上效果可能是这样的：</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/5eyQdzV0RMDigRT1sqQIsxJ6MdhEgaEUEM05yThoGXQmVQAaYiildNJ0N2dDAYep" alt="使用 textwrap 格式化后文字效果" loading="lazy"></figure>
+<blockquote>
+<p>使用这种方式，如果我们要调整字体大小，每一行的长度都还需要再重新调整。</p>
+</blockquote>
+<p>为了保证每一行宽度尽可能的一致，这里使用 <code>PIL.ImageDraw.ImageDraw.textsize</code> 获取字符宽高，然后按约定宽度把长文本分隔成文本列表，然后把列表每行文字写到图片上。</p>
+<pre><code class="language-python">def get_paragraph(text, note_width):
+    # 把每段文字按约定宽度分隔成几行
+    txt = Image.new('RGBA', (100, 100), (255, 255, 255, 0))
+    # get a drawing context
+    draw = ImageDraw.Draw(txt)
+    paragraph, sum_width = '', 0
+    line_numbers, line_height = 1, 0
+    for char in text:
+        w, h = draw.textsize(char, font)
+        sum_width += w
+        if sum_width &gt; note_width:
+            line_numbers += 1
+            sum_width = 0
+            paragraph += '\n'
+        paragraph += char
+        line_height = max(h, line_height)
+    if not paragraph.endswith('\n'):
+        paragraph += '\n'
+    return paragraph, line_height, line_numbers
+
+
+def split_text(text):
+    # 将文本按规定宽度分组
+    max_line_height, total_lines = 0, 0
+    paragraphs = []
+    for t in text.split('\n'):
+        # 先按 \n 把文本分段
+        paragraph, line_height, line_numbers = get_paragraph(t)
+        max_line_height = max(line_height, max_line_height)
+        total_lines += line_numbers
+        paragraphs.append((paragraph, line_numbers))
+    line_height = max_line_height
+    total_height = total_lines * line_height
+    # 这里返回分好的段，文本总高度以及行高
+    return paragraphs, total_height, line_height
+</code></pre>
+<p>这是按字符宽度分隔文本写到图片的效果：</p>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/c6HsAdeihOmRnO5WtppOXWOmiiyB3rh5AW82fmUDEg35EjKzt-o5yGWQcJWQaSCq" alt="计算字符宽度后格式化效果" loading="lazy"></figure>
+<blockquote>
+<p>由于文本长度不固定，生成得到的文本高度也不固定，背景图我们也需要动态生成</p>
+</blockquote>
+<h3 id="根据文本高度生成背景图">根据文本高度生成背景图</h3>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/OjG3S1KAtlLVG7NYgnaabCQzCLwzSGlVaeSinqc0tzXZNQuzZHAD9ZLRBb8zsL0v" alt="便签图片" loading="lazy"></figure>
+<p>通过图片我们可以看到，头部和尾部是固定的，变化的是文字部分，那么背景图片的高度计算公式为</p>
+<blockquote>
+<p>背景图片高度=头部高度+尾部高度+文本高度</p>
+</blockquote>
+<p>实现代码如下：</p>
+<pre><code class="language-python">NOTE_HEADER_IMG = path.normpath(path.join(
+    path.dirname(__file__), 'note_header_660.png'))
+NOTE_BODY_IMG = path.normpath(path.join(
+    path.dirname(__file__), 'note_body_660.png'))
+NOTE_FOOTER_IMG = path.normpath(path.join(
+    path.dirname(__file__), 'note_footer_660.png'))
+NOTE_WIDTH = 660
+NOTE_TEXT_WIDTH = 460
+body_height = NOTE_BODY_HEIGHT = 206
+header_height = NOTE_HEADER_HEIGHT = 89
+footer_height = NOTE_FOOTER_HEIGHT = 145
+font = ImageFont.truetype(NOTE_OTF, 24)
+
+
+
+def get_images(note_height):
+    numbers = note_height // body_height + 1
+    images = [(NOTE_HEADER_IMG, header_height)]
+    images.extend([(NOTE_BODY_IMG, body_height)] * numbers)
+    images.append((NOTE_FOOTER_IMG, footer_height))
+    return images
+
+
+def make_backgroud():
+    # 将图片拼接到一起
+    images = get_images()
+    total_height = sum([height for _, height in images])
+    # 最终拼接完成后的图片
+    backgroud = Image.new('RGB', (body_width, total_height))
+    left, right = 0, 0
+    background_img = '/tmp/%s_backgroud.png' % total_height
+    # 判断背景图是否存在
+    if path.exists(background_img):
+        return background_img
+    for image_file, height in images:
+        image = Image.open(image_file)
+        # (0, left, self.body_width, right+height)
+        # 分别为 左上角坐标 0, left
+        # 右下角坐标 self.body_width, right+height
+        backgroud.paste(image, (0, left, body_width, right+height))
+        left += height  # 从上往下拼接，左上角的纵坐标递增
+        right += height  # 左下角的纵坐标也递增
+    backgroud.save(background_img, quality=85)
+    return background_img
+</code></pre>
+<h3 id="将文字写到图片">将文字写到图片</h3>
+<p>现在我们得到了背景图以及分隔好的文本，就可以直接将文本写到图片上了</p>
+<pre><code class="language-python">def draw_text(paragraphs, height):
+    background_img = make_backgroud()
+    note_img = Image.open(background_img).convert(&quot;RGBA&quot;)
+    draw = ImageDraw.Draw(note_img)
+    # 文字开始位置坐标，需要根据背景图的大小做调整
+    x, y = 80, 100
+    for paragraph, line_numbers in paragraphs:
+        for line in paragraph.split('\n')[:-1]:
+            draw.text((x, y), line, fill=(110, 99, 87), font=font)
+            y += line_height
+        # draw.text((x, y), paragraph, fill=(110, 99, 87), font=font)
+        # y += self.line_height * line_numbers
+    note_img.save(filename, &quot;png&quot;, quality=1, optimize=True)
+    return filename
+</code></pre>
+<p>完整版代码请查看 [https://github.com/gusibi/momo/blob/master/momo/note.py][https://github.com/gusibi/momo/blob/master/momo/note.py]</p>
+<p>执行后效果如图：</p>
+<figure data-type="image" tabindex="5"><img src="http://note.gusibi.mobi/oRWAws7M4TDPnm7I8nt6Rp9dbAO8_1531033396.png" alt="" loading="lazy"></figure>
+<h3 id="遇到的问题">遇到的问题</h3>
+<p>为了能方便使用，我把这个做成了公号的一个功能，然后遇到了一个严重问题，<strong>太慢了！</strong></p>
+<p>使用 <code>line_profiler</code> 分析可以发现，大部分时间都消耗在了图片保存这一步，</p>
+<pre><code class="language-python">note_img.save(filename, &quot;png&quot;, quality=1, optimize=True)
+</code></pre>
+<blockquote>
+<p>性能分析工具也会占用时间，测试完成后需要关闭分析</p>
+</blockquote>
+<p>解决这个问题可能的方法：</p>
+<ol>
+<li>减小背景图片大小</li>
+<li>减小字体大小</li>
+</ol>
+<p>通过测试，发现把背景图宽度从990减到660，字体大小从40px 调整到24px，生成的图片大小体积缩小了接近1倍，生成速度也比原来快了2/5。</p>
+<blockquote>
+<p>相同代码，相同文本，使用 python3 只用了2.3s，而 Python2 用时却是5.3 s，还从来没在其它功能上遇到过 Python2 和 Python3 有这么大的差别。</p>
+<blockquote>
+<p>具体差异可以使用源码测试一下</p>
+</blockquote>
+</blockquote>
+<h4 id="还是有问题">还是有问题</h4>
+<p>优化完图片生成速度后，发现在长文本状态下，公号还是会超时报错。经过检查发现是图片上传到公众平台太慢了（服务器只有1M 带宽，没有办法.）。</p>
+<blockquote>
+<p>解决方法，把图片上传到腾讯云（文件上传使用的是内网带宽，不受限制），返回图片 url。</p>
+</blockquote>
+<figure data-type="image" tabindex="6"><img src="http://media.gusibi.mobi/QoT4slWjqm_MtC910mPpJqhzlRmEpz75vGh1T4Oip_Zj3FrHIeQtZxi2imzLE1ex" alt="" loading="lazy"></figure>
+<h2 id="参考链接">参考链接</h2>
+<hr>
+<p>*<strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="7"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="8"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E8%AE%A1%E7%AE%97%E6%96%87%E5%AD%97%E5%AE%BD%E9%AB%98">计算文字宽高</a></li>
+<li><a href="#%E6%A0%B9%E6%8D%AE%E6%96%87%E6%9C%AC%E9%AB%98%E5%BA%A6%E7%94%9F%E6%88%90%E8%83%8C%E6%99%AF%E5%9B%BE">根据文本高度生成背景图</a></li>
+<li><a href="#%E5%B0%86%E6%96%87%E5%AD%97%E5%86%99%E5%88%B0%E5%9B%BE%E7%89%87">将文字写到图片</a></li>
+<li><a href="#%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98">遇到的问题</a>
+<ul>
+<li><a href="#%E8%BF%98%E6%98%AF%E6%9C%89%E9%97%AE%E9%A2%98">还是有问题</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/hello_grpc/">
+              <h3 class="post-title">
+                Python gRPC 入门
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

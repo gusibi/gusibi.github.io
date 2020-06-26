@@ -1,0 +1,421 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>python设计模式-模板方法模式 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="python设计模式-模板方法模式 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="首先先介绍一下咖啡和茶的冲泡方法：
+茶
+1. 把水煮沸
+2. 用沸水浸泡茶叶
+3. 把茶放到杯子里
+
+咖啡
+1. 把水煮沸
+2. 用沸水冲泡咖啡
+3. 把咖啡倒进杯子
+4. 加糖和牛奶
+
+用python代码实现冲泡方法大概是这个样子：
+# ..." />
+    <meta name="keywords" content="读书笔记,python,设计模式" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              python设计模式-模板方法模式
+            </h2>
+            <div class="post-info">
+              <span>
+                2018-12-02
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/tWtXVJcNMyg/" class="post-tag">
+                  # 设计模式
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>首先先介绍一下咖啡和茶的冲泡方法：</p>
+<p><strong>茶</strong></p>
+<pre><code>1. 把水煮沸
+2. 用沸水浸泡茶叶
+3. 把茶放到杯子里
+</code></pre>
+<p><strong>咖啡</strong></p>
+<pre><code>1. 把水煮沸
+2. 用沸水冲泡咖啡
+3. 把咖啡倒进杯子
+4. 加糖和牛奶
+</code></pre>
+<p>用python代码实现冲泡方法大概是这个样子：</p>
+<pre><code class="language-python"># 茶的制作方法
+class Tea:
+
+    def prepare_recipe(self):
+        # 在下边实现具体步骤
+        self.boil_water()
+        self.brew_tea_bag()
+        self.pour_in_cup()
+        
+    def boil_water(self):
+        print(&quot;Boiling water&quot;)
+        
+    def brew_tea_bag(self):
+        print(&quot;Steeping the tea&quot;)
+        
+    def pour_in_cup(self):
+        print(&quot;Pouring into cup&quot;)
+</code></pre>
+<pre><code class="language-python"># 咖啡的制作方法
+class Coffee:
+
+    def prepare_recipe(self):
+        # 在下边实现具体步骤
+        self.boil_water()
+        self.brew_coffee_grinds()
+        self.pour_in_cup()
+        self.add_sugar_and_milk()
+        
+    def boil_water(self):
+        print(&quot;Boiling water&quot;)
+        
+    def brew_coffee_grinds(self):
+        print(&quot;Dripping Coffee through filter&quot;)
+        
+    def pour_in_cup(self):
+        print(&quot;Pouring into cup&quot;)
+        
+    def add_sugar_and_milk(self):
+        print(&quot;Adding Sugar and Milk&quot;)
+</code></pre>
+<p>仔细看上边两端代码会发现，茶和咖啡的实现方式基本类似，都有<code>prepare_recipe</code>，<code>boil_water</code>，<code>pour_in_cup</code> 这三个方法。</p>
+<blockquote>
+<p><code>问题：</code>如何重新设计这两个类来让代码更简洁呢？</p>
+</blockquote>
+<p>首先看一下两个类的类图：</p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/jom4jOc8uWezDNwLSyqUYcOF5pXzLTh4ztvglMCIajscrtcrp3T5eyH7YnOgZbwD" alt="2bd637fbc0532bd0bafbf861005fabd3.png" loading="lazy"></figure>
+<ol>
+<li>每个类中都有 <code>prepare_recipe() boil_water() pour_in_cup()</code>方法。</li>
+<li>每个类中<code>prepare_recipe()</code>方法的实现都不一样。</li>
+</ol>
+<p>现在把<code>prepare_recipe() boil_water() pour_in_cup()</code>三个方法抽取出来做成一个父类<code>CoffeineBeverage()</code>，<code>Tea</code> 和 <code>Coffee</code> 都继自<code>CoffeineBeverage()</code>。</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/GTzGMHTGpxLF8o69DDykX4MCpkoy2Xf-uuGFWOIgARmWqv9xLnP5g74QKmgYf95d" alt="ce3e56409c313d4ce42e9878f3b5c8f4.png" loading="lazy"></figure>
+<blockquote>
+<p>因为每个类中<code>prepare_recipe()</code>实现的方法不一样，所以<code>Tea</code> 和 <code>Coffee</code> 类都分别实现了 <code>prepare_recipe()</code>。<br>
+<code>问题</code>: 那么，有没有办法将<code>prepare_recipe()</code>也抽象化？</p>
+</blockquote>
+<p>对比 <code>Tea</code> 和 <code>Coffee</code> 的<code>prepare_recipe()</code> 方法会发现，他们之间的差异主要是：</p>
+<pre><code class="language-python">
+def prepare_recipe(self):
+    # 相同部分隐藏
+    # self.boil_water()
+    self.brew_tea_bag()  # 差异1
+    #self.pour_in_cup()
+        
+def prepare_recipe(self):
+    # 相同部分隐藏
+    # self.boil_water()
+    self.brew_coffee_grinds() # 差异1
+    # self.pour_in_cup()
+    self.add_sugar_and_milk() # 差异2
+
+</code></pre>
+<p>这里的实现思路是，将两处差异分别用新的方法名代替，替换后结果如下：</p>
+<pre><code class="language-python">
+def prepare_recipe(self):
+    # 新的实现方法
+    self.boil_water()
+    self.brew() # 差异1 使用brew 代替 brew_tea_bag 和 brew_coffee_grinds
+    self.pour_in_cup()
+    self.add_condiments() # 差异2 Tea 不需要此方法，可以用空的实现代替
+
+</code></pre>
+<p>新的类图如下：</p>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/Fqusr6qE_RUIHrwJIoNIvR64HEE8LSNWndLIz3gmtNXNqdGw0nJ12GR9-l4SvD7T" alt="bff9cea3d8f8226b6a9bb29c1deb8d88.png" loading="lazy"></figure>
+<p>现在，类 <code>Tea</code> 和 <code>Coffee</code> 只需要实现具体的 <code>brew()</code>和 <code>add_condiments()</code> 方法即可。代码实现如下：</p>
+<pre><code class="language-python">
+class CoffeineBeverage:
+
+    def prepare_recipe(self):
+        # 新的实现方法
+        self.boil_water()
+        self.brew() 
+        self.pour_in_cup()
+        self.add_condiments()
+        
+    def boil_water(self):
+        print(&quot;Boiling water&quot;)
+        
+    def brew(self):
+        # 需要在子类实现
+        raise NotImplementedError
+        
+    def pour_in_cup(self):
+        print(&quot;Pouring into cup&quot;)
+        
+    def add_condiments(self):
+        # 这里其实是个钩子方法，子类可以视情况选择是否覆盖
+        # 钩子方法是一个可选方法，也可以让钩子方法作为某些条件触发后的动作
+        pass
+
+# 茶的制作方法
+class Tea(CoffeineBeverage):
+        
+    def brew(self):
+        # 父类中声明了 raise NotImplementedError，这里必须要实现此方法
+        print(&quot;Steeping the tea&quot;)
+        
+    # Tea 不需要 add_condiments 方法，所以这里不需要实现
+
+# 咖啡的制作方法
+class Coffee(CoffeineBeverage):
+        
+    def brew(self):
+        # 父类中声明了 raise NotImplementedError，这里必须要实现此方法
+        print(&quot;Dripping Coffee through filter&quot;)
+        
+    def add_condiments(self):
+        print(&quot;Adding Sugar and Milk&quot;)
+</code></pre>
+<h3 id="模板方法">模板方法</h3>
+<p>上述抽象过程使用的就是模板方法。模板方法定义了一个算法的步骤，并且允许子类为一个或多个步骤提供实现。在这个例子中，<code>prepare_recipe</code> 就是一个模板方法。</p>
+<blockquote>
+<p><code>定义：</code>模板方法牧师在一个方法中定义一个算法的骨架，而将一些步骤延迟到子类中。模板方法使得子类可以在不改变算法结构的情况下，重新定义算法中的某些步骤。</p>
+</blockquote>
+<h4 id="优点">优点</h4>
+<ol>
+<li>使用模板方法可以将代码的复用最大化</li>
+<li>子类只需要实现自己的方法，将算法和实现的耦合降低。</li>
+</ol>
+<h4 id="好莱坞原则">好莱坞原则</h4>
+<p>模板方法使用到了一个原则，<code>好莱坞原则</code>。</p>
+<blockquote>
+<p><code>好莱坞原则</code>，别调用我，我会调用你。</p>
+</blockquote>
+<p><img src="http://media.gusibi.mobi/F62XbVcTYD9i-4swfqL5_sgS8SYXCfyB_2h2pEJq2BIZ8LikiEF2Yulq3HIxvISz" alt="好莱坞原则" loading="lazy"><br>
+在这个原则之下，允许低层组件将自己挂钩到系统上，但是由高层组件来决定什么时候使用这些低层组件。</p>
+<p>在上边的例子中，CoffeineBeverage 是高层组件，Coffee和Tea 是低层组件，他们不会之间调用抽象类（CoffeineBeverage）。</p>
+<h3 id="一个例子">一个例子🌰</h3>
+<p>Python 第三方表单验证包 wtforms 的表单验证部分就使用到了模板方法模式。Field 类中<code>validate</code>方法就是一个模板方法，在这个方法中，会调用 <code>pre_validate</code>， <code>_run_validation_chain</code>，<code>post_validate</code>方法来验证表单，这些方法也都可以在子类中重新实现。具体实现可以参考以下源码。</p>
+<p>源码地址：<a href="https://github.com/wtforms/wtforms/blob/master/src/wtforms/fields/core.py#L225">https://github.com/wtforms/wtforms/blob/master/src/wtforms/fields/core.py</a></p>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://github.com/wtforms/wtforms/blob/master/src/wtforms/fields/core.py#L225">https://github.com/wtforms/wtforms/blob/master/src/wtforms/fields/core.py</a></li>
+</ul>
+<hr>
+<blockquote>
+<p>本文例子来自《Head First 设计模式》</p>
+</blockquote>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/ah0mqMXMtdJb9Yj03suu-NGEyVRxyEuOIT5bXSv7ip5aqtHkiRjTTl8SMRMv3Qp5" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95">模板方法</a>
+<ul>
+<li><a href="#%E4%BC%98%E7%82%B9">优点</a></li>
+<li><a href="#%E5%A5%BD%E8%8E%B1%E5%9D%9E%E5%8E%9F%E5%88%99">好莱坞原则</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%80%E4%B8%AA%E4%BE%8B%E5%AD%90">一个例子🌰</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/python-design-pattern-facade-pattern/">
+              <h3 class="post-title">
+                python设计模式-外观模式
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

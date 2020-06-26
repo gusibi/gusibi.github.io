@@ -1,0 +1,591 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CSS入门指南-2：盒子模型、浮动和清除 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="CSS入门指南-2：盒子模型、浮动和清除 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+这是CSS设计指南的读书笔记，用于加深学习效果。
+
+上一篇介绍了css 的工作原理，这一篇主要介绍盒子模型和浮动。
+盒子模型
+
+所谓盒子模型，就是浏览器为页面中的每个HTML元素生成的矩形盒子。这些盒子们都要按照可见版式模型在页面上排布。..." />
+    <meta name="keywords" content="读书笔记,前端,tutorial,css,html" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              CSS入门指南-2：盒子模型、浮动和清除
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-07-19
+              </span>
+              <span>
+                12 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/QFxrVQKr-F/" class="post-tag">
+                  # 前端
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/GIyDdkICePO/" class="post-tag">
+                  # css
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/SFv860kTvVz/" class="post-tag">
+                  # html
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>这是CSS设计指南的读书笔记，用于加深学习效果。</p>
+</blockquote>
+<p>上一篇介绍了css 的工作原理，这一篇主要介绍<code>盒子模型</code>和<code>浮动</code>。</p>
+<h2 id="盒子模型">盒子模型</h2>
+<blockquote>
+<p>所谓盒子模型，就是浏览器为页面中的每个HTML元素生成的矩形盒子。这些盒子们都要按照可见版式模型在页面上排布。</p>
+</blockquote>
+<p>HUGOMORE42</p>
+<p>可见的页面版式主要由三个属性控制：position、display和float。</p>
+<ul>
+<li>position：控制页面上元素的位置关系</li>
+<li>display：控制元素是堆叠、并排还是不在页面出现</li>
+<li>float：提供控制的方式，以便吧元素组成多栏布局</li>
+</ul>
+<p>元素盒子的属性可以分成三组：</p>
+<ul>
+<li>边框(board)。可以甚至边框的宽窄、样式和颜色</li>
+<li>内边距(padding)。可以甚至盒子内容区与边框的间距</li>
+<li>外边距(margin)。可以设置盒子与相邻元素的间距</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="http://omuo4kh1k.bkt.clouddn.com/4J2VDi7TIFFuSOVgWp-3uuDrzvYh7oMDxeNv5OxgpaQoUGlHPo8tL43fAa5iheKn" alt="盒模型示意图展示了HTML元素的边框、内边距和外边距之间的关系" loading="lazy"></figure>
+<p>元素盒子还有一个背景层，可以改变颜色，也可以添加图片。</p>
+<h3 id="简写样式">简写样式</h3>
+<p>CSS为边框、内边距和外边距分别规定了简写属性，每个简写声明中，属性值得顺序都是上、右、下、左。</p>
+<p>比如：</p>
+<pre><code class="language-css">{
+  margin-top: 5px; 
+  margin-right: 10px;
+  margin-bottom: 12px; 
+  margin-left: 8px;
+}
+</code></pre>
+<p>使用简写则为这样：</p>
+<pre><code class="language-css">{
+    margin: 12px 10px 12px 8px;
+}
+</code></pre>
+<p>如果有一个值没写，那么则使用对边的值。</p>
+<p>比如：</p>
+<pre><code class="language-css">{margin: 12px 10px 12px;}
+/*等同于*/
+{
+    margin: 12px 10px 12px 10px;
+}
+</code></pre>
+<p>如果只写一个值，则4个边都取这个值。</p>
+<pre><code class="language-css">{margin: 12px;}
+/*等同于*/
+{margin: 12px 12px 12px 12px;}
+</code></pre>
+<p>另外每个盒子的属性也分三个粒度，这三个粒度从一般到特殊分别举例如下：</p>
+<pre><code class="language-css">{
+    border: 2px dashed red;
+}
+</code></pre>
+<p>混合使用三种粒度的简写属性达成设计目标是很常见的。比如，想为盒子的上边和下边添加4像素的红色边框，为左边添加1像素宽的红色边框，而右边没有。可以这么写：</p>
+<pre><code class="language-css">{border: 4px solid red;} /* 先给4条边设置相同的样式*/
+{border-left-width: 1px;} /* 修改左边框宽度*/
+{border-fight: none;} /*移出右边框*/
+</code></pre>
+<h3 id="盒子边框">盒子边框</h3>
+<p>border 有三个相关属性。</p>
+<ul>
+<li>宽度（border-width)。可以使用thin、medium和thick等文本值，也可以使用除百分比和负值之外的任何绝对值。</li>
+<li>样式（border-style)。有none、hidden、dotted、dashed等文本值。</li>
+<li>颜色（border-color）。可以使用任意颜色值，包括RGB、HSL、十六进制颜色值和颜色关键字。</li>
+</ul>
+<h3 id="盒子内边距">盒子内边距</h3>
+<p>内边距是盒子内容区与盒子边框之间的距离。</p>
+<figure data-type="image" tabindex="2"><img src="http://omuo4kh1k.bkt.clouddn.com/sKiD0I3LeE7lTK8rARqH8TFpzVK9vh4QoAWCg_7Ll7m9V8VMkBNKY_YfvVUueia8" alt="" loading="lazy"></figure>
+<p>上图的样式为：</p>
+<pre><code class="language-css">p {
+    font: 16px helvetica, sans-serif; 
+    width: 220px; 
+    border: 2px solid red; 
+    background-color: #caebff;
+}
+</code></pre>
+<p>可以看到在没有设定内边距的情况下，内容紧挨着边框。</p>
+<p>设定边框后：</p>
+<pre><code class="language-css">p {
+    font: 16px helvetica, arial, sans-serif; 
+    width: 220px; 
+    border: 2px solid red; 
+    background-color: #caebff; 
+    padding: 10px;
+}
+</code></pre>
+<p>效果如下，可以看到样式舒服了很多：</p>
+<figure data-type="image" tabindex="3"><img src="http://omuo4kh1k.bkt.clouddn.com/k6hxSxGq2igZL_RfVnFVqsdD-kX40LgyIPKoXyOprfTQfgL2DdnU4RRBB0c7qYXB" alt="添加内边距后的效果图" loading="lazy"></figure>
+<blockquote>
+<p>内边距在盒子的内部，所以也会取得盒子背景。也就是说，多出来的内边距并没有挤压文本内容，实际是加在了声明的盒子宽度之上。</p>
+</blockquote>
+<h3 id="盒子外边距">盒子外边距</h3>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/nU6FAYz7aFdQrfj7ByrBHbcvJx5F86G_jlpttdfaGt24vpb4KsYUln3JuVW7ZZ14" alt="外边距的例子" loading="lazy"></figure>
+<p>上图的例子中，第一组是默认情况，第二组是在第一组基础上添加了边框，第三组是把第二组的外边距设置为了0，标题和段落全紧挨在一起了。</p>
+<blockquote>
+<p>推荐大家吧这条规则作为样式表的第一条规则：</p>
+</blockquote>
+<pre><code class="language-css">* {margin: 0; padding: 0;}
+</code></pre>
+<p>这条规则是把所有元素默认的外边距和内边距都设定为0。这样，我们可以为那些真正需要添加边距的元素设定边距。</p>
+<h3 id="叠加外边距">叠加外边距</h3>
+<p>比如下边这个样式：</p>
+<pre><code class="language-css">p {
+    height: 50px;
+    border: 1px solid #000;
+    backgroundcolor: #fff;
+    margin-top: 50px;
+    margin-bottom: 30px;
+}
+</code></pre>
+<p>如果我们把这个样式应用到3个前后相接的段落上，由于上边距和下边距相邻，<code>你可能会认为他们之间的外边距是80（50+30）像素，但是实际上是50像素</code>，这就是边距叠加。</p>
+<blockquote>
+<p>垂直方向上外边距会叠加 水平方向的不会<br>
+<code>外边距单位</code> 根据经验，水平边距可以使用像素，以便该段文本始终与包含元素边界保持固定间距，不受自豪变大或变小的影响。而对于上下外边距，已<code>em</code> 为单位则可以让段间距随字号变化而相应增大或缩小。</p>
+</blockquote>
+<h3 id="盒子有多大">盒子有多大</h3>
+<h3 id="没有宽度的盒子">没有宽度的盒子</h3>
+<p>如果没有显式的设置元素的 <code>width</code> 属性，我们就称这个盒子没有宽度。<br>
+如果没有设定 width， 那么这个属性的默认值是 auto，会让元素的宽度扩展到与父元素同宽。</p>
+<p>我们看个例子🌰：</p>
+<pre><code class="language-html">&lt;body&gt;
+&lt;p&gt; 这个元素没有设置宽度&lt;/p&gt;
+&lt;/body&gt;
+</code></pre>
+<p>设置样式：</p>
+<pre><code class="language-css">body {
+    font-family: helvetica, arial, sans-serif;
+    size: 1em;
+    marging: 0px;
+    background-color: #caebff;
+}
+
+p {
+    margin: 0;
+    background-color: #fff;
+}
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="http://media.gusibi.mobi/ZzLp1aWGAOITCd_lxtpRdQ6NX1NRqE8Sgjk38YvazbBCB8nExjmrAL5CPZsDAG7U" alt="不设置宽度的样式" loading="lazy"></figure>
+<p>可以看到，不给段落设置宽度，段落会填满 body 元素。</p>
+<p>为了更加明显，我给段落左右分别加一个边框，再加一个外边距。</p>
+<pre><code class="language-css">p {
+    margin:0 30px; 
+    background-color:#fff; 
+    padding:0 20px; 
+    border: solid red; 
+    border-width: 0 6px;
+}
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="http://media.gusibi.mobi/Wc3Sep8w8seiPVOK-aC70y-maRXmdR0gqqLq9pLXZvjtu0FuTKruWq8mKX_dLMj6" alt="段落添加左右边框" loading="lazy"></figure>
+<p>这时段落内容区域变成了 288像素（我把浏览器宽度手动调成了400px，400-(20+6+30)x2）。</p>
+<blockquote>
+<p><code>结论</code>：没有宽度的元素始终会扩展到填满其父元素的宽度为止。添加水平边框、内边距和外边距会导致内容宽度减少，减少量等于水平边框、内边距和外边距的和。</p>
+</blockquote>
+<h3 id="有宽度的盒子">有宽度的盒子</h3>
+<p>还是上边的例子，我们先把外边距去掉，固定宽度400px；</p>
+<pre><code class="language-css">p {
+    width:400px; 
+    margin:0; 
+    padding:0 20px;  
+    border:solid red;  
+    border-width: 0 6px  0 6px;  
+    background-color:#fff;
+}
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="http://media.gusibi.mobi/p-NHopjzQr4Wb9oQGYVrmjTT-kROYvB0p-cBVEW2uEtliPKnMDxZC-0NowuYuzs0" alt="设定宽度、内边距、边框的样式" loading="lazy"></figure>
+<p>可以看到，盒子的宽度并不是400px，而是452像素（400+(20+6)*2）。</p>
+<p>再给盒子加上外边距：</p>
+<pre><code class="language-css">p {
+    width:400px; 
+    margin:0 30px; 
+    padding:0 20px;  
+    border:solid red;  
+    border-width: 0 6px  0 6px;  
+    background-color:#fff;
+}
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="http://media.gusibi.mobi/t1Np4vU0aQAiAJ-anFl4nJEEJVh_58Mtv5wgwG6umS103kIolQz374za8QFWbiP1" alt="设定宽度、内边距、外边距、边框的样式" loading="lazy"></figure>
+<p>可以看到，这时总宽度达到了512像素（30+6+20+400+20+6+30=512）</p>
+<blockquote>
+<p><code>结论</code>: 为设定了宽度的盒子添加边框、内边距和外边距，会导致盒子更宽。实际上盒子的 width 属性设定的只是盒子内容区的宽度，而非盒子整体的宽度</p>
+</blockquote>
+<h2 id="浮动与清除">浮动与清除</h2>
+<h3 id="浮动">浮动</h3>
+<p>css 设计 float（浮动）属性的主要目的是为了实现文本绕排图片的效果，这个属性也是创建多栏布局最简单的方式。<br>
+我们先看一个例子：</p>
+<pre><code class="language-html">&lt;img .../&gt;
+&lt;p&gt;..the paragraph text...&lt;/p&gt;
+</code></pre>
+<p>css 规则如下。</p>
+<pre><code class="language-css">p {
+    margin: 0;
+    border: 1px solid red;
+}
+img {
+    float: left;
+    margin: 0 4px 4px 0;
+}
+</code></pre>
+<p>这个例子的样式如图所示：<br>
+<img src="http://media.gusibi.mobi/oO9LyVmGMagZ6OLJTOp6X4cVPsXliIY5i6DgzFeFm7tflJwZeZLbImciTfmC9yDl" alt="" loading="lazy"></p>
+<blockquote>
+<p>这里我们给图片加了 <code>float: left</code> 样式，这时浏览器就会把图片向上推，直到它碰到父元素的内边界（也就是body）。后面的内容不再认为浮动元素在它的前边，所以它会占据父元素左上角的位置。不过，它的内容会绕开浮动的图片。</p>
+</blockquote>
+<h3 id="创建分栏">创建分栏</h3>
+<p>在上面的基初上如何使内容分栏呢？<br>
+只要再用一<code>float</code> 属性就可以了。</p>
+<pre><code class="language-css">p {
+    float: left; /* 加上这两行*/
+    width: 200px;
+    ...
+}
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="http://media.gusibi.mobi/uLsus15W0rQdkt-NzbZwFJuRlczzkEyAWgLb94eGAOGJN-9P_Xi644qyJcgviz8w" alt="" loading="lazy"></figure>
+<p>这样同时浮动图片和有宽度的段落，会使图片绕排效果消失，而浮动的段落也向左向上移动。变成了多栏的效果。</p>
+<h3 id="围住浮动元素">围住浮动元素</h3>
+<p>看下这个例子：</p>
+<pre><code class="language-html">&lt;section&gt;
+    &lt;img src=&quot;images/rubber_duck2.jpg&quot;&gt;
+    &lt;p&gt;It's fun to float.&lt;/p&gt;
+&lt;/section&gt;
+&lt;footer&gt;Here is the footer element that runs across&lt;/footer&gt;
+</code></pre>
+<p>应用样式如下：</p>
+<pre><code class="language-css">section {
+    border: 1px solid blue;
+    margin: 0 0 10px 0;
+}
+p {
+    marging: 0;
+}
+footer {
+    border: 1px solid red;
+}
+</code></pre>
+<p>效果如图：</p>
+<figure data-type="image" tabindex="10"><img src="http://media.gusibi.mobi/FgZ9xXjRtez6W2GXoMKbhzDq25LRtJISiO90AYkJ6yEKJ9WB0QUvU1Zz-f7wEmlB" alt="浮动图片后标题跑到了右边，但父元素section也收缩到只包含文本的高度" loading="lazy"></figure>
+<p>但这并不是我们想要的，我们并不想让footer 被提到上边。<br>
+浮动元素脱离了原来的文档流，不受父元素的控制。如果我们想让父元素还包含浮动的子元素，怎么做呢？<br>
+有三种方法：</p>
+<h4 id="为父元素应用-overflow-hidden">为父元素应用 <code>overflow: hidden</code></h4>
+<p>只需要在 <code>section</code> 加上这个样式：</p>
+<pre><code class="language-css">section {
+    overflow: hidden;
+    ...
+}
+</code></pre>
+<p>现在效果如图：</p>
+<figure data-type="image" tabindex="11"><img src="http://media.gusibi.mobi/Kepon_jsAnaY99ITC0Oc5SapqZD5PjXOhwAuyeX-O8OH2Ag2hmryl9wH5jdI_gSR" alt="section 又包围了浮动的图片" loading="lazy"></figure>
+<blockquote>
+<p>实际上，<code>overflow: hidden</code> 声明凯真正用途是防止包含元素被超大内容撑大。也就是说应用上这个之后，包含元素（父元素）会保持其设定的宽度，如果子元素过大，会被截掉。</p>
+</blockquote>
+<h4 id="浮动父元素">浮动父元素</h4>
+<p>第二种方法是让父元素和子元素同时浮动。</p>
+<pre><code class="language-css">section {
+    float: left;
+    width: 100%;
+    border: 1px solid blue;
+}
+img {
+    float: left;
+}
+footer {
+    border: 1px solid red;
+    clear: left;
+}
+</code></pre>
+<p>浮动section 后，不管其子元素是否浮动，都会被包围。因此需要用 <code>width: 100%</code> 让section 与浏览器同宽。由于section 也浮动，所以footer 会往它旁边挤，这时需要使用 <code>clear: left</code> 以保证不会被提升到浮动的元素旁边。</p>
+<h4 id="在父元素内容的末尾添加浮动元素可以直接在标记中加也可以通过给父元素添加clearfix-类来加">在父元素内容的末尾添加浮动元素，可以直接在标记中加，也可以通过给父元素添加clearfix 类来加。</h4>
+<p>第三种方法是给父元素添加一个非浮动的子元素，然后清除该子元素。</p>
+<blockquote>
+<p>这种方式可以生效是因为父元素一定会包围非浮动子元素，且清除会让这个子元素处于最下。</p>
+</blockquote>
+<p>这里我们使用神奇的 <code>clearfix</code> 规则：</p>
+<pre><code class="language-css">.clearfix:after {
+	 content: &quot;.&quot;;
+	 display: block;
+	 height: 0;
+	 clear: both;
+	 visibility: hidden;
+	}
+</code></pre>
+<p>这个 <code>clearfix</code> 规则最早是由程序员 <code>Tony Aslett</code> 发明的，它只添加了一个清除的包含句点作为非浮动元素（必须有内容，句点是最小的内容）。规则中其他生命是为了确保这个伪元素没有高度，而且不可见。</p>
+<blockquote>
+<p><code>after</code> 会在元素内容（而不是元素后插入一个伪元素）<br>
+使用clear: both 意味着 section 中新增的子元素会被清除左右浮动元素。</p>
+</blockquote>
+<p>我们看了三种方法围住浮动元素的方式。</p>
+<p>那如果没有父元素，如果清除浮动呢？</p>
+<p>比如下边这个例子：</p>
+<pre><code class="language-html">&lt;section&gt;
+    &lt;img src=&quot;images/rubber_duck3.jpg&quot;&gt;
+    &lt;p&gt;This text sits next to the image and because the text extends below the bottom of the image, the next image positions itself correctly under the previous image.&lt;/p&gt;
+    &lt;img src=&quot;images/beach_ball.jpg&quot;&gt;
+    &lt;p&gt;This text is short, so the next image can float up beside this one.&lt;/p&gt;
+    &lt;img src=&quot;images/yellow_float.jpg&quot;&gt;
+    &lt;p&gt;Because the previous image's text does not extend below it, this image and text move up next to the previous image. This problem can be solved by the use of the clear property.&lt;/p&gt;
+&lt;/section&gt;
+</code></pre>
+<p>样式如下：</p>
+<pre><code class="language-css">section {
+    width:300px; b
+    order:1px solid red;
+}
+img {
+    float:left; 
+    margin:0 4px 4px 0;
+}
+p {
+    font-family:helvetica, arial, sans-serif; 
+    margin:0 0 5px 0;
+}
+</code></pre>
+<p>效果如图所示：</p>
+<figure data-type="image" tabindex="12"><img src="http://media.gusibi.mobi/bgZc0EUo1bur6AIje1zvk3hrV2XF4obDGJ3YzGRfDEriPyfneQWQ45Xb5iEVIJCD" alt="" loading="lazy"></figure>
+<p>由于第二张图下方有空间，所以第三张图及说明文字会上浮到第二张图片右侧，这并不是我们想要的结果。</p>
+<p>我们想要的效果是如下图这样：</p>
+<figure data-type="image" tabindex="13"><img src="http://media.gusibi.mobi/VBkwrlGf31kzH72-6luCmCeBgqCB2_-8giCfqQtY9KBWV0pU-5KsUFJ8STTJde2J" alt="" loading="lazy"></figure>
+<p>那怎么实现呢？ 还是应用 <code>clearfix</code> 规则。为每个段落加上clearfix 类。通过<code>clearfix</code>类清除元素后，布局就是我们希望的了。</p>
+<p>这一篇主要介绍了盒子模型，浮动和清除。下一篇介绍css 布局。</p>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="14"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="15"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E7%9B%92%E5%AD%90%E6%A8%A1%E5%9E%8B">盒子模型</a>
+<ul>
+<li><a href="#%E7%AE%80%E5%86%99%E6%A0%B7%E5%BC%8F">简写样式</a></li>
+<li><a href="#%E7%9B%92%E5%AD%90%E8%BE%B9%E6%A1%86">盒子边框</a></li>
+<li><a href="#%E7%9B%92%E5%AD%90%E5%86%85%E8%BE%B9%E8%B7%9D">盒子内边距</a></li>
+<li><a href="#%E7%9B%92%E5%AD%90%E5%A4%96%E8%BE%B9%E8%B7%9D">盒子外边距</a></li>
+<li><a href="#%E5%8F%A0%E5%8A%A0%E5%A4%96%E8%BE%B9%E8%B7%9D">叠加外边距</a></li>
+<li><a href="#%E7%9B%92%E5%AD%90%E6%9C%89%E5%A4%9A%E5%A4%A7">盒子有多大</a></li>
+<li><a href="#%E6%B2%A1%E6%9C%89%E5%AE%BD%E5%BA%A6%E7%9A%84%E7%9B%92%E5%AD%90">没有宽度的盒子</a></li>
+<li><a href="#%E6%9C%89%E5%AE%BD%E5%BA%A6%E7%9A%84%E7%9B%92%E5%AD%90">有宽度的盒子</a></li>
+</ul>
+</li>
+<li><a href="#%E6%B5%AE%E5%8A%A8%E4%B8%8E%E6%B8%85%E9%99%A4">浮动与清除</a>
+<ul>
+<li><a href="#%E6%B5%AE%E5%8A%A8">浮动</a></li>
+<li><a href="#%E5%88%9B%E5%BB%BA%E5%88%86%E6%A0%8F">创建分栏</a></li>
+<li><a href="#%E5%9B%B4%E4%BD%8F%E6%B5%AE%E5%8A%A8%E5%85%83%E7%B4%A0">围住浮动元素</a>
+<ul>
+<li><a href="#%E4%B8%BA%E7%88%B6%E5%85%83%E7%B4%A0%E5%BA%94%E7%94%A8-overflow-hidden">为父元素应用 <code>overflow: hidden</code></a></li>
+<li><a href="#%E6%B5%AE%E5%8A%A8%E7%88%B6%E5%85%83%E7%B4%A0">浮动父元素</a></li>
+<li><a href="#%E5%9C%A8%E7%88%B6%E5%85%83%E7%B4%A0%E5%86%85%E5%AE%B9%E7%9A%84%E6%9C%AB%E5%B0%BE%E6%B7%BB%E5%8A%A0%E6%B5%AE%E5%8A%A8%E5%85%83%E7%B4%A0%E5%8F%AF%E4%BB%A5%E7%9B%B4%E6%8E%A5%E5%9C%A8%E6%A0%87%E8%AE%B0%E4%B8%AD%E5%8A%A0%E4%B9%9F%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87%E7%BB%99%E7%88%B6%E5%85%83%E7%B4%A0%E6%B7%BB%E5%8A%A0clearfix-%E7%B1%BB%E6%9D%A5%E5%8A%A0">在父元素内容的末尾添加浮动元素，可以直接在标记中加，也可以通过给父元素添加clearfix 类来加。</a></li>
+</ul>
+</li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/weixin_mp_diy_setp_by_setp_1_db_desgin/">
+              <h3 class="post-title">
+                微信公号DIY：MongoDB 简易ORM &amp; 公号记账数据库设计
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

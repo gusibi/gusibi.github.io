@@ -1,0 +1,852 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>并发模型：线程与锁 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="并发模型：线程与锁 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="并发&amp;并行
+并发程序含有多个逻辑上的独立执行块，他们可以独立的并行执行，也可以串行执行。
+并行程序解决问题的速度比串行程序快的多，因为其可以同时执行整个任务的多个部分。并行程序可能有多个独立执行块，也可能只有一个。
+
+引用Rob P..." />
+    <meta name="keywords" content="读书笔记,python,并发" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              并发模型：线程与锁
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-05-19
+              </span>
+              <span>
+                20 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/Y7K-ZUm9XP/" class="post-tag">
+                  # 并发
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h2 id="并发并行">并发&amp;并行</h2>
+<p>并发程序含有多个逻辑上的独立执行块，他们可以独立的并行执行，也可以串行执行。<br>
+并行程序解决问题的速度比串行程序快的多，因为其可以同时执行整个任务的多个部分。并行程序可能有多个独立执行块，也可能只有一个。</p>
+<blockquote>
+<p>引用Rob Pike的经典描述就是：<br>
+并发是同一时间应对多件事情的能力；<br>
+并行是同一时间动手做多件事情的能力。</p>
+</blockquote>
+<p>常见的并发模型有：</p>
+<ol>
+<li>线程与锁</li>
+<li>函数式编程</li>
+<li>actor模型和通信顺序是进行（Communicating Sequential Processes, CSP）</li>
+<li>数据级并行</li>
+<li>lambda 架构</li>
+<li>分离标识与状态模型</li>
+</ol>
+<p>这篇主要介绍线程与锁模型</p>
+<h2 id="线程与锁模型">线程与锁模型</h2>
+<p>线程与锁模型是对底层硬件运行过程的形式化，非常简单直接，几乎所有的编程语言都对其提供了支持，且不对其使用方法加以限制（易出错）。</p>
+<blockquote>
+<p>这篇文章主要使用python语言来演示线程与锁模型。文章结构来自《七周七并发模型》</p>
+</blockquote>
+<h2 id="互斥和内存模型">互斥和内存模型</h2>
+<h3 id="创建线程">创建线程</h3>
+<pre><code class="language-python">from threading import Thread
+
+def hello_world():
+    print(&quot;Hello from new thread&quot;)
+
+def main():
+    my_thread = Thread(target=hello_world)
+    my_thread.start()
+    print(&quot;Hello from main thread&quot;)
+    my_thread.join()
+
+main()
+
+</code></pre>
+<p>这段代码创建并启动了一个<code>Thread</code>实例，首先从<code>start()</code> 开始，<code>my_thread.start() main()</code>函数的余下部分一起并发执行。最后调用<code>join()</code> 来等待<code>my_thread</code>线程结束。</p>
+<p>运行这段代码输出结果有几种：</p>
+<pre><code>Hello from new thread
+Hello from main thread
+</code></pre>
+<p>或者</p>
+<pre><code>Hello from main thread
+Hello from new thread
+</code></pre>
+<p>或者</p>
+<pre><code>Hello from new threadHello from main thread
+</code></pre>
+<p>究竟哪个结果取决于哪个线程先执行<code>print()</code>。多线程编程很难的原因之一就是运行结果可能依赖于时序，多次运行结果并不稳定。</p>
+<h3 id="第一把锁">第一把锁</h3>
+<pre><code class="language-python">
+from threading import Thread, Lock
+
+
+class Counter(object):
+    def __init__(self, count=0):
+        self.count = count
+
+    def increment(self):
+        self.count += 1
+
+    def get_count(self):
+        print(&quot;Count: %s&quot; % self.count)
+        return self.count
+
+
+def test_count():
+    counter = Counter()
+
+    class CounterThread(Thread):
+        def run(self):
+            for i in range(10000):
+                counter.increment()
+
+    t1 = CounterThread()
+    t2 = CounterThread()
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+
+    counter.get_count()
+
+test_count()
+</code></pre>
+<p>这段代码创建一个简单的类Counter 和两个线程，每个线程都调用counter.increment() 10000次。</p>
+<p>多次运行这段代码会得到不同的值，原因是两个线程在使用 counter.count 时发生了<code>竞态条件</code>（代码行为取决于各操作的时序）。</p>
+<p>一个可能的操作是：</p>
+<ol>
+<li>线程t1 获取count的值时，线程t2也同时获取到了count 的值（假设是100），</li>
+<li>这时t1  count + 1， 此时count 为101，回写count 值，然后t2 执行了相同的操作 count+1，因为t2 取到的值也是100 此时 count 仍是101，回写后count 依然是101，但是 +1 操作执行了两次。</li>
+</ol>
+<p>竞态条件的解决方法是对 count 进行同步（synchronize）访问。一种操作是使用 <code>内置锁</code>(也称互斥锁（mutex）、管程（monitor）或临界区（critical section）)来同步对increment() 的调用。</p>
+<blockquote>
+<p>线程同步能够保证多个线程安全访问竞争资源，最简单的同步机制是引入互斥锁。互斥锁为资源引入一个状态：锁定/非锁定。某个线程要更改共享数据时，先将其锁定，此时资源的状态为“锁定”，其他线程不能更改；<br>
+直到该线程释放资源，将资源的状态变成“非锁定”，其他的线程才能再次锁定该资源。互斥锁保证了每次只有一个线程进行写入操作，从而保证了多线程情况下数据的正确性。</p>
+</blockquote>
+<blockquote>
+<p>当一个线程调用锁的acquire()方法获得锁时，锁就进入“locked”状态。每次只有一个线程可以获得锁。如果此时另一个线程试图获得这个锁，该线程就会变为“blocked”状态，称为“同步阻塞”。<br>
+直到拥有锁的线程调用锁的release()方法释放锁之后，锁进入“unlocked”状态。线程调度程序从处于同步阻塞状态的线程中选择一个来获得锁，并使得该线程进入运行（running）状态。</p>
+</blockquote>
+<p>python 锁的使用流程如下：</p>
+<pre><code class="language-python">#创建锁
+mutex = threading.Lock()
+#锁定
+mutex.acquire([timeout])
+#释放
+mutex.release()
+</code></pre>
+<p>推荐使用上下文管理器来操作锁，</p>
+<pre><code class="language-python">with lock:
+    do someting
+
+# 相当于
+
+lock.acquire()
+
+try:
+    # do something...
+finally:
+    lock.release()
+</code></pre>
+<blockquote>
+<p>acquire(blocking=True, timeout=-1)<br>
+可以阻塞或非阻塞地获得锁。<br>
+当调用时参数 blocking 设置为 True （缺省值），阻塞直到锁被释放，然后将锁锁定并返回 True 。<br>
+在参数 blocking 被设置为 False 的情况下调用，将不会发生阻塞。如果调用时 blocking 设为 True 会阻塞，并立即返回 False ；否则，将锁锁定并返回 True。<br>
+当浮点型 timeout 参数被设置为正值调用时，只要无法获得锁，将最多阻塞 timeout 设定的秒数。timeout 参数被设置为 -1 时将无限等待。当 blocking 为 false 时，timeout 指定的值将被忽略。<br>
+如果成功获得锁，则返回 True，否则返回 False (例如发生 超时 的时候)。<br>
+timeout 参数需要 <code>python3.2+</code></p>
+</blockquote>
+<pre><code class="language-python">from threading import Thread, Lock
+mutex = Lock()
+
+class SynchronizeCounter(object):
+    def __init__(self, count=0):
+        self.count = count
+
+    def increment(self):
+        # if mutex.acquire(1): # 获取锁
+        #     self.count += 1
+        #     mutex.release()  # 释放锁
+        # 等同于上述代码
+        with mutex:
+            self.count += 1
+
+    def get_count(self):
+        print(&quot;Count: %s&quot; % self.count)
+        return self.count
+
+def test_synchronize_count():
+    counter = SynchronizeCounter()
+
+    class CounterThread(Thread):
+        def run(self):
+            for i in range(100000):
+                counter.increment()
+
+    t1 = CounterThread()
+    t2 = CounterThread()
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+
+    counter.get_count()
+
+
+if __name__ == &quot;__main__&quot;:
+    for i in range(100):
+        test_synchronize_count()
+
+</code></pre>
+<blockquote>
+<p>这段代码还有一个隐藏的bug，那就是 get_count()，这里get_count() 是在join()之后调用的，因此是线程安全的，但是如果在其它地方调用了 get_count() 函数。<br>
+由于在 get_count() 中没有进行线程同步，调用时可能会获取到一个失效的值。</p>
+</blockquote>
+<h4 id="诡异的内存">诡异的内存</h4>
+<p>对于JAVA等竞态编译语言，</p>
+<ol>
+<li>编译器的静态优化可能会打乱代码的执行顺序</li>
+<li>JVM 的动态优化也会打乱代码的执行顺序</li>
+<li>硬件可以通过乱序执行来优化性能</li>
+</ol>
+<p>更糟糕的是，有时一个线程产生的修改可能会对另一个线程不可见。</p>
+<blockquote>
+<p>从直觉上来说，编译器、JVM、硬件都不应插手修改原本的代码逻辑。但是近几年的运行效率提升，尤其是共享内存交媾的运行效率提升，都仰仗于此类代码优化。<br>
+具体的副作用，Java 内存模型有明确说明。<br>
+Java 内存模型定义了何时一个线程对内存的修改对另一个线程可见。<code>基本原则是：如果读线程和写线程不进行同步，就不能保证可见性。</code></p>
+</blockquote>
+<h3 id="多把锁">多把锁</h3>
+<p><strong>一个重点：</strong> 两个线程都需要进行同步。只在其中一个线程进行同步是不够的。</p>
+<p>可如果所有的方法都同步，大多数线程可能都会被阻塞，失去了并发的意义，并且可能会出现死锁。</p>
+<p><a href="https://zh.wikipedia.org/wiki/%E5%93%B2%E5%AD%A6%E5%AE%B6%E5%B0%B1%E9%A4%90%E9%97%AE%E9%A2%98">哲学家进餐问题</a></p>
+<blockquote>
+<p><code>哲学家就餐问题</code>：假设有五位哲学家围坐在一张圆形餐桌旁，做以下两件事情之一：吃饭，或者思考。吃东西的时候，他们就停止思考，思考的时候也停止吃东西。餐桌中间有一大碗意大利面，每两个哲学家之间有一只餐叉。因为用一只餐叉很难吃到意大利面，所以假设哲学家必须用两只餐叉吃东西。他们只能使用自己左右手边的那两只餐叉。</p>
+</blockquote>
+<blockquote>
+<p>哲学家从来不交谈，这就很危险，可能产生死锁，每个哲学家都拿着左手的餐叉，永远都在等右边的餐叉（或者相反）。<br>
+即使没有死锁，也有可能发生资源耗尽。例如，假设规定当哲学家等待另一只餐叉超过五分钟后就放下自己手里的那一只餐叉，并且再等五分钟后进行下一次尝试。这个策略消除了死锁（系统总会进入到下一个状态），但仍然有可能发生“活锁”。如果五位哲学家在完全相同的时刻进入餐厅，并同时拿起左边的餐叉，那么这些哲学家就会等待五分钟，同时放下手中的餐叉，再等五分钟，又同时拿起这些餐叉。</p>
+</blockquote>
+<p>下面是哲学家进餐问题的一个实现：</p>
+<pre><code class="language-python">import threading
+import random
+import time
+
+
+class Philosopher(threading.Thread):
+
+    running = True
+
+    def __init__(self, xname, forkOnLeft, forkOnRight):
+        threading.Thread.__init__(self)
+        self.name = xname
+        self.forkOnLeft = forkOnLeft
+        self.forkOnRight = forkOnRight
+
+    def run(self):
+        while self.running:
+            #  Philosopher is thinking (but really is sleeping).
+            time.sleep(random.uniform(1, 3))
+            print(&quot;%s is hungry.&quot; % self.name)
+            self.dine()
+
+    def dine(self):
+        fork1, fork2 = self.forkOnLeft, self.forkOnRight
+
+        while self.running:
+            fork1.acquire(True)  # 阻塞式获取left 锁
+            # locked = fork2.acquire(True) # 阻塞式 获取right 锁  容易产生死锁
+            locked = fork2.acquire(False)  # 非阻塞式 获取right 锁
+            if locked:
+                break  # 如果被锁定，释放 left 退出等待
+            fork1.release()
+            print(&quot;%s swaps forks&quot; % self.name)
+            fork1, fork2 = fork2, fork1
+        else:
+            return
+
+        self.dining()
+        fork2.release()
+        fork1.release()
+
+    def dining(self):
+        print(&quot;%s starts eating &quot; % self.name)
+        time.sleep(random.uniform(1, 5))
+        print(&quot;%s finishes eating and leaves to think.&quot; % self.name)
+
+
+def DiningPhilosophers():
+    forks = [threading.Lock() for n in range(5)]
+    philosopherNames = (&quot;Aristotle&quot;, &quot;Kant&quot;, &quot;Buddha&quot;, &quot;Marx&quot;, &quot;Russel&quot;)
+
+    philosophers = [
+        Philosopher(philosopherNames[i], forks[i % 5], forks[(i + 1) % 5])
+        for i in range(5)
+    ]
+
+    Philosopher.running = True
+    for p in philosophers:
+        p.start()
+    for p in philosophers:
+        p.join()
+    time.sleep(100)
+    Philosopher.running = False
+    print(&quot;Now we're finishing.&quot;)
+
+
+DiningPhilosophers()
+
+</code></pre>
+<h3 id="外星方法的危害">外星方法的危害</h3>
+<p>规模较大的程序常用监听器模式来解耦模块，这里我们构造一个类从一个URL进行下载，Listeners 监听下载进度。</p>
+<pre><code class="language-python">import requests
+import threading
+
+
+class Listeners(object):
+    def __init__(self, count=0):
+        self.count = count
+        self.done_count = 0.0
+        self.listeners = []
+
+    def append(self, listener):
+        self.listeners.append(listener)
+
+    def remove(self, listener):
+        self.listeners.remove(listener)
+
+    def on_progress(self, n):
+        # 一些我们不知道的实现
+        # do someting
+        # self.done_count += 1
+        # print(&quot;Process: %f&quot; % (self.done_count / self.count))
+        pass
+
+
+listeners = Listeners(5)
+
+
+class Downloader(threading.Thread):
+    def __init__(
+        self, group=None, target=None, name=None, args=(), kwargs=None, daemon=None
+    ):
+        threading.Thread.__init__(
+            self, group=group, target=target, name=name, daemon=daemon
+        )
+        self.url = kwargs.get(&quot;url&quot;)
+
+    def download(self):
+        resp = requests.get(self.url)
+
+    def add_listener(self, listener):
+        listeners.append(listener)
+
+    def remove_listener(self, listener):
+        listeners.delete(listener)
+
+    def update_progress(self, n):
+        for listener in listeners:
+            listner.on_progress(n)
+
+    def run(self):
+        self.download()
+        print(self.url)
+        listeners.on_progress(1)
+
+
+def test():
+    urls = [
+        &quot;https://www.baidu.com&quot;,
+        &quot;https://www.google.com&quot;,
+        &quot;https://www.bing.com&quot;,
+        &quot;https://www.zaih.com&quot;,
+        &quot;https://www.github.com&quot;,
+    ]
+    ts = [Downloader(kwargs=dict(url=url)) for url in urls]
+    print(ts)
+    [t.start() for t in ts]
+    [t.join() for t in ts]
+
+
+if __name__ == &quot;__main__&quot;:
+    test()
+
+</code></pre>
+<p>这段代码中，add_listener， remove_listener 和 update_progress 都是同步方法，但 update_progress 调用了一个我们不知道如何实现的方法。如果这个方法中，获取了一把锁，程序在执行的过程中就可能发生死锁。所以，我们要尽量避免使用这种方法。还有一种方法是在遍历之前对 listeners 进行保护性复制，再针对这份副本进行遍历。（现在调用外星方法不再需要加锁）</p>
+<h2 id="超越内置锁">超越内置锁</h2>
+<h3 id="可重入锁">可重入锁</h3>
+<p>Lock() 虽然方便，但限制很多：</p>
+<ol>
+<li>一个线程因为等待内置锁而进入阻塞之后，就无法中断该线程</li>
+<li>Lock() 不知道当前拥有锁的线程是否是当前线程，如果当前线程获取了锁，再次获取也会阻塞。</li>
+</ol>
+<p>重入锁是(threading.RLock)一个可以被同一个线程多次获取的同步基元组件。在内部，它在基元锁的锁定/非锁定状态上附加了 &quot;所属线程&quot; 和 &quot;递归等级&quot; 的概念。在锁定状态下，某些线程拥有锁 ； 在非锁定状态下， 没有线程拥有它。</p>
+<p>若要锁定锁，线程调用其 acquire() 方法；一旦线程拥有了锁，方法将返回。若要解锁，线程调用 release() 方法。 acquire()/release() 对可以嵌套；只有最终 release() (最外面一对的 release() ) 将锁解开，才能让其他线程继续处理 acquire() 阻塞。</p>
+<p>threading.RLock 提供了显式的 acquire() 和 release() 方法<br>
+一个好的实践是：</p>
+<pre><code>lock = threading.RLock()
+</code></pre>
+<p>Lock 和 RLock 的使用区别如下：</p>
+<pre><code class="language-python">#rlock_tut.py
+import threading
+num = 0
+lock = Threading.Lock()
+lock.acquire()
+num += 1
+lock.acquire() # 这里会被阻塞
+num += 2
+lock.release()
+
+# With RLock, that problem doesn’t happen.
+lock = Threading.RLock()
+lock.acquire()
+num += 3
+lock.acquire() # 不会被阻塞.
+num += 4
+lock.release()
+lock.release() # 两个锁都需要调用 release() 来释放.
+
+</code></pre>
+<h3 id="超时">超时</h3>
+<p>使用内置锁时，阻塞的线程无法被中断，程序不能从死锁恢复，可以给锁设置超时时间来解决这个问题。</p>
+<blockquote>
+<p>timeout 参数需要 python3.2+</p>
+</blockquote>
+<pre><code class="language-python">import time
+from threading import Thread, Lock
+
+lock1 = RLock()
+lock2 = RLock()
+
+# 这个程序会一直死锁下去，如果想突破这个限制，可以在获取锁的时候加上超时时间
+# &gt; python threading 没有实现 销毁(destroy)，停止(stop)，暂停(suspend)，继续（resume）,中断（interrupt）等
+
+
+class T1(Thread):
+    def run(self):
+        print(&quot;start run T1&quot;)
+        lock1.acquire()
+        # lock1.acquire(timeout=2) # 设置超时时间可避免死锁
+        time.sleep(1)
+        lock2.acquire()
+        # lock2.acquire(timeout=2) # 设置超时时间可避免死锁
+        lock1.release()
+        lock2.release()
+
+
+class T2(Thread):
+    def run(self):
+        print(&quot;start run T2&quot;)
+        lock2.acquire()
+        # lock2.acquire(timeout=2) # 设置超时时间可避免死锁
+        time.sleep(1)
+        lock1.acquire()
+        # lock1.acquire(timeout=2) # 设置超时时间可避免死锁
+        lock2.release()
+        lock1.release()
+
+
+def test():
+    t1, t2 = T1(), T2()
+    t1.start()
+    t2.start()
+
+    t1.join()
+    t2.join()
+
+
+if __name__ == &quot;__main__&quot;:
+    test()
+
+</code></pre>
+<h3 id="交替锁">交替锁</h3>
+<p>如果我们要在链表中插入一个节点。一种做法是用锁保护整个链表，但链表加锁时其它使用者无法访问。交替锁可以只所追杀链表的一部分，允许不涉及被锁部分的其它线程自由访问。</p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/TEbTwYoXnf5oLt4T3ovmxSALDg90i63Lx3t2EZIfyqVyo6bDHJGVnvu-v89vas7E" alt="交替锁" loading="lazy"></figure>
+<pre><code class="language-python">
+from random import randint
+from threading import Thread, Lock
+
+class Node(object):
+
+    def __init__(self, value, prev=None, next=None):
+        self.value = value
+        self.prev = prev
+        self.next = next
+        self.lock = Lock()
+
+
+class SortedList(Thread):
+
+    def __init__(self, head):
+        Thread.__init__(self)
+        self.head = head
+
+    def insert(self, value):
+        head = self.head
+        node = Node(value)
+        print(&quot;insert: %d&quot; % value)
+        while True:
+            if head.value &lt;= value:
+                if head.next != None:
+                    head = head.next
+                else:
+                    head.lock.acquire()
+                    head.next = node
+                    node.prev = head
+                    head.lock.release()
+                    break
+            else:
+                prev = head.prev
+                prev.lock.acquire()
+                head.lock.acquire()
+                if prev != None:
+                    prev.next = node
+                else:
+                    self.head = node
+                node.prev = prev
+                prev.lock.release()
+                node.next = head
+                head.prev = node
+                head.lock.release()
+                break
+
+    def run(self):
+        for i in range(5):
+            self.insert(randint(10, 20))
+
+
+def test():
+    head = Node(10)
+    t1 = SortedList(head)
+    t2 = SortedList(head)
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+    while head:
+        print(head.value)
+        head = head.next
+
+
+if __name__ == &quot;__main__&quot;:
+    test()
+</code></pre>
+<p>这种方案不仅可以让多个线程并发的进行链表插入操作，还能让其他的链表操作安全的并发。</p>
+<h3 id="条件变量">条件变量</h3>
+<p>并发编程经常需要等待某个事件发生。比如从队列删除元素前需要等待队列非空、向缓存添加数据前需要等待缓存有足够的空间。条件变量就是为这种情况设计的。</p>
+<p>条件变量总是与某种类型的锁对象相关联，锁对象可以通过传入获得，或者在缺省的情况下自动创建。当多个条件变量需要共享同一个锁时，传入一个锁很有用。锁是条件对象的一部分，不必单独地跟踪它。</p>
+<p>条件变量服从上下文管理协议：使用 with 语句会在它包围的代码块内获取关联的锁。 acquire() 和 release() 方法也能调用关联锁的相关方法。</p>
+<p>其它方法必须在持有关联的锁的情况下调用。 wait() 方法释放锁，然后阻塞直到其它线程调用 notify() 方法或 notify_all() 方法唤醒它。一旦被唤醒， wait() 方法重新获取锁并返回。它也可以指定超时时间。</p>
+<pre><code class="language-python">#condition_tut.py
+import random, time
+from threading import Condition, Thread
+&quot;&quot;&quot;
+'condition' variable will be used to represent the availability of a produced
+item.
+&quot;&quot;&quot;
+condition = Condition()
+box = []
+def producer(box, nitems):
+    for i in range(nitems):
+        time.sleep(random.randrange(2, 5))  # Sleeps for some time.
+        condition.acquire()
+        num = random.randint(1, 10)
+        box.append(num)  # Puts an item into box for consumption.
+        condition.notify()  # Notifies the consumer about the availability.
+        print(&quot;Produced:&quot;, num)
+        condition.release()
+def consumer(box, nitems):
+    for i in range(nitems):
+        condition.acquire()
+        condition.wait()  # Blocks until an item is available for consumption.
+        print(&quot;%s: Acquired: %s&quot; % (time.ctime(), box.pop()))
+        condition.release()
+threads = []
+&quot;&quot;&quot;
+'nloops' is the number of times an item will be produced and
+consumed.
+&quot;&quot;&quot;
+nloops = random.randrange(3, 6)
+for func in [producer, consumer]:
+    threads.append(Thread(target=func, args=(box, nloops)))
+    threads[-1].start()  # Starts the thread.
+for thread in threads:
+    &quot;&quot;&quot;Waits for the threads to complete before moving on
+       with the main script.
+    &quot;&quot;&quot;
+    thread.join()
+print(&quot;All done.&quot;)
+
+</code></pre>
+<h3 id="原子变量">原子变量</h3>
+<blockquote>
+<p>与锁相比使用原子变量的优点：</p>
+<ol>
+<li>不会忘记在正确的时候获取锁</li>
+<li>由于没有锁的参与，对原子变量的操作不会引发死锁。</li>
+<li>原子变量时无锁（lock-free）非阻塞（non-blocking）算法的基础，这种算法可以不用锁和阻塞来达到同步的目的。</li>
+</ol>
+</blockquote>
+<p><strong>python 不支持原子变量</strong></p>
+<h2 id="总结">总结</h2>
+<h3 id="优点">优点</h3>
+<p>线程与锁模型最大的优点是适用面广，更接近于“本质”--近似于对硬件工作方式的形式化--正确使用时效率高。<br>
+此外，线程与锁模型也可轻松的集成到大多数编程语言。</p>
+<h3 id="缺点">缺点</h3>
+<ol>
+<li>线程与锁模型没有为并行提供直接的支持</li>
+<li>线程与锁模型只支持共享内存模型，如果要支持分布式内存模型，就需要寻求其他技术的帮助。</li>
+<li>用线程与锁模型编写的代码难以测试（比如死锁问题可能很久才会出现），出了问题后很难找到问题在哪，并且bug难以复现</li>
+<li>代码难以维护（要保证所有对象的同步都是正确的、必须按  顺序来获取多把锁、持有锁时不调用外星方法。还要保证维护代码的开发者都遵守这个规则</li>
+</ol>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://hackernoon.com/synchronization-primitives-in-python-564f89fee732?gi=ce162d119247">Let’s Synchronize Threads in Python</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%93%B2%E5%AD%A6%E5%AE%B6%E5%B0%B1%E9%A4%90%E9%97%AE%E9%A2%98">哲学家进餐问题</a></li>
+</ul>
+<h4 id="references">References</h4>
+<p>[1] 哲学家进餐问题: https://zh.wikipedia.org/wiki/%E5%93%B2%E5%AD%A6%E5%AE%B6%E5%B0%B1%E9%A4%90%E9%97%AE%E9%A2%98<br>
+[2] Let’s Synchronize Threads in Python: https://hackernoon.com/synchronization-primitives-in-python-564f89fee732?gi=ce162d119247</p>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%B9%B6%E5%8F%91%E5%B9%B6%E8%A1%8C">并发&amp;并行</a></li>
+<li><a href="#%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%94%81%E6%A8%A1%E5%9E%8B">线程与锁模型</a></li>
+<li><a href="#%E4%BA%92%E6%96%A5%E5%92%8C%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B">互斥和内存模型</a>
+<ul>
+<li><a href="#%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B">创建线程</a></li>
+<li><a href="#%E7%AC%AC%E4%B8%80%E6%8A%8A%E9%94%81">第一把锁</a>
+<ul>
+<li><a href="#%E8%AF%A1%E5%BC%82%E7%9A%84%E5%86%85%E5%AD%98">诡异的内存</a></li>
+</ul>
+</li>
+<li><a href="#%E5%A4%9A%E6%8A%8A%E9%94%81">多把锁</a></li>
+<li><a href="#%E5%A4%96%E6%98%9F%E6%96%B9%E6%B3%95%E7%9A%84%E5%8D%B1%E5%AE%B3">外星方法的危害</a></li>
+</ul>
+</li>
+<li><a href="#%E8%B6%85%E8%B6%8A%E5%86%85%E7%BD%AE%E9%94%81">超越内置锁</a>
+<ul>
+<li><a href="#%E5%8F%AF%E9%87%8D%E5%85%A5%E9%94%81">可重入锁</a></li>
+<li><a href="#%E8%B6%85%E6%97%B6">超时</a></li>
+<li><a href="#%E4%BA%A4%E6%9B%BF%E9%94%81">交替锁</a></li>
+<li><a href="#%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F">条件变量</a></li>
+<li><a href="#%E5%8E%9F%E5%AD%90%E5%8F%98%E9%87%8F">原子变量</a></li>
+</ul>
+</li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a>
+<ul>
+<li><a href="#%E4%BC%98%E7%82%B9">优点</a></li>
+<li><a href="#%E7%BC%BA%E7%82%B9">缺点</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a><br>
+*
+<ul>
+<li><a href="#references">References</a></li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/jwt-refresh-token/">
+              <h3 class="post-title">
+                JWT RefreshToken 实践
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

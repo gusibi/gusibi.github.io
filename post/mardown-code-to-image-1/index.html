@@ -1,0 +1,271 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>markdown中code生成图片的思路 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="markdown中code生成图片的思路 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="最近在头条上写东西，遇到了一个比较烦的事情---编辑器不支持代码。这对于一个像我这样使用代码凑字数的人来说实在不是一个好的消息。但是等头条改进编辑器太遥远了，只能自己自足实现一个替代方案了--把代码替换成图片。
+一段代码的时候，我随手截图，..." />
+    <meta name="keywords" content="tutorial,golang,python,公众号" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              markdown中code生成图片的思路
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-06-13
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/dE3Sy1WOcy/" class="post-tag">
+                  # golang
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/Vo0Pk96Rxe/" class="post-tag">
+                  # 公众号
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>最近在头条上写东西，遇到了一个比较烦的事情---<strong>编辑器不支持代码</strong>。这对于一个像我这样使用代码凑字数的人来说实在不是一个好的消息。但是等头条改进编辑器太遥远了，只能自己自足实现一个替代方案了--把代码替换成图片。</p>
+<p>一段代码的时候，我随手截图，简单完成了；<br>
+两段代码的时候，我随手随手截图，也完成了；<br>
+三段代码的时候，我随手随手随手截图，强忍着完成了；<br>
+等我发现代码越来越多的时候，不能忍了。<br>
+懒惰是程序员的美德，不能再花费时间干这些事情了。我觉得要写个程序，把markdown 中的代码自动生成图片。</p>
+<p><strong>考虑了一下，大概需要做的工作是：</strong></p>
+<ol>
+<li>把markdown 中 &quot;<code></code>&quot; 包换的代码提取出来（也可以使用工具先把markdown 转换成html 再解析html 取出code</li>
+<li>把每一段code 分别生成图片</li>
+<li>把图片对应的代码替换掉</li>
+</ol>
+<p>想想还是很简单的。那就开始吧。</p>
+<p>但是到第二步的时候遇到了问题，<strong>code 如何生成图片，生成什么样的图片？</strong></p>
+<ol>
+<li>首先code 需要保持原有的样式，如果能高亮那就更好了（嗯，高亮</li>
+<li>生成图片的时候是把code 作为文字使用PIL（我使用python）写在背景上么，图片大小是多少，高亮怎么实现</li>
+<li>算了，还是先把code 生成html，然后截取html页面吧。（这样html 还能使用 highlight.js 来实现高亮）</li>
+<li>如何动态生成包含code 的html 页面呢？</li>
+<li>如何把截取html 页面呢？</li>
+</ol>
+<p><strong>动态生成包含code 的html 页面有两个思路：</strong></p>
+<ol>
+<li>使用post 请求，把code 写入数据库（或者文件），然后返回id，再使用id GET 请求获取页面（需要存储，两次请求）</li>
+<li>压缩code，把code 作为url参数，使用GET请求获取页面（可能会造成url太长的错误）</li>
+</ol>
+<p><strong>那如何截取html呢？</strong></p>
+<p>如果是python，可以使用pyqt，渲染html页面，截取webview。<br>
+如果使用node，可以使用 html2canvas。</p>
+<p>大致流程如下：</p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/AeaSby9Zk5mB9lMW2hiZDbSzaQa9VlpRaHomeb_mVndzFIn6oMEKbIKJqk3P59_U" alt="" loading="lazy"></figure>
+<p><strong>哎，这一篇没有代码，就凑不了多少字。</strong></p>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/dynamodb-best-practice/">
+              <h3 class="post-title">
+                DynamoDB 最佳实践
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

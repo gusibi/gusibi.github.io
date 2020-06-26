@@ -1,0 +1,760 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CSS入门指南-4：页面布局 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="CSS入门指南-4：页面布局 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+这是《CSS设计指南》的读书笔记，用于加深学习效果。
+
+display 属性
+display是 CSS 中最重要的用于控制布局的属性。每个元素都有一个默认的 display 值。对于大多数元素它们的默认值通常是 block 或 inlin..." />
+    <meta name="keywords" content="读书笔记,前端,tutorial,css,html" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              CSS入门指南-4：页面布局
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-08-10
+              </span>
+              <span>
+                20 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/QFxrVQKr-F/" class="post-tag">
+                  # 前端
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/GIyDdkICePO/" class="post-tag">
+                  # css
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/SFv860kTvVz/" class="post-tag">
+                  # html
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>这是《CSS设计指南》的读书笔记，用于加深学习效果。</p>
+</blockquote>
+<h2 id="display-属性">display 属性</h2>
+<p><code>display</code>是 CSS 中最重要的用于控制布局的属性。每个元素都有一个默认的 display 值。对于大多数元素它们的默认值通常是 block 或 inline 。一个 block 元素通常被叫做块级元素。一个 inline 元素通常被叫做行内元素。</p>
+<h4 id="block">block</h4>
+<p><code>div</code> 是一个标准的块级元素。一个块级元素会新开始一行并且尽可能撑满容器。其他常用的块级元素包括 <code>p</code> 、 <code>form</code> 和HTML5中的新元素： <code>header</code> 、 <code>footer</code> 、 <code>section</code> 等等。</p>
+<h4 id="inline">inline</h4>
+<p><code>img</code> 是一个标准的行内元素。你可以把两个 <code>&lt;img&gt;</code> 标签写在两行，但这并不影响图片再浏览器中的显示效果，它们会并列出现在一行上。而且标签直接的空白（标记中的两个<img>标签虽然分别位于两行，但这并不影响图片在浏览器中显示时的效果。图片是行内元素，所以它们显示的时候就会并列出现在一行上。而且，标签之间的空白（包括制表、回车和空格）都会被浏览器忽略。</p>
+<p><code>a</code> 元素是最常用的行内元素，它可以被用作链接。</p>
+<h4 id="none">none</h4>
+<p>另一个常用的 display 值是 none。一些特殊元素的默认 display 值是它，例如<code>script</code>。display:none 通常被 JavaScript 用来在不删除元素的情况下隐藏或显示元素。<br>
+把display设置为 none，该元素及所有包含在其中的元素，都不会在页面中显示。它们原来占据的空间也会被回收。</p>
+<blockquote>
+<p>相对的属性是 <code>visibility</code>，这个属性常用的值是 visible（默认）和 hidden。把元素的 visibility 设定为 hidden，元素会隐藏，但它占据的空间仍然存在。</p>
+</blockquote>
+<h4 id="其他-display-值">其他 display 值</h4>
+<p>还有很多的更有意思的 display 值，几乎所有HTML元素的display属性值要么为block，要么为inline。最明显的一个例外是table元素，它有自己特殊的display属性值。<a href="https://developer.mozilla.org/en-US/docs/Web/CSS/display">这里有一份详细的列表</a>。</p>
+<p>块级元素（比如标题和段落）会相互堆叠在一起沿页面向下排列，每个元素分别占一行。而行内元素（比如链接和图片）则会相互并列，只有在空间不足以并列的情况下才会折到下一行显示 。</p>
+<p>块级元素和行内元素是可以互相转化的：</p>
+<pre><code class="language-css">/*默认为块级元素*/
+p {display: inline;}
+/*默认为行内元素*/
+a {display: block;}
+</code></pre>
+<p>属性了 display 属性之后，我们来看下页面布局：</p>
+<h2 id="布局的基本概念">布局的基本概念</h2>
+<p>多栏布局有三种基本的实现方案：<code>固定宽度</code>、<code>流动</code>、 <code>弹性</code>。</p>
+<ul>
+<li>
+<p>固定宽度布局的大小不会随用户调整浏览器窗口大小而变化，一般是900到1100像素宽。其中960像素是最常见的，因为这个宽度适合所有现代显示器，而且能够被16、12、10、8、6、5、4和3整除，不仅容易计算等宽分栏的数量，而且计算结果也能得到没有小数的像素数。</p>
+</li>
+<li>
+<p>流动布局的大小会随用户调整浏览器窗口大小而变化。这种布局能够更好地适应大屏幕，但同时也意味着放弃对页面某些方面的控制，比如随着页面宽度变化，文本行的长度和页面元素之间的位置关系都可能变化。Amazon.com的页面采用的就是流动中栏布局，在各栏宽度加大时通过为内容元素周围添加空白来保持内容居中，而且现在的导航条会在布局变窄到某个宽度时收缩进一个下拉菜单中，从而为内容腾出空间。</p>
+</li>
+<li>
+<p>弹性布局与流动布局类似，在浏览器窗口变宽时，不仅布局变宽，而且所有内容元素的大小也会变化，让人产生一种所有东西都变大了的感觉。</p>
+</li>
+</ul>
+<h3 id="布局的高度">布局的高度</h3>
+<p>多数情况下，布局中结构化元素（乃至任何元素）的高度是不必设定的。事实上，我甚至想告诉你根本不应该给元素设定高度。除非你确实需要这样做，比如在页面中创造一个绝对定位的元素。</p>
+<blockquote>
+<p>为什么正常情况下都应该保持元素height属性的默认值auto不变呢？很简单，只有这样元素才能随自己包含内容的增加而在垂直方向上扩展。这样扩展的元素会把下方的元素向下推，而布局也能随着内容数量的增减而垂直伸缩。假如你明确设定了元素的高度，那么超出的内容要么被剪掉，要么会跑到容器之外——取决于元素overflow属性的设定。</p>
+</blockquote>
+<h3 id="布局的宽度">布局的宽度</h3>
+<p>与高度不同，我们需要更精细地控制布局宽度，以便随着浏览器窗口宽度的合理变化，布局能够作出适当的调整，确保文本行不会过长或过短。如果随意给元素添加内边距、边框，或者元素本身过大，导致浮动元素的宽度超过包含元素的布局宽度，那浮动元素就可能“躲”到其他元素下方。应该让这些内容元素自动扩展到填满栏的宽度。(这是块级元素的默认行为)</p>
+<h2 id="三栏-固定宽度布局">三栏-固定宽度布局</h2>
+<p>我们先从一个简单的居中的单栏布局开始吧。看下面 HTML 代码，主要标记的 ID 是 wrapper：</p>
+<pre><code class="language-html">&lt;div id=&quot;wrapper&quot;&gt;
+	&lt;article&gt;
+        &lt;h1&gt;Single-Column Layout&lt;/h1&gt;
+        &lt;p&gt;这是第一段&lt;/p&gt;
+        &lt;h2&gt;This is a Second-Level Heading&lt;/h2&gt;
+        &lt;p&gt;这是第二段&lt;/p&gt;
+    &lt;/article&gt;
+&lt;/div&gt;
+</code></pre>
+<p>布局相关 css 如下：</p>
+<pre><code class="language-css">#wrapper {
+	width:960px; margin:0 auto; border:1px solid;
+}
+article {
+	background:#ffed53;	
+}
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/ehJIyepJP3ARTLkMYIDfndpryupJA8PrXFP1MlcUdPiDuX0gfMZo8r15dRn35M9l" alt="效果图" loading="lazy"></figure>
+<blockquote>
+<p>如图所示，通过给外包装设定宽度值，并将其水平外边距设定为 auto，这个单栏布局在页面上居中了。随着向里添加内容，这一栏的高度会相应增加。外包装中的article元素本质上就是一个没有宽度的块级盒子（关于“没有宽度的盒子”，请参见3.2节），它水平扩展填满了外包装。</p>
+</blockquote>
+<p>下面，我们再向外包装里添加一个导航元素，让它作为第二栏。</p>
+<p>HTML 代码如下：</p>
+<pre><code class="language-html">&lt;div id=&quot;wrapper&quot;&gt;
+	&lt;nav&gt;
+        &lt;ul&gt;
+            &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Link 1&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Link 2&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Link 3&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/nav&gt;
+    &lt;article&gt;
+        &lt;h1&gt;Single-Column Layout&lt;/h1&gt;
+        &lt;p&gt;这是第一段&lt;/p&gt;
+        &lt;h2&gt;This is a Second-Level Heading&lt;/h2&gt;
+        &lt;p&gt;这是第二段.&lt;/p&gt;
+    &lt;/article&gt;
+&lt;/div&gt;
+</code></pre>
+<p>这里我们将两栏都添加<code>float: left</code>，以让它们并排显示。</p>
+<pre><code class="language-css">#wrapper {
+	width:960px; 
+	margin:0 auto; 
+	border:1px solid; 
+	overflow:hidden;
+}
+nav {
+	width:150px;
+	float:left; /*浮动*/
+	background:#dcd9c0;
+	}
+nav li {
+    /*去掉列表项目符号*/
+	list-style-type:none;
+	}
+article {
+	width:810px;
+	float:left; /*浮动*/
+	background:#ffed53;	
+	}
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/FJAogkzMENomRRtTqAobo1o3EiGsSSMBjhdz-4NZc2NOP0vaEjUF6br4TeZvH943" alt="效果图" loading="lazy"></figure>
+<blockquote>
+<p>这里我们把两栏的总宽度设定为外包装的宽度（150+810=960），并浮动它们，就可以创造出并肩排列的两栏来。每一栏的长度取决于内容多少。</p>
+</blockquote>
+<p>接下来我们添加第三栏。</p>
+<pre><code class="language-html">&lt;div id=&quot;wrapper&quot;&gt;
+	&lt;nav&gt;
+        &lt;ul&gt;
+            &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Link 1&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Link 2&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Link 3&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/nav&gt;
+    &lt;article&gt;
+        &lt;h1&gt;Single-Column Layout&lt;/h1&gt;
+        &lt;p&gt;这是第一段&lt;/p&gt;
+        &lt;h2&gt;This is a Second-Level Heading&lt;/h2&gt;
+        &lt;p&gt;这是第二段.&lt;/p&gt;
+    &lt;/article&gt;
+    &lt;aside&gt;
+        &lt;h3&gt;This is the Sidebar&lt;/h3&gt;
+        &lt;p&gt;这是侧边栏.&lt;/p&gt;
+    &lt;/aside&gt;
+&lt;/div&gt;
+</code></pre>
+<p>接下来我们调整一下 article 这一栏的宽度，为第三栏腾出空间</p>
+<pre><code class="language-css">#wrapper {
+	width:960px; margin:0 auto; border:1px solid; overflow:hidden;
+}
+nav {
+	width:150px;
+	float:left;
+	background:#dcd9c0;
+}
+article {
+	width:600px;
+	float:left;
+	background:#ffed53;	
+}
+aside {
+	width:210px;
+	float:left;
+	background:#3f7ccf;
+}
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/ih7NWCcRAtvH4fHkIJ26zbdTl0K378Ew4oKFbVu1y8TCUrQsqvFFruceGWPdPoaP" alt="三栏的示意图" loading="lazy"></figure>
+<blockquote>
+<p>如图所示，通过把三个浮动容器的总宽度设定为恰好等于外包装的宽度（150+600+210=960），就有了三栏布局的框架。</p>
+</blockquote>
+<p>现在我们再添加一个页眉和页脚：</p>
+<pre><code class="language-html">&lt;div id=&quot;wrapper&quot;&gt;
+	&lt;header&gt;
+		&lt;h1&gt;A Fixed-Width Layout&lt;/h1&gt;
+	&lt;/header&gt;
+	&lt;nav&gt;
+        &lt;ul&gt;
+            &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Link 1&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Link 2&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Link 3&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/nav&gt;
+    &lt;article&gt;
+        &lt;h1&gt;Single-Column Layout&lt;/h1&gt;
+        &lt;p&gt;这是第一段&lt;/p&gt;
+        &lt;h2&gt;This is a Second-Level Heading&lt;/h2&gt;
+        &lt;p&gt;这是第二段.&lt;/p&gt;
+    &lt;/article&gt;
+    &lt;aside&gt;
+        &lt;h3&gt;This is the Sidebar&lt;/h3&gt;
+        &lt;p&gt;这是侧边栏.&lt;/p&gt;
+    &lt;/aside&gt;
+   	&lt;footer&gt;
+        &lt;p&gt;This is the footer. Phasellus pretium gravida interdum. Nam interdum posuere tempus. Ut commodo laoreet dolor, non hendrerit mi dictum vitae. Nam nec egestas libero.&lt;/p&gt;
+    &lt;/footer&gt;
+&lt;/div&gt;
+</code></pre>
+<p>为了让页脚在最下一栏不浮动到 <code>aside</code> 后边，我们为页脚应用<code>clear:both</code>，以组织它向上移动。<br>
+css 样式如下：</p>
+<pre><code class="language-css">* {margin:0; padding:0;} 
+#wrapper {
+    width:960px;
+    margin:0 auto;
+    border:1px solid;
+} 
+header {
+    background:#f00;
+} 
+nav {
+    width:150px;
+    float:left;
+    background:#dcd9c0;
+} 
+nav li {
+    list-style-type:none;
+} 
+article {
+    width:600px;
+    float:left;
+    background:#ffed53;
+}
+aside {
+    width:210px;
+    float:left;
+    background:#3f7ccf;
+} 
+footer {
+    clear:both;
+    background:#000;
+}
+</code></pre>
+<p>现在效果如图：<br>
+<img src="http://media.gusibi.mobi/qGmwPd79PzMw_N-UcZFSj8teXyQ11LnBN_r5aeExPp44vtBtZ4YGYRNor_Pp2bfq" alt="三栏+页眉+页脚的效果图" loading="lazy"></p>
+<p>现在各栏太拥挤，每栏的高度也都由文本内容决定，我们现在修改一下，为内容间加上空白。</p>
+<h3 id="为栏设定内边距和边距">为栏设定内边距和边距</h3>
+<p>为了让内容与栏边界空开距离，为栏添加水平外边距和内边距，但这样会导致布局宽度增大，进而浮动栏下滑。<br>
+比如，我们给 article 增加内边距：</p>
+<pre><code class="language-css">article {
+    width: 600px;
+    float: left;
+    background: #ffed53;
+    padding: 10px 20px;
+}
+</code></pre>
+<p>效果如图：</p>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/rjwewoLYNvkPSRnwJYZJTCUqZLYpsDr6P1oFgWe0X3fdQDdApeNcrKvb07jQw4AR" alt="article 增加内边距后的效果图" loading="lazy"></figure>
+<p>由于增加了内边距导致<code>article</code>的总宽度增加，导致右边的栏不能再与前两排并列在一起。有三种方法来预防改问题发生：</p>
+<ul>
+<li>从设定的元素宽度中减去添加的水平外边距、边框和内边距的宽度和。</li>
+<li>在容器内部的元素上添加内边距或外边距。</li>
+<li>使用CSS3的box-sizing属性切换盒子缩放方式，比如section {box-sizing:border-box;} 。 应用box-sizing属性后，给section添加边框和内边距都不会增大盒子，相反会导致内容变窄。</li>
+</ul>
+<h3 id="重设宽度以抵消内边距和边框">重设宽度以抵消内边距和边框</h3>
+<p>一个代代相传的解决方案是通过数学计算。CSS开发者需要用比他们实际想要的宽度小一点的宽度，需要减去内边距和边框的宽度。<code>比如我们给600像素宽的中间栏增加了20像素的内边距，为了抵消增加的内边距，可以把栏减少40像素而设定为560像素。</code>值得庆幸地是你不需要再这么做了...</p>
+<h3 id="给容器内部元素应用内边距和边框">给容器内部元素应用内边距和边框</h3>
+<p>把外边距和内边距应用到内容元素上确实有效，不过这样的前提是这些元素没有明确的设定宽度，这样内容才会随内外边距的增加而缩小。<br>
+与其为容器中的元素添加外边距，不如在栏中再添加一个没有宽度的div，让它包含所有内容元素，然后再给这个div应用边框和内边距。如此一来，只要为内部div设定一次样式，就可以把让所有内容元素与栏边界保持一致的距离。而且，将来再需要调整时也会很方便。任何新增内容元素的宽度都由这个内部div决定。</p>
+<p>下面我们用这种方法修复上面第三栏浮动到下边的问题。</p>
+<pre><code class="language-html">&lt;article&gt;
+    &lt;div class=&quot;inner&quot;&gt;
+    &lt;!-- 这里是各种内容 --&gt;
+    &lt;/div&gt;
+&lt;/article&gt;
+</code></pre>
+<p>接下来，我们不仅要给内部 div 应用内边距，还要给她应用外边距和边框。</p>
+<pre><code class="language-css">/*更新 css*/
+article {
+	width:600px;
+	float:left;
+	background:#ffed53;
+}
+article .inner {
+	margin:10px; 
+	border:2px solid red;
+	padding:20px; 
+}
+</code></pre>
+<p>效果如图：<br>
+<img src="http://media.gusibi.mobi/rQINy0ZYV9tT-nU7LJPlfY-RqwcDLA7n5PdZzdEEa-eGPz43J0G40nnLbbYvycAa" alt="给容器内部元素应用内边距和边框的示例图" loading="lazy"></p>
+<p>以上措施使布局有了明显改观。就这么简单的几下，布局就显得更专业了。处理栏及其内部div的关键在于，浮动栏并设定栏宽，但不给任何内容元素设定宽度。要让内容元素扩展以填充它们的父元素——内部div。这样，只要简单地设定内部div的外边距和内边距，就可以让它们以及它们包含的内容与栏边界保持一定距离。</p>
+<h3 id="使用-box-sizingborder-box">使用 box-sizing:border-box</h3>
+<p>人们慢慢的意识到传统的盒子模型不直接，所以他们新增了一个叫做 box-sizing 的CSS属性。当你设置一个元素为 box-sizing: border-box; 时，此元素的内边距和边框不再会增加它的宽度。这里有一个与前一页相同的例子，唯一的区别是两个元素都设置了 box-sizing: border-box;</p>
+<pre><code class="language-css">nav {
+	-webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+	box-sizing:border-box;
+	width:150px;
+	float:left;
+	background:#dcd9c0;
+	padding:10px 10px;
+	}
+article {
+	-webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+	box-sizing:border-box;
+	width:600px;
+	float:left;
+	background:#ffed53;	
+	padding:10px 20px;
+}
+aside {
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+	box-sizing:border-box;
+	width:210px;
+	float:left;
+	background:#3f7ccf;
+	padding:10px 10px;
+}
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="http://media.gusibi.mobi/W72nR0pZ9isuBunBOxwMX5O1fnacmxEZdNSTQkT0uDPm_87znZleYhehw83kslGH" alt="使用 box-sizing: border-box; 的效果图" loading="lazy"></figure>
+<p>这是目前为止最好的解决方法了，那最简单有效的方法就是在 css 里添加这样一条规则：</p>
+<pre><code class="language-css">* {
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    box-sizing:border-box;        
+    }
+</code></pre>
+<h2 id="三栏-中栏流动布局">三栏-中栏流动布局</h2>
+<p>中栏流动布局的目的是在屏幕变窄时，中栏变窄，左栏和右栏宽度不变。<br>
+这里我们使用<code>负外边距</code>实现。</p>
+<h3 id="用负外边距实现">用负外边距实现</h3>
+<p>实现三栏布局且让中栏内容区流动（不固定）的核心问题是处理右栏的定位，并在中栏内容区大小改变时控制右栏与布局的关系。</p>
+<p>这里我们使用<code>Ryan Brill</code>给出的控制两个外包装容器的外边距的解决方案。其中一个外包装包围三栏，另一个外保障包围左栏和中栏。</p>
+<p>html代码示例如下：</p>
+<pre><code class="language-html">&lt;div id=&quot;main_wrapper&quot;&gt;
+    &lt;header&gt;
+        &lt;!-- 页眉--&gt;
+    &lt;/header&gt;
+    &lt;div id=&quot;threecolwrap&quot;&gt;/*三栏外包装（包围全部三栏）*/
+        &lt;div id=&quot;twocolwrap&quot;&gt;/*两栏外包装（包围左栏和中栏）*/ /*左栏*/
+            &lt;nav&gt;
+                &lt;!-- 导航 --&gt;
+            &lt;/nav&gt; /*中栏*/
+            &lt;article&gt;
+                &lt;!-- 区块 --&gt;
+            &lt;/article&gt;
+        &lt;/div&gt;/*结束两栏外包装（twocolwrap）*/ /*右栏*/
+        &lt;aside&gt;
+            &lt;!-- 侧栏 --&gt;
+        &lt;/aside&gt;
+    &lt;/div&gt;/*结束三栏外包装（threecolwrap）*/
+    &lt;footer&gt;
+        &lt;!-- 页脚 --&gt;
+    &lt;/footer&gt;
+&lt;/div&gt; 
+</code></pre>
+<p>css规则如下：</p>
+<pre><code class="language-css">* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font: 1em helvetica, arial, sans-serif;
+}
+
+div#main_wrapper {
+    min-width: 600px;
+    max-width: 1100px;
+    /*超过最大宽度时，居中布局*/
+    margin: 0 auto;
+    /*背景图片默认从左上角开始拼接*/
+    background: url(images/bg_tile_150pxw.png) repeat-y #eee;
+}
+
+header {
+    padding: 5px 10px;
+    background: #3f7ccf;
+}
+
+div#threecolwrap {
+    /*浮动强制它包围浮动的栏*/
+    float: left;
+    width: 100%;
+    /*背景图片右对齐*/
+    background: url(images/bg_tile_210pxw.png) top right repeat-y;
+}
+
+div#twocolwrap {
+    /*浮动强制它包围浮动的栏*/
+    float: left;
+    width: 100%;
+    /*把右栏拉到区块外边距腾出的位置上*/
+    margin-right: -210px;
+}
+
+nav {
+    float: left;
+    width: 150px;
+    background: #f00;
+    padding: 20px 0;
+}
+
+/*让子元素与栏边界保持一定距离*/
+
+nav&gt;* {
+    margin: 0 10px;
+}
+
+article {
+    width: auto;
+    margin-left: 150px;
+    /*在流动居中的栏右侧腾出空间*/
+    margin-right: 210px;
+    background: #eee;
+    padding: 20px 0;
+}
+
+/*让子元素与栏边界保持一定距离*/ 
+article&gt;* {
+    margin: 0 20px;
+}
+
+aside {
+    float: left;
+    width: 210px;
+    background: #ffed53;
+    padding: 20px 0;
+}
+
+/*让子元素与栏边界保持一定距离*/ 
+aside&gt;* {
+    margin: 0 10px;
+}
+
+footer {
+    clear: both;
+    width: 100%;
+    text-align: center;
+    background: #000;
+}
+</code></pre>
+<p><img src="http://media.gusibi.mobi/DMdD7nQ_BMk1Q8tQMwYgnu6BJDVM_BZMRx5C1sUUVj1AtFFb5EkD9aEshr-qDEhb" alt="宽屏效果" loading="lazy"><br>
+<img src="http://media.gusibi.mobi/9S7ij-86f1AF6eV7jOziitveLNrUpbO_untKwE4uofOXyvE5UrVvxY_1DEnVzp50" alt="窄屏效果" loading="lazy"></p>
+<blockquote>
+<p><code>基本原理：</code>上面两幅图展示了流动中栏布局。三栏中的右栏是210像素宽。为了给右栏腾出空间，中栏article元素有一个210像素的右外边距。包围左栏和中栏的两栏外包装上210像素的负右外边距，会把右栏拉回article元素右外边距（在两栏外包装内部右侧）创造的空间内。中栏aticle元素的宽度是auto，因此它仍然会力求占据浮动左栏剩余的所有空间。可是，一方面它自己的右外边距在两栏外包装内为右栏腾出了空间，另一方面两栏外包装的负右外边距又把右栏拉到了该空间内。</p>
+</blockquote>
+<h3 id="百分比宽度">百分比宽度</h3>
+<p>上面的例子中，我们用到了<code>百分比宽度</code>，百分比是一种相对于包含块的计量单位。你还能同时使用 min-width 和 max-width 来限制最大或最小宽度！</p>
+<p>你可以用百分比做布局，但是这需要更多的工作。如果我们上边的例子中 nav 用百分比宽度做布局，当窗口宽度很窄时 nav 的内容会以一种不太友好的方式被包裹起来。</p>
+<h2 id="inline-block-布局">inline-block 布局</h2>
+<p>上面的例子我们实现多栏并列的方式是使用<code>float</code>，不过我们也可以使用<code>inline-block</code>。下边是我们把 float 替换为<code>inline-block</code> 的例子。</p>
+<pre><code class="language-css">nav {
+	width:150px;
+    display: inline-block;
+    vertical-align: top;
+	background:#dcd9c0;
+	}
+article {
+    word-spacing:0;
+	width:600px;
+    display: inline-block;
+    vertical-align: top;
+	background:#ffed53;	
+	}
+aside {
+    word-spacing:0;
+	width:210px;
+    display: inline-block;
+    vertical-align: top;
+	background:#3f7ccf;
+	}
+</code></pre>
+<p>使用<code>inline-block</code>，有一些事情需要你牢记：</p>
+<ul>
+<li>vertical-align 属性会影响到 inline-block 元素，你可能会把它的值设置为 top 。</li>
+<li>你需要设置每一列的宽度</li>
+<li>如果HTML源代码中元素之间有空格，那么列与列之间会产生空隙</li>
+</ul>
+<p>特别是第三条，如果我们不做任何修改，两个 block 之间会存在空格，像这样：</p>
+<figure data-type="image" tabindex="6"><img src="http://media.gusibi.mobi/8uHhpJiVoVCzg007mXBb2vHjceIB8Ja4Irws_AvxpE07QhjH360KZhiFniFMpmzr" alt="列与列之间有空格" loading="lazy"></figure>
+<p>因为列与列之间产生了空格，所以 aside 跑到了下边。这里最简单的解决办法是：</p>
+<pre><code class="language-html">&lt;nav&gt;
+导航
+&lt;/nav&gt;&lt;article&gt;
+内容
+&lt;/article&gt;&lt;aside&gt;
+第三栏
+&lt;/aside&gt;
+</code></pre>
+<p>其他解决方案可以参考这篇文章 <a href="https://css-tricks.com/fighting-the-space-between-inline-block-elements/">Fighting the Space Between Inline Block Elements</a></p>
+<h2 id="其他布局方式">其他布局方式</h2>
+<p>初次之外，css 还提供了 <code>column</code>、<code>flexbox</code>等布局方式，这些以后有机会再介绍吧。</p>
+<h2 id="总结">总结</h2>
+<p>这篇文章我们介绍了用浮动的有宽度的元素来创建多栏布局、如何让固定布局在页面上居中以及让它们在一定范围内可以伸缩。同时也了解了如何使用内部div在浮动元素中生成间距，而又不会改变布局的总宽度。</p>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s?__biz=MzAwNjI5MjAzNw==&amp;mid=2655752018&amp;idx=1&amp;sn=6915e4f11ba08fa196a64375224cd92e&amp;chksm=80b0b878b7c7316e1a065ae991c534cc11ca5fe72b33690a98fb1c3f6f53f8c98c4c8744cd3a#rd">CSS入门指南-2：盒子模型、浮动和清除</a></li>
+<li><a href="https://mp.weixin.qq.com/s?__biz=MzAwNjI5MjAzNw==&amp;mid=2655752022&amp;idx=1&amp;sn=a37d1ec3bab1d8188ae6ae45b1b1a211&amp;chksm=80b0b87cb7c7316ac3dcf29669d83f84300f1d85f8262848519ab1a37d754846b8eb482be436#rd">CSS入门指南-3：定位元素</a></li>
+<li><a href="http://zh.learnlayout.com">学习CSS布局</a></li>
+<li><a href="https://css-tricks.com/fighting-the-space-between-inline-block-elements/">Fighting the Space Between Inline Block Elements</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2015/07/flex-grammar.html">Flex 布局教程：语法篇</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="7"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="8"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#display-%E5%B1%9E%E6%80%A7">display 属性</a><br>
+*
+<ul>
+<li><a href="#block">block</a></li>
+<li><a href="#inline">inline</a></li>
+<li><a href="#none">none</a></li>
+<li><a href="#%E5%85%B6%E4%BB%96-display-%E5%80%BC">其他 display 值</a></li>
+</ul>
+</li>
+<li><a href="#%E5%B8%83%E5%B1%80%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5">布局的基本概念</a>
+<ul>
+<li><a href="#%E5%B8%83%E5%B1%80%E7%9A%84%E9%AB%98%E5%BA%A6">布局的高度</a></li>
+<li><a href="#%E5%B8%83%E5%B1%80%E7%9A%84%E5%AE%BD%E5%BA%A6">布局的宽度</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89%E6%A0%8F-%E5%9B%BA%E5%AE%9A%E5%AE%BD%E5%BA%A6%E5%B8%83%E5%B1%80">三栏-固定宽度布局</a>
+<ul>
+<li><a href="#%E4%B8%BA%E6%A0%8F%E8%AE%BE%E5%AE%9A%E5%86%85%E8%BE%B9%E8%B7%9D%E5%92%8C%E8%BE%B9%E8%B7%9D">为栏设定内边距和边距</a></li>
+<li><a href="#%E9%87%8D%E8%AE%BE%E5%AE%BD%E5%BA%A6%E4%BB%A5%E6%8A%B5%E6%B6%88%E5%86%85%E8%BE%B9%E8%B7%9D%E5%92%8C%E8%BE%B9%E6%A1%86">重设宽度以抵消内边距和边框</a></li>
+<li><a href="#%E7%BB%99%E5%AE%B9%E5%99%A8%E5%86%85%E9%83%A8%E5%85%83%E7%B4%A0%E5%BA%94%E7%94%A8%E5%86%85%E8%BE%B9%E8%B7%9D%E5%92%8C%E8%BE%B9%E6%A1%86">给容器内部元素应用内边距和边框</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8-box-sizingborder-box">使用 box-sizing:border-box</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89%E6%A0%8F-%E4%B8%AD%E6%A0%8F%E6%B5%81%E5%8A%A8%E5%B8%83%E5%B1%80">三栏-中栏流动布局</a>
+<ul>
+<li><a href="#%E7%94%A8%E8%B4%9F%E5%A4%96%E8%BE%B9%E8%B7%9D%E5%AE%9E%E7%8E%B0">用负外边距实现</a></li>
+<li><a href="#%E7%99%BE%E5%88%86%E6%AF%94%E5%AE%BD%E5%BA%A6">百分比宽度</a></li>
+</ul>
+</li>
+<li><a href="#inline-block-%E5%B8%83%E5%B1%80">inline-block 布局</a></li>
+<li><a href="#%E5%85%B6%E4%BB%96%E5%B8%83%E5%B1%80%E6%96%B9%E5%BC%8F">其他布局方式</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/sanic-custom-exception/">
+              <h3 class="post-title">
+                自定义 Sanic Exception
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

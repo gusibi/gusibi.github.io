@@ -1,0 +1,440 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>垃圾回收算法|GC标记-清除算法 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="垃圾回收算法|GC标记-清除算法 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+本文是《垃圾回收的算法与实现》读书笔记
+
+
+什么是GC标记-清除算法（Mark Sweep GC）
+GC 标记-清除算法由标记阶段和清除阶段构成。在标记阶段会把所有的活动对象都做上标记，然后在清除阶段会把没有标记的对象，也就是非活动对象回..." />
+    <meta name="keywords" content="读书笔记,垃圾回收,算法" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              垃圾回收算法|GC标记-清除算法
+            </h2>
+            <div class="post-info">
+              <span>
+                2018-07-21
+              </span>
+              <span>
+                9 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/h_bUpZSky-L/" class="post-tag">
+                  # 垃圾回收
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/YfG8YSZaXgc/" class="post-tag">
+                  # 算法
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>本文是《垃圾回收的算法与实现》读书笔记</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/kJ8L52gJq08Mi142RTC-wAwzbMUgwGTKue3rPKNWVrYTlvOMczGlXFvmEt1C1MRM" alt="" loading="lazy"></figure>
+<h3 id="什么是gc标记-清除算法mark-sweep-gc">什么是GC标记-清除算法（Mark Sweep GC）</h3>
+<p>GC 标记-清除算法由<code>标记阶段</code>和<code>清除阶段</code>构成。在标记阶段会把所有的活动对象都做上标记，然后在清除阶段会把没有标记的对象，也就是<code>非活动</code>对象回收。</p>
+<blockquote>
+<p><code>名词解释：</code></p>
+<p>在 GC 的世界里<code>对象</code>指的是通过应用程序利用的数据的集合。是 GC 的基本单位。一般由头（header）和域（field）构成。</p>
+<p><code>活动对象:</code>能通过引用程序引用的对象就被称为活动对象。（可以直接或间接从全局变量空间中引出的对象）</p>
+<p><code>非活动对象:</code>不能通过程序引用的对象呗称为非活动对象。（这就是被清除的目标）</p>
+</blockquote>
+<p>标记-清除算法的伪代码如下所示：</p>
+<pre><code class="language-go">func mark_sweep(){
+    mark_phase()   // 标记阶段
+    sweep_phase()  // 清除阶段
+} 
+</code></pre>
+<h3 id="标记阶段">标记阶段</h3>
+<blockquote>
+<p>标记阶段就是遍历对象并标记的处理过程。</p>
+</blockquote>
+<p>标记阶段伪代码如下：</p>
+<pre><code class="language-go">func mark_phase(){
+    for (r : $roots)  // 在标记阶段，会给所有的活动对象打上标记
+        mark(*r)
+}
+
+func mark(){
+    if (obj.mark == False)
+        obj.mark = True            // 先标记找出的活动对象
+        for (child: children(obj)) // 然后递归的标记通过指针数组能访问到的对象
+            mark(*child)
+}
+</code></pre>
+<blockquote>
+<p>这里 <code>$root</code>是指针对象的起点，通过$root 可以遍历全部活动对象。</p>
+</blockquote>
+<p>下图是标记前和标记后内存中堆的状态</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/E66QEbTr9uxUcn-_4HAJbjhIiPrO_gZ-RQcn6Wiiu8iQnP9wlA5xZ5KACvMLvEK-" alt="执行 GC 前堆的状态" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/7_BEou-9LxGREQm2CyB18NZLRMh43R8g6xY2UwXfHXw7eyYwpaSvSWPndirCzuHv" alt="执行 GC 后堆的状态" loading="lazy"></figure>
+<h3 id="清除阶段">清除阶段</h3>
+<blockquote>
+<p>在清除阶段，collector 会遍历整个堆，回收没有打上标记的对象（垃圾），使其能再次利用。</p>
+</blockquote>
+<p>sweep_phase() 函数伪代码实现如下：</p>
+<pre><code class="language-go">func sweep_phase(){
+    sweeping = $heap_start            // 首先将堆的首地址赋值给 sweeping
+    while(sweeping &lt; $head_end){
+        if(sweeping.mark == TRUE)
+            // 如果是标记状态就设为 FALSE，如果是活动对象，还会在标记阶段被标记为 TRUE
+            sweeping.mark == FALSE    
+        else:
+            sweeping.next = $free_list   // 将非活动对象 拼接到 $free_list 头部位置
+            $free_list = sweeping
+        sweeping += sweeping.size
+    }     
+}
+</code></pre>
+<blockquote>
+<p><code>size</code> 域指的是存储对象大小的域，在对象头中事先定义。</p>
+<p><code>next</code> 域只在生成空闲链表以及从空闲链表中取出分块时才会用到。</p>
+<p><code>分块(chunk)</code> 这里是指为利用对象而事先准备出来的空间。</p>
+<p>内存中区块的块生路线为 <code>分块--&gt;活动对象--&gt;垃圾—&gt;分块--&gt;...</code></p>
+</blockquote>
+<p>在清除阶段我们会把非活动回收再利用。回收对象就是把对象作为分块，连接到被称为<code>空闲链表</code>的单向链表。之后再分配空间时只需遍历这个空闲链表就可以了找到分块了。</p>
+<p>下图是清除阶段结束后堆的状态：</p>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/S1zEqC5TqtGnlofpDBf-8u_hBaLrtqyMT_vpEePlcVTVwVaJ_zwLFdXnIGbKfGBT" alt="清除阶段结束后堆的状态" loading="lazy"></figure>
+<h3 id="分配">分配</h3>
+<blockquote>
+<p>回收垃圾的目的是为了能再次分配</p>
+</blockquote>
+<p>当程序申请分块时，怎样才能把大小合适的分块分配给程序呢？</p>
+<p>分配伪代码如下：</p>
+<pre><code class="language-go">func new_obj(size){  // size 是需要的分块大小
+    chunk = pickup_chunk(size, $free_list)  // 遍历 $free_list 寻找大于等于 size 的分块
+    if(chunk != NULL)  
+        return chunk
+    else
+        allocation_fail()   // 如果没找到大小合适的分块 提示分配失败
+}
+</code></pre>
+<p><code>pickup_chunk()</code>函数不止返回和 size 大小相同的分块，也会返回大于 size 大小的分块（这时会将其分割成 size 大小的分块和去掉 size 后剩余大小的分块，并把剩余部分还给空闲链表）。</p>
+<blockquote>
+<p>分配策略有三种 <code>First-fit</code>,<code>Best-fit</code>,<code>Worst-fit</code></p>
+<p><code>First-fit</code>：发现大于等于 size的分块立刻返回</p>
+<p><code>Best-fit</code>：找到大小和 size 相等的分块再返回</p>
+<p>``Worst-fit`：找到最大的分块，然后分割成 size 大小和剩余大小（这种方法容易产生大量小的分块</p>
+</blockquote>
+<h4 id="合并">合并</h4>
+<p>根据分配策略的不同，分配过程中会出现大量小的分块，如果分块是连续的，我们就可以把小分块合并成一个大的分块，<code>合并是在清除阶段完成的</code>，包含了合并策略的清除代码如下：</p>
+<pre><code class="language-go">func sweep_phase(){
+    sweeping = $heap_start            // 首先将堆的首地址赋值给 sweeping
+    while(sweeping &lt; $head_end){
+        if(sweeping.mark == TRUE)
+            // 如果是标记状态就设为 FALSE，如果是活动对象，还会在标记阶段被标记为 TRUE
+            sweeping.mark == FALSE    
+        else:
+            if(sweeping == $free_list + $free_list.size)  // 堆的地址正好和空闲链表大小相同
+                $free_list.size += sweeping.size
+            else
+                sweeping.next = $free_list   // 将非活动对象 拼接到 $free_list 头部位置
+                $free_list = sweeping
+        sweeping += sweeping.size
+    }     
+}
+</code></pre>
+<blockquote>
+<p><code>$heap_end = $heap_start + HEAP_SIZE</code></p>
+<p>所以这里<code>sweeping == $free_list + $free_list.size</code>可以理解为需要清除的堆的地址正好和空闲链接相邻</p>
+</blockquote>
+<h3 id="优缺-点">优/缺 点</h3>
+<h4 id="优点">优点</h4>
+<ul>
+<li>实现简单</li>
+<li>与<code>保守式 GC 算法</code>兼容</li>
+</ul>
+<h4 id="缺点">缺点</h4>
+<ul>
+<li>碎片化严重（由上面描述的分配算法可知，容易产生大量小的分块</li>
+<li>分配速度慢（由于空闲区块是用链表实现，分块可能都不连续，每次分配都需要遍历空闲链表，极端情况是需要遍历整个链表的。</li>
+<li>与<code>写时复制技术</code>不兼容</li>
+</ul>
+<blockquote>
+<p>写时复制（copy-on-write）是众多 UNIX 操作系统用到的内存优化的方法。比如在 Linux 系统中使用 fork() 函数复制进程时，大部分内存空间都不会被复制，只是复制进程，只有在内存中内容被改变时才会复制内存数据。</p>
+<p>但是如果使用标记清除算法，这时内存会被设置<code>标志位</code>，就会频繁发生不应该发生的复制。</p>
+</blockquote>
+<h3 id="多个空闲链表">多个空闲链表</h3>
+<p>上面所说的标记清除算法只用到了一个空闲链表对大小不一的分块统一处理。但这样做每次都需要遍历一遍来寻找大小合适的分块，非常浪费时间。</p>
+<p>这里我们使用多个空闲链表的方法来存储非活动对象。比如：将两个字的分块组成一个空闲链表，三个字的分块组成另一个空闲链表，等等。。</p>
+<p>这时，如果需要分配三个字的分块，那我们只需要查询对应的三个字的空闲链表就可以了。</p>
+<blockquote>
+<p>到底需要制造多少个空闲链表呢？</p>
+<p>因为通常程序不会 申请特别大的分块，所以我们通常给分块大小设置一个上限，比如100，大于这个上限的组成一个特殊的空闲链表。这样101 个空闲链表就够了。</p>
+</blockquote>
+<h3 id="位图标记">位图标记</h3>
+<p>在单纯的 GC 标记-清除算法中，用于标记的位是被分配到对象头中的。算法是把对象和头一并处理，但这和写时复制不兼容。</p>
+<p><code>位图标记</code>法是只收集各个对象的标志位并表格化，不喝对象一起管理。在标记的时候不在对象的头里设置位置，而是在特定的表格中置位。</p>
+<figure data-type="image" tabindex="5"><img src="http://media.gusibi.mobi/hEEQsacTXvFE97jV14u-Jc-ghhrDKg6TY_w20Mvizspa1cmEQFvtV5ADazkBAOy0" alt="位图标记" loading="lazy"></figure>
+<blockquote>
+<p>在位图标记中重要的是，位图表格中位的位置要和堆里的各个对象切实对应。一般来说堆中的一个字会分配到一个位。</p>
+</blockquote>
+<p>位图标记中 mark() 函数的伪代码实现如下：</p>
+<pre><code class="language-go">func mark(obj){
+    obj_num = (obj - $heap_start) / WORD_LENGTH  // WORD_LENGTH 是一个常量，表示机器中一个字的位宽
+    index = obj_num / WORD_LENGTH
+    offset = obj_num % WORD_LENGTH
+    
+    if ($bitmap_tbl[index] &amp; (1 &lt;&lt; offset)) == 0
+        $bitmap_tbl[index] |= (1 &lt;&lt; offset)
+        for (child: children(obj)) // 然后递归的标记通过指针数组能访问到的对象
+            mark(*child)
+}
+</code></pre>
+<p>这里 obj_num 指的是从位图表格前面数，obj 的标志位在第几个。例如 E 的 obj_num 是8。</p>
+<p>obj_num 除以 WORD_LENGTH 得到的商 index 以及余数 offset 来分别表示位图表格的行编号和列编号。</p>
+<h4 id="优点-2">优点</h4>
+<ul>
+<li>和写时复制技术兼容</li>
+<li>清除更高效（只需要遍历位图表格就可以，清除的时候也只需要清除表格中的标志位）。</li>
+</ul>
+<h3 id="延迟清除">延迟清除</h3>
+<p>清除操作所花费的时间和堆的大小成正比，堆越大，标记-清除 动作花费的时间越长，也就越影响程序的运行。</p>
+<p>延迟清除（lazy sweep）是缩短清除操作花费导致程序最大暂停时间的方法。</p>
+<blockquote>
+<p><code>最大暂停时间</code>，因执行 GC 而暂停执行程序的最长时间。</p>
+</blockquote>
+<p>延迟清除中 new_obj() 函数会在分配的时候调用 <code>lazy_sweep()</code>函数，进行清除操作。如果它能用清除操作来分配分块，就会返回分块，如果不能分配分块，就会执行标记操作。然后重复这个步骤，直到找到分块或者<code>allocation_fail</code></p>
+<p>通过延迟清除法可以缩减程序的暂停时间，不过延迟效果并不是均衡的。比如下图这种刚标记完堆的情况：</p>
+<figure data-type="image" tabindex="6"><img src="http://media.gusibi.mobi/yOIKeU-sQUx1m4C56IcH__oPcq3aR7zKxokJ0kiaqGfBCT9UNqUGnXUalUmcLM9S" alt="堆里垃圾分布不均的情况" loading="lazy"></figure>
+<p>这时，活动对象和非活动对象都是相邻分布，如果程序在活动对象周围开始清除，那它找到的对象都是活动对象不可清除，只能不停遍历，暂停时间就会变长。</p>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://book.douban.com/subject/26821357/">垃圾回收的算法与实现</a></li>
+<li><a href="https://mp.weixin.qq.com/s/4aEUixY3cioH2OXTgYX0Mg">画说 Ruby 与 Python 垃圾回收</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="7"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="8"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AFgc%E6%A0%87%E8%AE%B0-%E6%B8%85%E9%99%A4%E7%AE%97%E6%B3%95mark-sweep-gc">什么是GC标记-清除算法（Mark Sweep GC）</a></li>
+<li><a href="#%E6%A0%87%E8%AE%B0%E9%98%B6%E6%AE%B5">标记阶段</a></li>
+<li><a href="#%E6%B8%85%E9%99%A4%E9%98%B6%E6%AE%B5">清除阶段</a></li>
+<li><a href="#%E5%88%86%E9%85%8D">分配</a>
+<ul>
+<li><a href="#%E5%90%88%E5%B9%B6">合并</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BC%98%E7%BC%BA-%E7%82%B9">优/缺 点</a>
+<ul>
+<li><a href="#%E4%BC%98%E7%82%B9">优点</a></li>
+<li><a href="#%E7%BC%BA%E7%82%B9">缺点</a></li>
+</ul>
+</li>
+<li><a href="#%E5%A4%9A%E4%B8%AA%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8">多个空闲链表</a></li>
+<li><a href="#%E4%BD%8D%E5%9B%BE%E6%A0%87%E8%AE%B0">位图标记</a>
+<ul>
+<li><a href="#%E4%BC%98%E7%82%B9-2">优点</a></li>
+</ul>
+</li>
+<li><a href="#%E5%BB%B6%E8%BF%9F%E6%B8%85%E9%99%A4">延迟清除</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/python_text_to_image/">
+              <h3 class="post-title">
+                Python 生成便签图片
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

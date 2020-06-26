@@ -1,0 +1,336 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JWT RefreshToken 实践 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="JWT RefreshToken 实践 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+Json web token (JWT), 根据官网的定义，是为了在网络应用环境间传递声明而执行的一种基于JSON的开放标准（(RFC 7519).该token被设计为紧凑且安全的，特别适用于分布式站点的单点登录（SSO）场景。JWT的声..." />
+    <meta name="keywords" content="tutorial,后端,restful" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              JWT RefreshToken 实践
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-04-29
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/f-Wl7DIwGU/" class="post-tag">
+                  # 后端
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/sPBsVeNnoL/" class="post-tag">
+                  # restful
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>Json web token (JWT), 根据官网的定义，是为了在网络应用环境间传递声明而执行的一种基于JSON的开放标准（(RFC 7519).该token被设计为紧凑且安全的，特别适用于分布式站点的单点登录（SSO）场景。JWT的声明一般被用来在身份提供者和服务提供者间传递被认证的用户身份信息，以便于从资源服务器获取资源，也可以增加一些额外的其它业务逻辑所必须的声明信息，该token也可直接被用于认证，也可被加密。<br>
+详细介绍可以查看这篇文章 <a href="https://mp.weixin.qq.com/s/gUgh_kmMu0Hmobeah7wNLQ">理解JWT（JSON Web Token）认证及实践</a></p>
+</blockquote>
+<h2 id="jwt-特点">JWT 特点</h2>
+<h3 id="优点">优点</h3>
+<ul>
+<li>体积小，因而传输速度快</li>
+<li>传输方式多样，可以通过URL/POST参数/HTTP头部等方式传输</li>
+<li>严格的结构化。它自身（在 payload 中）就包含了所有与用户相关的验证消息，如用户可访问路由、访问有效期等信息，服务器无需再去连接数据库验证信息的有效性，并且 payload 支持为你的应用而定制化。</li>
+<li>支持跨域验证，可以应用于单点登录。</li>
+</ul>
+<h3 id="存在的问题">存在的问题</h3>
+<p>JWT 自身（在 payload 中）就包含了所有与用户相关的验证消息，所以通常情况下不需要保存。这种设计存在几个问题：</p>
+<ol>
+<li>Token不能撤销--客户端重置密码后之前的JWT依然可以使用（JWT 并没有过期或者失效</li>
+<li>不支持refresh token，JWT过期后需要执行登录授权的完整流程</li>
+<li>无法知道用户签发了几个JWT</li>
+</ol>
+<p>针对第一个问题，可能的解决方法有：</p>
+<ol>
+<li>保存JWT到数据库（或Redis），这样可以针对每个JWT单独校验</li>
+<li>在重置密码等需要作废之前全部JWT时，把操作时间点记录到数据库（或Redis），校验JWT时同时判断此JWT创建之后有没有过重置密码等类似操作，如果有校验不通过</li>
+</ol>
+<p>当然，这种解决方法都会多一次数据库请求，JWT自身可校验的优势会有所减少，同时也会影响认证效率。</p>
+<p>这篇文章主要介绍解决第二个问题（不支持refresh token）的思路。</p>
+<h3 id="refresh-token">refresh token</h3>
+<p>refresh token是OAuth2 认证中的一个概念，和OAuth2 的access token 一起生成，表示更新令牌，过期所需时间比access toen 要长，可以用来获取下一次的access token。</p>
+<p>如果JWT 需要添加 refresh token支持，refresh token需要满足的条件有一下几项：</p>
+<ol>
+<li>和JWT一起生成返回给客户端</li>
+<li>有实效时间，有效时间比JWT要长</li>
+<li>只能用来换取下一次JWT，不能用于访问认证</li>
+<li>不能重复使用（可选）</li>
+</ol>
+<h4 id="refresh-token-获取流程">refresh token 获取流程</h4>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/kY3mm6nLAlHkGDxHJF1WLctLSbp9eA-6iirdYBlC0CDwMcq_rTPsCWpAhmWUr_nJ" alt="" loading="lazy"></figure>
+<h4 id="refresh-token-使用流程">refresh token 使用流程</h4>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/-PJDYI_rQ-EiYl6aGJ-_zPtkgKY9nRnBnShAj47rsoEY115E8IRlM4zMuOvx70zi" alt="" loading="lazy"></figure>
+<h2 id="代码示例">代码示例</h2>
+<pre><code class="language-python">import jwt
+import time
+
+# 使用 sanic 作为restful api 框架 
+def create_token(account_id, username):
+    payload = {
+        &quot;iss&quot;: &quot;gusibi.mobi&quot;,
+        &quot;iat&quot;: int(time.time()),
+        &quot;exp&quot;: int(time.time()) + 86400 * 7,
+        &quot;aud&quot;: &quot;www.gusibi.mobi&quot;,
+        &quot;sub&quot;: account_id,
+        &quot;username&quot;: username,
+        &quot;scopes&quot;: ['open']
+    }
+    token = jwt.encode(payload, 'secret', algorithm='HS256')
+    payload['grant_type'] = &quot;refresh&quot;
+    refresh_token = jwt.encode(payload, 'secret', algorithm='HS256')
+    return True, {
+        'access_token': token,
+        'account_id': account_id,
+        &quot;refresh_token&quot;: refresh_token
+        }
+
+# 验证refresh token 出否有效
+def verify_refresh_token(token):
+    payload = jwt.decode(token, 'secret', audience='www.gusibi.com', algorithms=['HS256'])
+    # 校验token 是否有效，以及是否是refresh token，验证通过后生成新的token 以及 refresh_token
+    if payload and payload.get('grant_type') == 'refresh':
+        # 如果需要标记此token 已经使用，需要借助redis 或者数据库（推荐redis）
+        return True, payload
+    return False, None
+
+# 验证token 是否有效
+def verify_bearer_token(token):
+    #  如果在生成token的时候使用了aud参数，那么校验的时候也需要添加此参数
+    payload = jwt.decode(token, 'secret', audience='www.gusibi.com', algorithms=['HS256'])
+    # 校验token 是否有效，以及不能是refresh token
+    if payload and not payload.get('grant_type') == 'refresh':
+        return True, payload
+    return False, None
+</code></pre>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/gUgh_kmMu0Hmobeah7wNLQ">理解JWT（JSON Web Token）认证及实践</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2014/05/oauth_2_0.html">理解OAuth 2.0</a>[1]</li>
+</ul>
+<p>References<br>
+[1] 理解OAuth 2.0: http://www.ruanyifeng.com/blog/2014/05/oauth_2_0.html</p>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#jwt-%E7%89%B9%E7%82%B9">JWT 特点</a>
+<ul>
+<li><a href="#%E4%BC%98%E7%82%B9">优点</a></li>
+<li><a href="#%E5%AD%98%E5%9C%A8%E7%9A%84%E9%97%AE%E9%A2%98">存在的问题</a></li>
+<li><a href="#refresh-token">refresh token</a>
+<ul>
+<li><a href="#refresh-token-%E8%8E%B7%E5%8F%96%E6%B5%81%E7%A8%8B">refresh token 获取流程</a></li>
+<li><a href="#refresh-token-%E4%BD%BF%E7%94%A8%E6%B5%81%E7%A8%8B">refresh token 使用流程</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E4%BB%A3%E7%A0%81%E7%A4%BA%E4%BE%8B">代码示例</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/golang-mod/">
+              <h3 class="post-title">
+                Golang mod 入门
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

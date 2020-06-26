@@ -1,0 +1,613 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Amazon DynamoDB 入门7：项目更新 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Amazon DynamoDB 入门7：项目更新 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+上一节介绍了DynamoDB 的查询，本来计划这一节介绍使用索引的查询，不过随机看到了更新操作，就先写更新操作吧
+
+update (修改表中的数据)
+SQL 语言提供用于修改数据的 UPDATE 语句。DynamoDB 使用 Update..." />
+    <meta name="keywords" content="python,DynamoDB,nosql,database,AWS" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Amazon DynamoDB 入门7：项目更新
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-02-07
+              </span>
+              <span>
+                14 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/BG0jvEzhDF/" class="post-tag">
+                  # DynamoDB
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/vnysOkbn9w/" class="post-tag">
+                  # nosql
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/SS95MaqZ5J/" class="post-tag">
+                  # database
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/8Np8k9SC3Nz/" class="post-tag">
+                  # AWS
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>上一节介绍了DynamoDB 的查询，本来计划这一节介绍使用索引的查询，不过随机看到了更新操作，就先写更新操作吧</p>
+</blockquote>
+<h2 id="update-修改表中的数据">update (修改表中的数据)</h2>
+<p>SQL 语言提供用于修改数据的 UPDATE 语句。DynamoDB 使用 UpdateItem 操作完成类似的任务。</p>
+<h3 id="sql">SQL</h3>
+<p>在 SQL 中，可使用 UPDATE 语句修改一个或多个行。SET 子句为一个或多个列指定新值，WHERE 子句确定修改的行。示例如下：</p>
+<pre><code class="language-sql">UPDATE Music
+SET RecordLabel = 'Global Records'
+WHERE Artist = 'No One You Know' AND SongTitle = 'Call Me Today';
+</code></pre>
+<p>HUGOMORE42</p>
+<p>如果任何行均不匹配 WHERE 子句，则 UPDATE 语句不起作用。</p>
+<h3 id="dynamodb">DynamoDB</h3>
+<p>在 DynamoDB 中，可使用 UpdateItem 操作修改单个项目。</p>
+<p>API 语法如下：</p>
+<pre><code class="language-json">{
+   &quot;AttributeUpdates&quot;: {
+      &quot;string&quot; : {
+         &quot;Action&quot;: &quot;string&quot;,
+         &quot;Value&quot;: {
+            &quot;B&quot;: blob,
+            &quot;BOOL&quot;: boolean,
+            &quot;BS&quot;: [ blob ],
+            &quot;L&quot;: [
+               &quot;AttributeValue&quot;
+            ],
+            &quot;M&quot;: {
+               &quot;string&quot; : &quot;AttributeValue&quot;
+            },
+            &quot;N&quot;: &quot;string&quot;,
+            &quot;NS&quot;: [ &quot;string&quot; ],
+            &quot;NULL&quot;: boolean,
+            &quot;S&quot;: &quot;string&quot;,
+            &quot;SS&quot;: [ &quot;string&quot; ]
+         }
+      }
+   },
+   &quot;ConditionalOperator&quot;: &quot;string&quot;,
+   &quot;ConditionExpression&quot;: &quot;string&quot;,
+   &quot;Expected&quot;: {
+      &quot;string&quot; : {
+         &quot;AttributeValueList&quot;: [
+            {
+               &quot;B&quot;: blob,
+               &quot;BOOL&quot;: boolean,
+               &quot;BS&quot;: [ blob ],
+               &quot;L&quot;: [
+                  &quot;AttributeValue&quot;
+               ],
+               &quot;M&quot;: {
+                  &quot;string&quot; : &quot;AttributeValue&quot;
+               },
+               &quot;N&quot;: &quot;string&quot;,
+               &quot;NS&quot;: [ &quot;string&quot; ],
+               &quot;NULL&quot;: boolean,
+               &quot;S&quot;: &quot;string&quot;,
+               &quot;SS&quot;: [ &quot;string&quot; ]
+            }
+         ],
+         &quot;ComparisonOperator&quot;: &quot;string&quot;,
+         &quot;Exists&quot;: boolean,
+         &quot;Value&quot;: {
+            &quot;B&quot;: blob,
+            &quot;BOOL&quot;: boolean,
+            &quot;BS&quot;: [ blob ],
+            &quot;L&quot;: [
+               &quot;AttributeValue&quot;
+            ],
+            &quot;M&quot;: {
+               &quot;string&quot; : &quot;AttributeValue&quot;
+            },
+            &quot;N&quot;: &quot;string&quot;,
+            &quot;NS&quot;: [ &quot;string&quot; ],
+            &quot;NULL&quot;: boolean,
+            &quot;S&quot;: &quot;string&quot;,
+            &quot;SS&quot;: [ &quot;string&quot; ]
+         }
+      }
+   },
+   &quot;ExpressionAttributeNames&quot;: {
+      &quot;string&quot; : &quot;string&quot;
+   },
+   &quot;ExpressionAttributeValues&quot;: {
+      &quot;string&quot; : {
+         &quot;B&quot;: blob,
+         &quot;BOOL&quot;: boolean,
+         &quot;BS&quot;: [ blob ],
+         &quot;L&quot;: [
+            &quot;AttributeValue&quot;
+         ],
+         &quot;M&quot;: {
+            &quot;string&quot; : &quot;AttributeValue&quot;
+         },
+         &quot;N&quot;: &quot;string&quot;,
+         &quot;NS&quot;: [ &quot;string&quot; ],
+         &quot;NULL&quot;: boolean,
+         &quot;S&quot;: &quot;string&quot;,
+         &quot;SS&quot;: [ &quot;string&quot; ]
+      }
+   },
+   &quot;Key&quot;: {
+      &quot;string&quot; : {
+         &quot;B&quot;: blob,
+         &quot;BOOL&quot;: boolean,
+         &quot;BS&quot;: [ blob ],
+         &quot;L&quot;: [
+            &quot;AttributeValue&quot;
+         ],
+         &quot;M&quot;: {
+            &quot;string&quot; : &quot;AttributeValue&quot;
+         },
+         &quot;N&quot;: &quot;string&quot;,
+         &quot;NS&quot;: [ &quot;string&quot; ],
+         &quot;NULL&quot;: boolean,
+         &quot;S&quot;: &quot;string&quot;,
+         &quot;SS&quot;: [ &quot;string&quot; ]
+      }
+   },
+   &quot;ReturnConsumedCapacity&quot;: &quot;string&quot;,
+   &quot;ReturnItemCollectionMetrics&quot;: &quot;string&quot;,
+   &quot;ReturnValues&quot;: &quot;string&quot;,
+   &quot;TableName&quot;: &quot;string&quot;,
+   &quot;UpdateExpression&quot;: &quot;string&quot;
+}
+</code></pre>
+<p>参数说明：</p>
+<ul>
+<li>Key: 主键，用于定位项目</li>
+<li>TableName：表名 （最小 3. 最大 255）</li>
+<li>Expected：</li>
+<li>AttributeUpdates： 遗留参数，已废弃</li>
+<li>ConditionalOperator： 遗留参数，已废弃</li>
+<li>ConditionExpression：条件表达式（仅在特定 ConditionExpression 的计算结果为 true 时成功完成）</li>
+<li>ExpressionAttributeNames：条件表达式的名称的别名，比如 date 为保留字，可用别名定义为 #d</li>
+<li>ExpressionAttributeValues：条件表达式的值</li>
+<li>ReturnConsumedCapacity：显示使用的写入容量单位数
+<ul>
+<li>TOTAL 会返回由表及其所有global secondary index占用的写入容量；</li>
+<li>INDEXES 仅返回由global secondary index占用的写入容量；</li>
+<li>NONE 表示您不需要返回任何占用容量统计数据。</li>
+</ul>
+</li>
+<li>ReturnValues: 更新后返回的数据.
+<ul>
+<li>NONE - 如果没有特别说明，返回None (这个是默认值)</li>
+<li>ALL_OLD - 按在进行更新之前的情况，返回整个项目。</li>
+<li>ALL_NEW - 按在进行更新之后的情况，返回整个项目。</li>
+<li>UPDATED_OLD - 按在进行更新之前的情况，仅返回更新的值。</li>
+<li>UPDATED_NEW - 按在进行更新之后的情况，仅返回更新的值。</li>
+</ul>
+</li>
+<li>UpdateExpression：指定要修改的属性以及这些属性的新值，更新表达式还指定如何修改属性。下面是更新表达式的语法摘要：</li>
+</ul>
+<pre><code>update-expression ::=
+SET set-action , ...
+| REMOVE remove-action , ...  
+| ADD add-action , ...
+| DELETE delete-action , ...  
+</code></pre>
+<p>更新表达式由多个部分组成。每个部分以一个 SET、REMOVE、ADD 或 DELETE 关键字开头。您可在更新表达式中按任意顺序包含其中任意部分。但是，每个部分关键字只能出现一次。您可以同时修改多个属性。以下是更新表达式的一些示例：</p>
+<ul>
+<li>SET list[0] = :val1</li>
+<li>REMOVE #m.nestedField1, #m.nestedField2</li>
+<li>ADD aNumber :val2, anotherNumber :val3</li>
+<li>DELETE aSet :val4</li>
+</ul>
+<p>以下示例显示了带有多个部分的单个更新表达式：</p>
+<pre><code class="language-json">SET list[0] = :val1 REMOVE #m.nestedField1, #m.nestedField2 ADD aNumber :val2, anotherNumber :val3 DELETE aSet :val4
+</code></pre>
+<p>我们可以在更新表达式中使用任意属性名称，<em>第一个字符是 a-z 或 A-Z</em>，<em>第二个字符（如果存在）是 a-z、A-Z 或 0-9</em>。<br>
+如果属性名称不满足此要求，则需要将表达式属性名称定义为占位符。更多信息参考（表达式属性名称）。</p>
+<p>要在更新表达式中指定文本值，可以使用表达式属性值。更多信息参考（表达式属性值）。</p>
+<hr>
+<h5 id="set">SET</h5>
+<p>在更新表达式中使用 SET 操作可将一个或多个属性与值添加到项目。如果这些属性已存在，则更新。还可以使用 SET 来加或减数字类型的属性。对多个属性执行 SET 操作，使用逗号分隔。</p>
+<p>set语法如下：</p>
+<pre><code>set-action ::=
+    path = value
+
+value ::=
+    operand
+    | operand '+' operand
+    | operand '-' operand
+
+operand ::=
+    path | function
+</code></pre>
+<ul>
+<li>path 元素是项目的文档路径。(比如项目中info 为字典 info 中 a 的路径为info['a'])</li>
+<li>operand 元素可以为项目的文档路径，或者为函数。</li>
+</ul>
+<p>SET 操作支持以下函数：</p>
+<ul>
+<li>if_not_exists (path, operand) - 如果项目在指定 path 中不包含属性，则 if_not_exists 的求值结果为 operand；否则求值结果为 path。您可以使用此函数来避免覆盖项目中已存在的属性。</li>
+<li>list_append (operand, operand) - 此函数的求值结果为列表，新元素将添加到列表中。新元素必须包含在列表中，例如要向列表中添加 2，操作数将成为 [2]。您可以通过反转操作数的顺序，将新元素附加到列表的开头或结尾。</li>
+</ul>
+<p>以下是在这些函数中使用 SET 操作的一些示例。</p>
+<p>如果属性已存在，则以下示例不执行任何操作；否则它会将属性设置为默认值。</p>
+<pre><code>SET Price = if_not_exists(Price, 100)
+</code></pre>
+<p>以下示例将新元素添加到 FiveStar 评论列表。表达式属性名称 #pr 是 ProductReviews；属性值 :r 是只包含一个元素的列表。如果列表之前有两个元素 [0] 和 [1]，则新元素将为 [2]。</p>
+<pre><code>SET #pr.FiveStar = list_append(#pr.FiveStar, :r)
+</code></pre>
+<p>以下示例将另一个元素添加到 FiveStar 评论列表中，但此时元素将附加到列表开头的位置 [0] 处。列表中的所有其他元素将会移动一位。</p>
+<pre><code>SET #pr.FiveStar = list_append(:r, #pr.FiveStar)
+</code></pre>
+<h5 id="remove">REMOVE</h5>
+<p>在更新表达式中使用 REMOVE 操作可从项目中删除一个或多个元素。要执行多个 REMOVE 操作，请使用逗号分隔。</p>
+<p>下面是更新表达式中的 REMOVE 的语法摘要。唯一的操作数是您要删除的属性的文档路径：</p>
+<pre><code>remove-action ::=
+    path
+</code></pre>
+<p>以下是使用 REMOVE 操作的更新表达式示例。从项目中删除多个属性：</p>
+<pre><code>REMOVE Title, RelatedItems[2], Pictures.RearView
+</code></pre>
+<p>对列表元素使用 REMOVE</p>
+<p>当删除现有列表元素时，剩余的元素将会移位。例如，考虑以下列表：</p>
+<pre><code>MyNumbers: { [&quot;Zero&quot;,&quot;One&quot;,&quot;Two&quot;,&quot;Three&quot;,&quot;Four&quot;] }
+</code></pre>
+<p>列表包含元素 [0]、[1]、[2]、[3] 和 [4]。现在，我们使用 REMOVE 操作删除两个元素：</p>
+<pre><code>REMOVE MyNumbers[1], MyNumbers[3]
+</code></pre>
+<p>剩余的元素会向右移位，生成带有元素 [0]、[1] 和 [2] 的列表，每个元素具有以下数据：</p>
+<pre><code>MyNumbers: { [&quot;Zero&quot;,&quot;Two&quot;,&quot;Four&quot;] }
+</code></pre>
+<blockquote>
+<p>如果您使用 REMOVE 来删除超出列表中最后一个元素位置的不存在项目，则将不执行任何操作：也就是不删除任何数据。例如，以下表达式对 MyNumbers 列表没有任何效果：</p>
+</blockquote>
+<pre><code>REMOVE MyNumbers[11]
+</code></pre>
+<h5 id="add">ADD</h5>
+<p><em>ADD 操作仅支持数字和集数据类型。一般而言，我们建议使用 SET 而不是 ADD。</em></p>
+<p>在更新表达式中使用 ADD 可执行以下任一操作：</p>
+<ul>
+<li>如果属性尚不存在，则将新属性及其值添加到项目。</li>
+<li>如果属性已存在，则 ADD 的行为取决于属性的数据类型：</li>
+<li>如果属性是数字，并且添加的值也是数字，则该值将按数学运算与现有属性相加。（如果该值为负数，则从现有属性减去该值。）</li>
+<li>如果属性是集，并且您添加的值也是集，则该值将附加到现有集中。</li>
+<li>要执行多个 ADD 操作，请使用逗号分隔。</li>
+</ul>
+<p>在以下语法摘要中：</p>
+<ul>
+<li>path 元素是属性的文档路径。属性必须为数字或集数据类型。</li>
+<li>value 元素是要与属性相加的值（对于数字数据类型），或者是要附加到属性中的集（对于集类型）。</li>
+</ul>
+<pre><code>add-action ::=
+    path value
+</code></pre>
+<p>以下是使用 add 操作的一些更新表达式示例。</p>
+<p>以下示例对数字进行加运算。表达式属性值 :n 是数字，此值将与 Price 相加。</p>
+<pre><code>ADD Price :n
+</code></pre>
+<p>以下示例将一个或多个值添加到 Color 集。表达式属性值 :c 是字符串集。</p>
+<pre><code>ADD Color :c
+</code></pre>
+<h5 id="delete">DELETE</h5>
+<p><em>DELETE 操作只支持集数据类型。</em></p>
+<p>在更新表达式中使用 DELETE 操作可从集中删除元素。要执行多个 DELETE 操作，请使用逗号分隔。</p>
+<p>在以下语法摘要中：</p>
+<ul>
+<li>path 元素是属性的文档路径。该属性必须是集数据类型。</li>
+<li>value 元素是集中要删除的元素。</li>
+</ul>
+<pre><code>delete-action ::=
+    path value
+</code></pre>
+<p>以下示例使用 DELETE 操作从 Color 集中删除元素。表达式属性值 :c 是字符串集。</p>
+<pre><code>DELETE Color :c
+</code></pre>
+<h4 id="updateitem-示例如下">UpdateItem 示例如下：</h4>
+<pre><code class="language-json">{
+    TableName: &quot;Music&quot;,
+    Key: {
+        &quot;Artist&quot;:&quot;No One You Know&quot;,
+        &quot;SongTitle&quot;:&quot;Call Me Today&quot;
+    },
+    UpdateExpression: &quot;SET RecordLabel = :label&quot;,
+    ExpressionAttributeValues: {
+        &quot;:label&quot;: &quot;Global Records&quot;
+    }
+}
+</code></pre>
+<ul>
+<li>UpdateItem必须指定要修改的项目的 Key 属性和一个用于指定属性值的 UpdateExpression。</li>
+<li>UpdateItem 替换整个项目，而不是替换单个属性。</li>
+<li>UpdateItem 的行为与“upsert”操作的行为类似：如果项目位于表中，则更新项目，否则添加（插入）新项目。</li>
+<li>UpdateItem只能修改单个项目，如果要修改多个项目，则必须使用多个 UpdateItem 操作。</li>
+<li>UpdateItem 支持条件写入，在此情况下，操作仅在特定 ConditionExpression 的计算结果为 true 时成功完成。例如，除非歌曲的价格大于或等于 2.00，否则以下 UpdateItem 操作不会执行更新：</li>
+</ul>
+<h4 id="条件写入">条件写入</h4>
+<p>要执行条件更新，请使用更新表达式以及条件表达式来执行 UpdateItem 操作。要继续执行操作，条件表达式的求值结果必须为 true；否则操作将失败。</p>
+<p>假设您要将某项目的价格提高一定金额，如 :amt，但前提是结果不得超过最高价。为此，您可以计算当前允许提价的最高价，然后从最高价中减去提高的金额 :amt。将结果定义为 :limit，然后使用以下条件表达式：</p>
+<p>条件表达式：Price &lt;= :limit)<br>
+更新表达式：SET Price = Price + :amt<br>
+现在假设您要为项目设置前视图图片，不过前提是该项目还没有任何图片，不希望覆盖任何现有元素。您可以使用以下表达式来执行操作：</p>
+<p>更新表达式：SET Pictures.FrontView = :myUR<br>
+（假设 :myURL 是项目图片的位置，例如 http://example.com/picture.jpg。）<br>
+条件表达式：attribute_not_exists(Pictures.FrontView)</p>
+<pre><code class="language-python">{
+    TableName: &quot;Music&quot;,
+    Key: {
+        &quot;Artist&quot;:&quot;No One You Know&quot;,
+        &quot;SongTitle&quot;:&quot;Call Me Today&quot;
+    },
+    UpdateExpression: &quot;SET RecordLabel = :label&quot;,
+    ConditionExpression: &quot;Price &gt;= :p&quot;,
+    ExpressionAttributeValues: {
+        &quot;:label&quot;: &quot;Global Records&quot;,
+        &quot;:p&quot;: 2.00
+    }
+}
+</code></pre>
+<ul>
+<li>UpdateItem 还支持原子计数器或类型为 Number 的属性（可递增或递减）。原子计数器在很多方面都类似于 SQL 数据库中的顺序生成器、身份列或自递增字段。</li>
+</ul>
+<p>以下是一个 UpdateItem 操作的示例，它初始化一个新属性 (Plays) 来跟踪歌曲的已播放次数：</p>
+<pre><code class="language-json">{
+    TableName: &quot;Music&quot;,
+    Key: {
+        &quot;Artist&quot;:&quot;No One You Know&quot;,
+        &quot;SongTitle&quot;:&quot;Call Me Today&quot;
+    },
+    UpdateExpression: &quot;SET Plays = :val&quot;,
+    ExpressionAttributeValues: {
+        &quot;:val&quot;: 0
+    },
+    ReturnValues: &quot;UPDATED_NEW&quot;
+}
+</code></pre>
+<p>ReturnValues 参数设置为 UPDATED_NEW，这将返回已更新的任何属性的新值。在此示例中，它返回 0（零）。</p>
+<p>当某人播放此歌曲时，可使用以下 UpdateItem 操作来将 Plays 增加 1：</p>
+<pre><code>{
+    TableName: &quot;Music&quot;,
+    Key: {
+        &quot;Artist&quot;:&quot;No One You Know&quot;,
+        &quot;SongTitle&quot;:&quot;Call Me Today&quot;
+    },
+    UpdateExpression: &quot;SET Plays = Plays + :incr&quot;,
+    ExpressionAttributeValues: {
+        &quot;:incr&quot;: 1
+    },
+    ReturnValues: &quot;UPDATED_NEW&quot;
+}
+</code></pre>
+<h4 id="总结一下">总结一下</h4>
+<ul>
+<li>UpdateItem 一次只能更新一个项目</li>
+<li>UpdateItem 更新更新整个项目而不是只修改特点的值</li>
+<li>UpdateItem 支持条件写入</li>
+</ul>
+<blockquote>
+<p>这一节我们介绍了DynamoDB 项目的更新操作，下一节我们将介绍项目的删除操作（索引的查询又要延后了。。</p>
+</blockquote>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzAwNjI5MjAzNw==&amp;mid=2655751962&amp;idx=1&amp;sn=9d3e387c3fa946305598bc269b40fd3e&amp;chksm=80b0b830b7c73126364b48cb33915d9a51552327afb4cc73388984f5449f99871fd44465baa6#rd">原文链接</a></p>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#update-%E4%BF%AE%E6%94%B9%E8%A1%A8%E4%B8%AD%E7%9A%84%E6%95%B0%E6%8D%AE">update (修改表中的数据)</a>
+<ul>
+<li><a href="#sql">SQL</a></li>
+<li><a href="#dynamodb">DynamoDB</a><br>
+*
+<ul>
+<li><a href="#set">SET</a></li>
+<li><a href="#remove">REMOVE</a></li>
+<li><a href="#add">ADD</a></li>
+<li><a href="#delete">DELETE</a></li>
+<li><a href="#updateitem-%E7%A4%BA%E4%BE%8B%E5%A6%82%E4%B8%8B">UpdateItem 示例如下：</a></li>
+<li><a href="#%E6%9D%A1%E4%BB%B6%E5%86%99%E5%85%A5">条件写入</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93%E4%B8%80%E4%B8%8B">总结一下</a></li>
+</ul>
+</li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/Amazon-DynamoDB-query-and-scan/">
+              <h3 class="post-title">
+                Amazon DynamoDB 入门6：query 和 scan
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

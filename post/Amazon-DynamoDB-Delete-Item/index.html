@@ -1,0 +1,450 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Amazon DynamoDB 入门8：删除项目 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Amazon DynamoDB 入门8：删除项目 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="从表中删除数据
+
+上一篇介绍了DynamoDB 的更新，这一篇将会介绍项目删除操作和dynamoab-py
+
+在 SQL 中，DELETE 语句从表中删除一个或多个行。DynamoDB 使用 DeleteItem 操作一次删除一个项目。
+S..." />
+    <meta name="keywords" content="python,DynamoDB,nosql,database,AWS" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Amazon DynamoDB 入门8：删除项目
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-01-03
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/BG0jvEzhDF/" class="post-tag">
+                  # DynamoDB
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/vnysOkbn9w/" class="post-tag">
+                  # nosql
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/SS95MaqZ5J/" class="post-tag">
+                  # database
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/8Np8k9SC3Nz/" class="post-tag">
+                  # AWS
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="从表中删除数据">从表中删除数据</h1>
+<blockquote>
+<p>上一篇介绍了DynamoDB 的更新，这一篇将会介绍项目删除操作和dynamoab-py</p>
+</blockquote>
+<p>在 SQL 中，DELETE 语句从表中删除一个或多个行。<em>DynamoDB 使用 DeleteItem 操作一次删除一个项目。</em></p>
+<h3 id="sql">SQL</h3>
+<p>在 SQL 中，可使用 DELETE 语句删除一个或多个行。WHERE 子句确定要修改的行。示例如下：</p>
+<p>DELETE FROM Music<br>
+WHERE Artist = 'The Acme Band' AND SongTitle = 'Look Out, World';<br>
+我们可以修改 WHERE 子句以删除多个行。例如，删除某个特殊艺术家的所有歌曲，如下所示：</p>
+<p>DELETE FROM Music WHERE Artist = 'The Acme Band'</p>
+<h4 id="note">Note</h4>
+<p>如果省略 WHERE 子句，则数据库会尝试从表中删除所有行。</p>
+<h3 id="dynamodb">DynamoDB</h3>
+<p>在 DynamoDB 中，可使用 DeleteItem 操作修改单个项目。</p>
+<p>(http://docs.aws.amazon.com/zh_cn/amazondynamodb/latest/APIReference/API_DeleteItem.html?shortFooter=true)[API 语法如下]：</p>
+<pre><code class="language-json">{
+   &quot;ConditionExpression&quot;: &quot;string&quot;,
+   &quot;ExpressionAttributeNames&quot;: {
+      &quot;string&quot; : &quot;string&quot;
+   },
+   &quot;ExpressionAttributeValues&quot;: {
+      &quot;string&quot; : {
+         &quot;B&quot;: blob,
+         &quot;BOOL&quot;: boolean,
+         &quot;BS&quot;: [ blob ],
+         &quot;L&quot;: [
+            &quot;AttributeValue&quot;
+         ],
+         &quot;M&quot;: {
+            &quot;string&quot; : &quot;AttributeValue&quot;
+         },
+         &quot;N&quot;: &quot;string&quot;,
+         &quot;NS&quot;: [ &quot;string&quot; ],
+         &quot;NULL&quot;: boolean,
+         &quot;S&quot;: &quot;string&quot;,
+         &quot;SS&quot;: [ &quot;string&quot; ]
+      }
+   },
+   &quot;Key&quot;: {
+      &quot;string&quot; : {
+         &quot;B&quot;: blob,
+         &quot;BOOL&quot;: boolean,
+         &quot;BS&quot;: [ blob ],
+         &quot;L&quot;: [
+            &quot;AttributeValue&quot;
+         ],
+         &quot;M&quot;: {
+            &quot;string&quot; : &quot;AttributeValue&quot;
+         },
+         &quot;N&quot;: &quot;string&quot;,
+         &quot;NS&quot;: [ &quot;string&quot; ],
+         &quot;NULL&quot;: boolean,
+         &quot;S&quot;: &quot;string&quot;,
+         &quot;SS&quot;: [ &quot;string&quot; ]
+      }
+   },
+   &quot;ReturnConsumedCapacity&quot;: &quot;string&quot;,
+   &quot;ReturnItemCollectionMetrics&quot;: &quot;string&quot;,
+   &quot;ReturnValues&quot;: &quot;string&quot;,
+   &quot;TableName&quot;: &quot;string&quot;
+}
+</code></pre>
+<p>参数说明：</p>
+<ul>
+<li>Key: 主键，用于定位项目</li>
+<li>TableName：表名 （最小 3. 最大 255）</li>
+<li>ConditionExpression：条件表达式（仅在特定 ConditionExpression 的计算结果为 true 时成功完成）</li>
+<li>ExpressionAttributeNames：条件表达式的名称的别名，比如 date 为保留字，可用别名定义为 #d</li>
+<li>ExpressionAttributeValues：条件表达式的值</li>
+<li>ReturnConsumedCapacity：显示使用的写入容量单位数
+<ul>
+<li>TOTAL 会返回由表及其所有global secondary index占用的写入容量；</li>
+<li>INDEXES 仅返回由global secondary index占用的写入容量；</li>
+<li>NONE 表示您不需要返回任何占用容量统计数据。</li>
+</ul>
+</li>
+<li>ReturnValues: 更新后返回的数据.
+<ul>
+<li>NONE - 如果没有特别说明，返回None (这个是默认值)</li>
+<li>ALL_OLD - 按在进行更新之前的情况，返回整个项目。</li>
+</ul>
+</li>
+<li>ReturnItemCollectionMetrics： Determines whether item collection metrics are returned. If set to SIZE , the response includes statistics about item collections, if any, that were modified during the operation are returned in the response. If set to NONE (the default), no statistics are returned.</li>
+</ul>
+<p>(http://boto3.readthedocs.io/en/stable/reference/services/dynamodb.html?highlight=dynamodb#DynamoDB.Table.delete_item)[boto3语法如下]</p>
+<pre><code class="language-python">response = table.delete_item(
+    Key={
+        'string': 'string'|123|Binary(b'bytes')|True|None|set(['string'])|set([123])|set([Binary(b'bytes')])|[]|{}
+    },
+    ConditionalOperator='AND'|'OR',
+    ReturnValues='NONE'|'ALL_OLD'|'UPDATED_OLD'|'ALL_NEW'|'UPDATED_NEW',
+    ReturnConsumedCapacity='INDEXES'|'TOTAL'|'NONE',
+    ReturnItemCollectionMetrics='SIZE'|'NONE',
+    ConditionExpression=Attr('myattribute').eq('myvalue'),
+    ExpressionAttributeNames={
+        'string': 'string'
+    },
+    ExpressionAttributeValues={
+        'string': 'string'|123|Binary(b'bytes')|True|None|set(['string'])|set([123])|set([Binary(b'bytes')])|[]|{}
+    }
+)
+</code></pre>
+<p>在 DynamoDB 中，可使用 DeleteItem 操作从表中删除数据（一次删除一个项目）。必须指定项目的主键值。示例如下：</p>
+<pre><code class="language-python">{
+    TableName: &quot;Music&quot;,
+    Key: {
+        Artist: &quot;The Acme Band&quot;,
+        SongTitle: &quot;Look Out, World&quot;
+    }
+}
+</code></pre>
+<h4 id="note-2">Note</h4>
+<p>除了 DeleteItem 之外，Amazon DynamoDB 还支持同时删除多个项目的 BatchWriteItem 操作。</p>
+<p>DeleteItem 支持条件写入，在此情况下，操作仅在特定 ConditionExpression 的计算结果为 true 时成功完成。例如，以下 DeleteItem 操作仅在项目具有 RecordLabel 属性时删除项目：</p>
+<pre><code class="language-python">{
+    TableName: &quot;Music&quot;,
+    Key: {
+        Artist: &quot;The Acme Band&quot;,
+        SongTitle: &quot;Look Out, World&quot;
+    },
+   ConditionExpression: &quot;attribute_exists(RecordLabel)&quot;
+}
+</code></pre>
+<p>删除操作就这么简单，下边是福利时间。</p>
+<p>是不是每次用boto3 操作DynamoDB 都有种痛不欲生的感觉，下边我们介绍一个新工具。</p>
+<h3 id="dynamodb-py"><a href="https://github.com/gusibi/dynamodb-p">dynamodb-py</a></h3>
+<p>dynamodb-py  是模仿sqlalchemy 编写的DynamoDB ORM 它的使用方法特别简单，下边来看几个示例：</p>
+<h5 id="表的操作">表的操作</h5>
+<pre><code class="language-python">from dynamodb.model import Model
+from dynamodb.fields import CharField, IntegerField, FloatField, DictField
+from dynamodb.table import Table
+
+class Movies(Model):
+
+    __table_name__ = 'Movies'
+
+    ReadCapacityUnits = 10
+    WriteCapacityUnits = 10
+
+    year = IntegerField(name='year', hash_key=True)
+    title = CharField(name='title', range_key=True)
+    rating = FloatField(name='rating', indexed=True)
+    rank = IntegerField(name='rank', indexed=True)
+    release_date = CharField(name='release_date')
+    info = DictField(name='info', default={})
+
+# create_table
+Table(Movies()).create()
+
+# update_table
+Table(Movies()).update()
+
+# delete_table
+Table(Movies()).delete()
+
+</code></pre>
+<h5 id="查询项目">查询项目</h5>
+<pre><code class="language-python"># query without index
+items = Movies.query().where(Movies.year.eq(year)).all()
+items = Movies.query().where(Movies.year.eq(1985)).limit(10).all()
+items = (Movies.query()
+        .where(Movies.year.eq(1992),
+               Movies.title.between('A', 'L'))
+        .all())
+
+# query with index
+items = (Movies.query()
+        .where(Movies.year.eq(1992),
+               Movies.title.between('A', 'L'))
+        .order_by(Movies.rating, asc=False)
+        .all())
+</code></pre>
+<h5 id="更新项目">更新项目</h5>
+<pre><code class="language-python">item = Movies.get(year=year, title=title)
+
+item.update(rank=2467, rating=7.1)
+</code></pre>
+<h5 id="删除项目">删除项目</h5>
+<pre><code class="language-python">item = Movies.get(year=year, title=title)
+
+item.delete()
+</code></pre>
+<p>就是这么方便。</p>
+<p>不过<a href="https://github.com/gusibi/dynamodb-p">dynamodb-py</a> 还在开发中，欢迎试用，也欢迎贡献自己的力量。</p>
+<blockquote>
+<p>终于，下一节介绍索引的查询</p>
+</blockquote>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E4%BB%8E%E8%A1%A8%E4%B8%AD%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE">从表中删除数据</a><br>
+*
+<ul>
+<li><a href="#sql">SQL</a>
+<ul>
+<li><a href="#note">Note</a></li>
+</ul>
+</li>
+<li><a href="#dynamodb">DynamoDB</a>
+<ul>
+<li><a href="#note-2">Note</a></li>
+</ul>
+</li>
+<li><a href="#dynamodb-py">dynamodb-py</a><br>
+*
+<ul>
+<li><a href="#%E8%A1%A8%E7%9A%84%E6%93%8D%E4%BD%9C">表的操作</a></li>
+<li><a href="#%E6%9F%A5%E8%AF%A2%E9%A1%B9%E7%9B%AE">查询项目</a></li>
+<li><a href="#%E6%9B%B4%E6%96%B0%E9%A1%B9%E7%9B%AE">更新项目</a></li>
+<li><a href="#%E5%88%A0%E9%99%A4%E9%A1%B9%E7%9B%AE">删除项目</a></li>
+</ul>
+</li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/python-data-structures/">
+              <h3 class="post-title">
+                Python Data Structures
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

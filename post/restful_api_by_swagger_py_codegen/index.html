@@ -1,0 +1,636 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>使用swagger 生成 Flask RESTful API | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="使用swagger 生成 Flask RESTful API | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="什么是 RESTful
+什么是REST
+REST（英文：Representational State Transfer，又称具象状态传输）是Roy Thomas Fielding博士于2000年在他的博士论文[1] 中提出来的一种万维网软件..." />
+    <meta name="keywords" content="python,restful,swagger" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              使用swagger 生成 Flask RESTful API
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-07-11
+              </span>
+              <span>
+                15 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/sPBsVeNnoL/" class="post-tag">
+                  # restful
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/T9A_O6Ryeb-/" class="post-tag">
+                  # swagger
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h2 id="什么是-restful">什么是 RESTful</h2>
+<h3 id="什么是rest">什么是REST</h3>
+<p>REST（英文：Representational State Transfer，又称具象状态传输）是Roy Thomas Fielding博士于2000年在他的博士论文[1] 中提出来的一种万维网软件架构风格，目的是便于不同软件/程序在网络（例如互联网）中互相传递信息。</p>
+<p>REST 的核心是可编辑的资源及其集合，用符合 Atom 文档标准的 Feed 和 Entry 表示。每个资源或者集合有一个惟一的 URI。系统以资源为中心，构建并提供一系列的 Web 服务。</p>
+<p>在 REST 中，开发人员显式地使用 HTTP 方法，对系统资源进行创建、读取、更新和删除的操作：</p>
+<ul>
+<li>使用 POST 方法在服务器上创建资源</li>
+<li>使用 GET 方法从服务器检索某个资源或者资源集合</li>
+<li>使用 PUT 方法对服务器的现有资源进行更新</li>
+<li>使用 DELETE 方法删除服务器的某个资源</li>
+</ul>
+<p>如果一个架构符合REST原则，就可以称它为<code>RESTful架构</code>。</p>
+<h4 id="restful-api-设计定义">RESTful API 设计定义</h4>
+<p>以下是几个RESTful API的几个概念。</p>
+<ul>
+<li>资源（Resource）：系统上的所有事物都被抽象为资源（一篇文章，一张照片，一段语音）</li>
+<li>集合（Collection）：一组资源的合辑称为集合（几篇文章，几张照片）</li>
+<li>路径（Endpoint）：路径又称”终点“，表示API的具体网址（每个网址代表一种资源）</li>
+</ul>
+<p>那么一个设计良好的RESTful API应该遵循哪些原则呢？</p>
+<h5 id="协议">协议</h5>
+<p>API与用户的通信协议总是使用HTTPs协议。</p>
+<h5 id="域名">域名</h5>
+<p>应该尽量将API部署在专用域名，例如：</p>
+<pre><code class="language-sh">https://apis.gusibi.com
+</code></pre>
+<h5 id="api地址和版本">API地址和版本</h5>
+<p>在url中指定API版本。比如：</p>
+<pre><code class="language-sh">https://apis.gusibi.com/v1
+</code></pre>
+<h5 id="以资源为中心设计url">以资源为中心设计URL</h5>
+<p>资源是RESTful API的核心元素，所有的操作都是针对特定资源进化的。而资源就是URL表示的，所以简洁、清晰、结构化的URL设计是至关重要的。<br>
+在RESTful 架构中，每个网址代表一种资源（resource），所以网址中不能有动词，只能有名词，而且所用的名词往往与数据库的表格名对应。我们来看一下 Github 的例子：</p>
+<pre><code class="language-sh">/users/:username/repos
+/users/:org/repos
+/repos/:owner/:repo
+/repos/:owner/:repo/tags
+/repos/:owner/:repo/branches/:branch
+</code></pre>
+<h5 id="使用正确的method">使用正确的Method</h5>
+<p>对于资源的具体操作类型，使用HTTP method 表示。<br>
+以下是常用的HTTP方法。</p>
+<ul>
+<li>GET：从服务器取出资源</li>
+<li>POST：在服务器新建一个资源</li>
+<li>PUT：在服务器更新资源（客户端提供改变后的完整资源</li>
+<li>PATCH：在服务器更新资源（客户端只提供改变了属性）</li>
+<li>DELETE：从服务器删除资源</li>
+</ul>
+<p>还是使用 github 的例子：</p>
+<pre><code class="language-sh">GET /repos/:owner/:repo/issues
+GET /repos/:owner/:repo/issues/:number
+POST /repos/:owner/:repo/issues
+PATCH /repos/:owner/:repo/issues/:number
+DELETE /repos/:owner/:repo
+</code></pre>
+<h5 id="正确的过滤信息filtering">正确的过滤信息（filtering）</h5>
+<p>如果记录数量很多，服务器不能都将他们返回给用户。API应该提供参数，过滤返回结果。</p>
+<p>下边是一些是、常见的参数。</p>
+<ul>
+<li>?limit=10: 指定返回记录的数量</li>
+<li>?offset=10：指定返回记录的开始位置</li>
+<li>?page=2&amp;per_page=100：：指定第几页，以及每页的记录数。</li>
+<li>?sortby=name&amp;order=asc：指定返回结果按照哪个属性排序，以及排序顺序。</li>
+<li>?animal_type_id=1：指定筛选条件</li>
+</ul>
+<h5 id="选择合适的状态码">选择合适的状态码</h5>
+<p>HTTP 应答中，需要带一个很重要的字段：status code。它说明了请求的大致情况，是否正常完成、需要进一步处理、出现了什么错误，对于客户端非常重要。状态码都是三位的整数，大概分成了几个区间：</p>
+<p>2XX：请求正常处理并返回<br>
+3XX：重定向，请求的资源位置发生变化<br>
+4XX：客户端发送的请求有错误<br>
+5XX：服务器端错误</p>
+<p>常见的状态码有以下几种：</p>
+<blockquote>
+<p>200 OK - [GET]：服务器成功返回用户请求的数据，该操作是幂等的（Idempotent）。<br>
+201 CREATED - [POST/PUT/PATCH]：用户新建或修改数据成功。<br>
+204 NO CONTENT - [DELETE]：用户删除数据成功。<br>
+400 INVALID REQUEST - [POST/PUT/PATCH]：用户发出的请求有错误，服务器没有进行新建或修改数据的操作，该操作是幂等的。<br>
+401 Unauthorized - [<em>]：表示用户没有权限（令牌、用户名、密码错误）。<br>
+403 Forbidden - [</em>] 表示用户得到授权（与401错误相对），但是访问是被禁止的。<br>
+404 NOT FOUND - [<em>]：用户发出的请求针对的是不存在的记录，服务器没有进行操作，该操作是幂等的。<br>
+406 Not Acceptable - [GET]：用户请求的格式不可得（比如用户请求JSON格式，但是只有XML格式）。<br>
+410 Gone -[GET]：用户请求的资源被永久删除，且不会再得到的。<br>
+422 Unprocesable entity - [POST/PUT/PATCH] 当创建一个对象时，发生一个验证错误。<br>
+500 INTERNAL SERVER ERROR - [</em>]：服务器发生错误，用户将无法判断发出的请求是否成功。</p>
+</blockquote>
+<h5 id="返回结果">返回结果</h5>
+<p>针对不同操作，服务器向用户返回的结果应该符合以下规范。</p>
+<blockquote>
+<p>GET /collection：返回资源对象的列表（数组）<br>
+GET /collection/resource：返回单个资源对象<br>
+POST /collection：返回新生成的资源对象<br>
+PUT /collection/resource：返回完整的资源对象<br>
+PATCH /collection/resource：返回完整的资源对象<br>
+DELETE /collection/resource：返回一个空文档</p>
+</blockquote>
+<h5 id="错误处理error-handling">错误处理（Error handling）</h5>
+<p>如果出错的话，在response body 中通过 message 给出明确的信息。如果状态码是4xx，就应该向用户返回出错信息。</p>
+<h5 id="良好的文档">良好的文档</h5>
+<p>文档应该是规范的API的重要的组成部分，没有文档的API是难以给他人使用的，也是不利于维护的。</p>
+<h5 id="其它">其它</h5>
+<ul>
+<li>使用 OAuth2.0 鉴权</li>
+<li>尽量使用JSON作为返回的数据格式</li>
+<li>限流</li>
+</ul>
+<p>对应上述规则，我们并不能保证其它的API提供者也会遵守，特别是文档，有很大一部分API提供者给出的文档是pdf或者word文档，这是因为在API的迭代开发过程中，文档更新会比较麻烦。</p>
+<p>swagger帮API使用者和开发者纠正了这个问题。</p>
+<h2 id="什么是swagger">什么是swagger</h2>
+<p>Swagger是一个简单但功能强大的API表达工具。改框架为创建JSON或YAML格式的RESTful API 文档提供了OpenAPI规范。swagger文档可由各种编程语言处理，可以在软件开发周期中嵌入源代码控制系统中，以便进行版本管理。使用Swagger生成API，我们可以得到交互式文档，自动生成代码的SDK以及API的发现特性等。</p>
+<h3 id="如何编写api文档">如何编写API文档</h3>
+<p>我们可以选择使用JSON或者YAML来编写API文档。文档示例如下：</p>
+<p>json 格式文档：</p>
+<pre><code class="language-json">{
+    &quot;swagger&quot;: &quot;2.0&quot;,
+    &quot;info&quot;: {
+        &quot;version&quot;: &quot;1.0.0&quot;,
+        &quot;title&quot;: &quot;Simple API&quot;,
+        &quot;description&quot;: &quot;A simple API to learn how to write OpenAPI Specification&quot;
+    },
+    &quot;schemes&quot;: [
+        &quot;https&quot;
+    ],
+    &quot;host&quot;: &quot;simple.api&quot;,
+    &quot;basePath&quot;: &quot;/openapi101&quot;,
+    &quot;paths&quot;: {
+        &quot;/persons&quot;: {
+            &quot;get&quot;: {
+                &quot;summary&quot;: &quot;Gets some persons&quot;,
+                &quot;description&quot;: &quot;Returns a list containing all persons.&quot;,
+                &quot;responses&quot;: {
+                    &quot;200&quot;: {
+                        &quot;description&quot;: &quot;A list of Person&quot;,
+                        &quot;schema&quot;: {
+                            &quot;type&quot;: &quot;array&quot;,
+                            &quot;items&quot;: {
+                                &quot;properties&quot;: {
+                                    &quot;firstName&quot;: {
+                                        &quot;type&quot;: &quot;string&quot;
+                                    },
+                                    &quot;lastName&quot;: {
+                                        &quot;type&quot;: &quot;string&quot;
+                                    },
+                                    &quot;username&quot;: {
+                                        &quot;type&quot;: &quot;string&quot;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+</code></pre>
+<p>yaml 格式文档：</p>
+<pre><code class="language-yml">swagger: &quot;2.0&quot;
+
+info:
+  version: 1.0.0
+  title: Simple API
+  description: A simple API to learn how to write OpenAPI Specification
+
+schemes:
+  - https
+host: simple.api
+basePath: /openapi101
+
+paths:
+  /persons:
+    get:
+      summary: Gets some persons
+      description: Returns a list containing all persons.
+      responses:
+        200:
+          description: A list of Person
+          schema:
+            type: array
+            items:
+              required:
+                - username
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                username:
+                  type: string
+</code></pre>
+<p>可以发现，yaml格式的文档比json格式的更清晰，可读性更高，推荐使用yaml格式书写文档。</p>
+<p>swagger 官网提供了 <a href="http://editor.swagger.io/#/">swagger editor: http://editor.swagger.io/#/</a>，你可以在这个编辑器中创建或导入文档，并在交互式环境中浏览它。</p>
+<p>以下是您导入 leads.yaml 定义后的 Swagger Editor UI 外观：</p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/5f3vEHQSGzv7HLePBpb-fIZBRCw5wnuCkBe4gPFLMtQTuz4LsZCOMHq5gWv-dlal" alt="Swagger Editor UI 外观" loading="lazy"></figure>
+<p>右侧的显示窗格显示了格式化的文档，反映了在左侧窗格中的代码编辑器中执行的更改。代码编辑器会指出了所有格式错误。你可以展开和折叠每个窗格。</p>
+<h3 id="api文档的基本结构">API文档的基本结构</h3>
+<p>我用一个例子来介绍下swagger文档的基本结构，这里我用yaml格式来编写文档：</p>
+<pre><code class="language-yml">swagger: &quot;2.0&quot;
+info:
+  title: Sample API
+  description: API description in Markdown.
+  version: 1.0.0
+
+host: api.example.com
+basePath: /v1
+schemes:
+  - https
+
+paths:
+  /users:
+    get:
+      summary: Returns a list of users.
+      description: Optional extended description in Markdown.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+</code></pre>
+<p>上述文档包括元数据（Metadata）、Base URL、API路径（paths）三部分：</p>
+<h4 id="metadata">Metadata</h4>
+<p>这部分信息包括swagger 使用的版本：</p>
+<pre><code class="language-yml">swagger: &quot;2.0&quot;
+</code></pre>
+<p>API相关的描述信息（比如API介绍、版本等）：</p>
+<pre><code class="language-yml">info:
+  title: Sample API
+  description: API description in Markdown.
+  version: 1.0.0
+</code></pre>
+<h4 id="base-url">Base URL</h4>
+<p>作为web API，一个很重要的信息就是用来给用户使用的 根URL，可用协议（http/https）、host地址：</p>
+<pre><code class="language-yml">host: api.example.com
+basePath: /v1
+schemes:
+  - https
+</code></pre>
+<p>所有的API都是base URL 的相对路径 例如 /users 的API地址是 <code>https://api.example.com/v1/users</code>。</p>
+<h4 id="路径paths">路径（Paths）</h4>
+<p>paths 部分定义API的路径（endpoint）、支持的HTTP 请求方法</p>
+<pre><code class="language-yml">paths:  # 声明路径
+  /users:  # 定义API路径
+    get:   # 定义请求方式
+      summary: Returns a list of users.  # 简介
+      description: Optional extended description in Markdown.  # 描述
+      produces:
+        - application/json    # 定义 服务端response MIME types 
+      responses:
+        200:    # response 状态码
+          description: OK
+</code></pre>
+<p>当然这只是个最简单的例子，swagger可定义的内容要比我提到的多的多。<br>
+具体详细信息可以看下 <a href="https://swagger.io/docs/specification/what-is-swagger/">swagger 文档：https://swagger.io/docs/specification/what-is-swagger/</a>。</p>
+<p>当然，写完文档并不代表我们的代码就可以直接使用这份文档以及文档中的约束，swagger 还提供了 <a href="https://github.com/swagger-api/swagger-codegen">swagger-codegen：https://github.com/swagger-api/swagger-codegen</a>。</p>
+<h3 id="swagger_codegen">swagger_codegen</h3>
+<p>swagger-codegen 是一个开源的代码生成工具，它包含一个模板驱动引擎，可以直接从我们定义的 swagger 文档中生成可视化的文档查看界面和API客户端。</p>
+<p>这是一个开源的项目，地址是<a href="https://github.com/swagger-api/swagger-codegen">swagger-codegens： https://github.com/swagger-api/swagger-codegen</a>。可以自己安装使用一下。</p>
+<p>因为我最常用的语言是Python，所以给大家介绍一个第三方的 python 的代码生成器<a href="https://github.com/guokr/swagger-py-codegen">swagger-py-codegen：https://github.com/guokr/swagger-py-codegen</a></p>
+<h2 id="swagger_py_codegen">swagger_py_codegen</h2>
+<p>swagger-py-codegen的亮点是它是一个Python web framework 代码生成器，可以根据swagger 文档自动生成相应web framework 的代码，现在支持 Flask, Tornado，falcon，最新版将支持sanic。</p>
+<h3 id="安装">安装</h3>
+<p>可以使用 pip 安装：</p>
+<pre><code class="language-sh">pip install swagger-py-codegen
+</code></pre>
+<h3 id="使用">使用</h3>
+<p>安装后使用命令如下：</p>
+<pre><code class="language-sh">swagger_py_codegen --swagger-doc api.yml example-app
+</code></pre>
+<p>可选参数有：</p>
+<pre><code>-s, --swagger, --swagger-doc    Swagger doc file.  [required]
+-f, --force                     Force overwrite.
+-p, --package                   Package name / application name.
+-t, --template-dir              Path of your custom templates directory.
+--spec, --specification         Generate online specification json response.
+--ui                            Generate swagger ui.
+-j, --jobs INTEGER              Parallel jobs for processing.
+-tlp, --templates               gen flask/tornado/falcon templates, default flask.
+--version                       Show current version.
+--help                          Show this message and exit.
+</code></pre>
+<p>如果不指定 -tlp 参数，默认使用 flask 作为模板。<br>
+如果指定 --ui --spec 参数则会在 由-p 参数指定的目录下生成swagger UI 目录 static。</p>
+<h4 id="举个例子">举个例子</h4>
+<p>我们这里使用 swagger-py-codegen 提供的测试文档 执行：</p>
+<pre><code class="language-sh">swagger_py_codegen --swagger-doc api.yml example-app --ui --spec
+</code></pre>
+<p>生成的代码目录结构如下</p>
+<pre><code>$tree
+.
+|__ api.yml
+
+$ swagger_py_codegen -s api.yml example-app -p demo
+$ tree (flask-demo)
+.
+|__ api.yml
+|__ example-app
+   |__ demo
+   |  |__ __init__.py
+   |  |__ v1
+   |     |__ api
+   |     |  |__ __init__.py
+   |     |  |__ oauth_auth_approach_approach.py
+   |     |  |__ oauth_auth_approach.py
+   |     |  |__ users_token.py
+   |     |  |__ users_current.py
+   |     |  |__ users.py
+   |     |__ __init__.py
+   |     |__ routes.py
+   |     |__ schemas.py
+   |     |__ validators.py
+   |__ requirements.txt
+</code></pre>
+<p>可以看到，这时一个简单的app框架已经生成了，其中 routes.py 是自动生成的路由，validators.py 是response和request的校验代码，schemas.py 是由文档生成的校验规则，api 目录下的各个文件是你定义的endpoint。</p>
+<p>这时运行demo 目录下的 <code>__init__.py</code> 文件:</p>
+<pre><code class="language-python">python __init__.py 
+</code></pre>
+<p>会发现 server 已经启动：</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/pRyxskK89xODXjfsCdPVns9DJfMA2TF7tDLszenOAvhdB8gf5aBSwkCHCX9rSfQO" alt="server 启动示例" loading="lazy"></figure>
+<p>如果生成命令带上 --ui --spec，生成代码的同时也会生成swagger UI：</p>
+<pre><code class="language-sh">swagger_py_codegen --swagger-doc api.yml example-app --ui --spec
+</code></pre>
+<p>启动server后在浏览器输入地址 <code>http://0.0.0.0:8000/static/swagger-ui/index.html#!/default/get_users_uid</code></p>
+<p>可以看到直接使用的 swagger UI。</p>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/SGfBUnb6jxikwbr0IxOYROmwpqmScGJBWUHu88v5sIy806XNbk6KWDGGggDIeJH3" alt="swagger ui 截图" loading="lazy"></figure>
+<blockquote>
+<p>swagger-py-codegen 认证默认使用 OAuth2 认证方式，认证部分代码需要自己实现。</p>
+</blockquote>
+<p>现在代码结构已经生成，可以安心的写逻辑代码了。</p>
+<h2 id="总结">总结</h2>
+<p>这一篇主要介绍了RESTful API以及如何使用swagger编写规范的RESTful API。<br>
+最后介绍了如何使用 swagger-py-codegen 生成 web framework 的结构代码。<br>
+参考链接中的文章都非常值得一看，建议都看一下。</p>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/REST">REST： https://zh.wikipedia.org/wiki/REST</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2014/05/restful_api.html">RESTful API 设计指南： http://www.ruanyifeng.com/blog/2014/05/restful_api.html</a></li>
+<li><a href="https://codeplanet.io/principles-good-restful-api-design/">Principles of good RESTful API Design： https://codeplanet.io/principles-good-restful-api-design/</a></li>
+<li><a href="http://cizixs.com/2016/12/12/restful-api-design-guide">跟着 Github 学习 Restful HTTP API 设计： http://cizixs.com/2016/12/12/restful-api-design-guide</a></li>
+<li><a href="https://www.ibm.com/developerworks/cn/web/1103_chenyan_restapi/">最佳实践：更好的设计你的 REST API： https://www.ibm.com/developerworks/cn/web/1103_chenyan_restapi/</a></li>
+<li><a href="https://swagger.io/">swagger： https://swagger.io/</a></li>
+<li><a href="https://www.gitbook.com/book/huangwenchao/swagger/details">如何编写基于OpenAPI规范的API文档：https://www.gitbook.com/book/huangwenchao/swagger/details</a></li>
+<li><a href="https://www.ibm.com/developerworks/cn/web/wa-use-swagger-to-document-and-define-restful-apis/index.html">使用 Swagger 文档化和定义 RESTful API：https://www.ibm.com/developerworks/cn/web/wa-use-swagger-to-document-and-define-restful-apis/index.html</a></li>
+<li><a href="https://swagger.io/docs/specification/what-is-swagger/">swagger 文档：https://swagger.io/docs/specification/what-is-swagger/</a></li>
+<li><a href="https://github.com/guokr/swagger-py-codegen">swagger-py-codegen：https://github.com/guokr/swagger-py-codegen</a></li>
+</ul>
+<hr>
+<p>最后，感谢女朋友支持。</p>
+<table>
+<thead>
+<tr>
+<th>欢迎关注(April_Louisa)</th>
+<th>请我喝芬达</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="http://media.gusibi.mobi/Hy8XHexmzppNKuekLuGxWy8LjdGrQAzZA3mH_e9xltoiYgTFWdvlpZwGWxZESrbK" alt="欢迎关注" loading="lazy"></td>
+<td><img src="http://media.gusibi.mobi/CO9DwU6ZHnXHD5xuG3GqTsY_IYPl-JdpQrDaOo6tl6PiAGEBDeYFHO7sGQi_VVFc" alt="请我喝芬达" loading="lazy"></td>
+</tr>
+</tbody>
+</table>
+<p>这里是分割线</p>
+<hr>
+<p>公号现在已经开通了留言功能，如果你觉得文章有不对的地方，欢迎指出。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AF-restful">什么是 RESTful</a>
+<ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AFrest">什么是REST</a>
+<ul>
+<li><a href="#restful-api-%E8%AE%BE%E8%AE%A1%E5%AE%9A%E4%B9%89">RESTful API 设计定义</a>
+<ul>
+<li><a href="#%E5%8D%8F%E8%AE%AE">协议</a></li>
+<li><a href="#%E5%9F%9F%E5%90%8D">域名</a></li>
+<li><a href="#api%E5%9C%B0%E5%9D%80%E5%92%8C%E7%89%88%E6%9C%AC">API地址和版本</a></li>
+<li><a href="#%E4%BB%A5%E8%B5%84%E6%BA%90%E4%B8%BA%E4%B8%AD%E5%BF%83%E8%AE%BE%E8%AE%A1url">以资源为中心设计URL</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E6%AD%A3%E7%A1%AE%E7%9A%84method">使用正确的Method</a></li>
+<li><a href="#%E6%AD%A3%E7%A1%AE%E7%9A%84%E8%BF%87%E6%BB%A4%E4%BF%A1%E6%81%AFfiltering">正确的过滤信息（filtering）</a></li>
+<li><a href="#%E9%80%89%E6%8B%A9%E5%90%88%E9%80%82%E7%9A%84%E7%8A%B6%E6%80%81%E7%A0%81">选择合适的状态码</a></li>
+<li><a href="#%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C">返回结果</a></li>
+<li><a href="#%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86error-handling">错误处理（Error handling）</a></li>
+<li><a href="#%E8%89%AF%E5%A5%BD%E7%9A%84%E6%96%87%E6%A1%A3">良好的文档</a></li>
+<li><a href="#%E5%85%B6%E5%AE%83">其它</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AFswagger">什么是swagger</a>
+<ul>
+<li><a href="#%E5%A6%82%E4%BD%95%E7%BC%96%E5%86%99api%E6%96%87%E6%A1%A3">如何编写API文档</a></li>
+<li><a href="#api%E6%96%87%E6%A1%A3%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84">API文档的基本结构</a>
+<ul>
+<li><a href="#metadata">Metadata</a></li>
+<li><a href="#base-url">Base URL</a></li>
+<li><a href="#%E8%B7%AF%E5%BE%84paths">路径（Paths）</a></li>
+</ul>
+</li>
+<li><a href="#swagger_codegen">swagger_codegen</a></li>
+</ul>
+</li>
+<li><a href="#swagger_py_codegen">swagger_py_codegen</a>
+<ul>
+<li><a href="#%E5%AE%89%E8%A3%85">安装</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8">使用</a>
+<ul>
+<li><a href="#%E4%B8%BE%E4%B8%AA%E4%BE%8B%E5%AD%90">举个例子</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/weixin_mp_diy_image_upload/">
+              <h3 class="post-title">
+                微信公号DIY：训练聊天机器人&amp;公号变身图片上传工具
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

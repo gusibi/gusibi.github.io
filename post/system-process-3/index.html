@@ -1,0 +1,368 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>操作系统线程描述 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="操作系统线程描述 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+这是操作系统进程系列文章第三篇-操作系统线程描述
+文章是《操作系统-精髓与设计原理》学习笔记
+
+线程（thread）
+什么是线程
+线程是操作系统能够进行运算调度的最小单位。它被包含在进程之中，是进程中的实际运作单位。一条线程指的是进程中一..." />
+    <meta name="keywords" content="读书笔记,后端,并发,进程" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              操作系统线程描述
+            </h2>
+            <div class="post-info">
+              <span>
+                2018-03-24
+              </span>
+              <span>
+                9 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/f-Wl7DIwGU/" class="post-tag">
+                  # 后端
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/Y7K-ZUm9XP/" class="post-tag">
+                  # 并发
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/QVdSh7eeOQ5/" class="post-tag">
+                  # 进程
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>这是<code>操作系统进程</code>系列文章第三篇-操作系统线程描述<br>
+文章是《操作系统-精髓与设计原理》学习笔记</p>
+</blockquote>
+<h2 id="线程thread">线程（thread）</h2>
+<h3 id="什么是线程">什么是线程</h3>
+<p><strong>线程</strong>是操作系统能够进行运算调度的最小单位。它被包含在<a href="http://mp.weixin.qq.com/s/s_um6t-mORit4SDHvEYgpQ">进程</a>之中，是<a href="http://mp.weixin.qq.com/s/s_um6t-mORit4SDHvEYgpQ">进程</a>中的实际运作单位。一条线程指的是<a href="http://mp.weixin.qq.com/s/s_um6t-mORit4SDHvEYgpQ">进程</a>中一个单一顺序的控制流，一个进程中可以并发多个线程，每条线程并行执行不同的任务。</p>
+<p>关于进程的两个概念：</p>
+<ul>
+<li>资源所有权：一个进程包括一个存放进程映像的虚拟地址空间（进程映像是程序、数据、栈和进程控制块中定义的属性的集合）。一个进程总是拥有对资源的控制或所有权，这些资源包括内存、I/O 通道，I/O 设备和文件。</li>
+<li>调度/执行：一个进程沿着通过一个或多个程序的一条执行路径执行，其执行过程可能与其他进程的执行过程交替执行。一个进程具有一个执行状态和一个分片的优先级，并且是一个可被操作系统调度和分配的实体。</li>
+</ul>
+<p>这两个概念是独立的，操作系统可以独立的处理。</p>
+<blockquote>
+<p>现代操作系统通常把分派单位称为线程（或轻量级进程），拥有资源所有权的单位称为进程。</p>
+</blockquote>
+<h3 id="多线程">多线程</h3>
+<p>多线程是指操作系统在单个进程内支持多个并发执行路径的能力。每个进程中只有一个线程在执行的方法称为单线程方法。进程支持多个线程的情况被称作多线程。</p>
+<p>在多线程环境中，进程被定义成资源分配的单位和一个被保护的单位，与进程相关联的有：</p>
+<ul>
+<li>存放进程映像的虚拟地址空间</li>
+<li>受保护的对处理器、其他进程、文件和 I/O 资源的访问</li>
+</ul>
+<p>在一个进程中，可能有一个或多个线程，每个线程有：</p>
+<ul>
+<li>线程的执行状态（运行，就绪）</li>
+<li>在未运行时保存的线程上下文</li>
+<li>一个执行栈</li>
+<li>用于每个线程局部变量的静态存储空间</li>
+<li>与进程内的其他线程共享的对进程的内存和资源的访问</li>
+</ul>
+<h3 id="进程-vs-线程">进程 VS 线程</h3>
+<p>下图说明了进程和线程的区别：</p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/0KDXx7b4LkTyhJrxat45HK22Hsoz4OQrb_MKZCdsZH9DvqiPlajrDtLd1S_QtHMn" alt="线程和进程的区别" loading="lazy"></figure>
+<p>在单线程模型中，进程的标出包括他的进程控制块和用户地址空间，以及在进程执行中管理调用/返回 行为的用户栈和内核栈。当进程被控制时，处理器寄存器被该进程锁控制；当进程不运行时，这些处理器寄存器的内容被保存。</p>
+<p>在多线程环境中，进程仍然只有一个与之关联的进程控制块和用户地址空间。但是每个线程都有一个独立的栈，还有独立的控制块用于包含寄存器值、优先级和其他与线程相关的状态信息。</p>
+<blockquote>
+<p>进程中的所有线程共享该进程的状态和资源，它们驻留在同一块地址空间中，并且可以访问到相同的数据。当一个线程改变了内存中的一个数据项时，其他线程在访问这一数据项时能够看到变化后的结果。</p>
+</blockquote>
+<h3 id="线程的优点">线程的优点</h3>
+<ol>
+<li>在一个已有的进程中创建一个新的线程比创建一个全新的进程所需时间要少的多。</li>
+<li>终止一个线程比终止一个进程花费的时间少</li>
+<li>同一个进程内线程间切换比进程间切换花费的时间要少。</li>
+<li>线程提高了不同的执行程序间通信的效率。（大多数操作系统中，独立进程间的通信需要内核的介入，由于同一进程中的线程共享内存和文件，它们间的通信无需调用内核）</li>
+</ol>
+<h3 id="线程状态">线程状态</h3>
+<p>和进程一样，线程的关键状态有运行态、就绪态和阻塞态。挂起是进程级别的概念，一个进程被换出，它的所有线程都被换出。</p>
+<p>有4个与线程状态改变相关的操作：</p>
+<ul>
+<li>派生：当派生一个新进程时，同时也为改进程派生出一个线程。进程中的线程也可以在同一个进程中派生另一个线程，新的线程拥有自己的寄存器上下文和栈空间，且被放置在就绪队列中。</li>
+<li>阻塞：当线程需要等待一个事件时，将被阻塞，此时处理器转而执行另一个就绪线程（可能是同一进程，也可能是不同进程）</li>
+<li>解除阻塞：当阻塞一个线程的事件发生时，该线程被转移到就绪队列中</li>
+<li>结束：当一个线程完成时，其寄存器上下文和栈都被释放。</li>
+</ul>
+<h3 id="用户级线程和内核级线程">用户级线程和内核级线程</h3>
+<p>线程的实现可以分为两大类：<code>用户级线程（User-Level Thread ULT）</code>和<code>内核级线程（Kernel-Level Thread KLT）</code>。</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/gaApT9BLo5q0kZG1iOaC5yllVRMtR74cnYNxvAKy-jBDVm122aizcvSB2-ZyxCIp" alt="用户级线程和内核级线程" loading="lazy"></figure>
+<p>在用户级线程和内核级线程使用时，通常有以下三种模式：</p>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/gx5Ssn4Taoq-BDMJ0Dty58lVtdWhc5AHnF-3yssLGRzJl2k7HZa-sgq9PP3xAKGA" alt="用户级线程和内核级线程" loading="lazy"></figure>
+<p><strong>在一个纯粹的用户级线程程序中，有关线程管理的所有工作都由应用程序完成，内核意识不到线程的存在。</strong></p>
+<p>使用用户级线程的优点：</p>
+<ol>
+<li>线程切换不需要内核态特权，因此，进程不需要为了线程管理而切换到内核态，这节省了两次状态转换（从用户态到内核态，再从内核态返回用户态）的开销。</li>
+<li>调度可以是用户程序相关的。（可以为特定的应用使用特定的调度算法）</li>
+<li>用户级线程可以在任何操作系统中运行，不需要对底层内核进行修改以支持用户级线程。</li>
+</ol>
+<p>使用用户级线程的缺点：</p>
+<ol>
+<li>许多系统调用会被阻塞。因此当用户级线程执行一个系统调用时，不仅这个线程会被阻塞，进程中所有线程都会被阻塞。</li>
+<li>不能使用多个处理器。内核一次只把一个进程分配给一个处理器，因此一个进程中只有一个线程可以执行。</li>
+</ol>
+<blockquote>
+<p>解决这两个问题有两种方式：</p>
+<ol>
+<li>使用多进程代替多线程，但这样消除了多线程的优势</li>
+<li>使用 jacketing 技术。把一个产生阻塞的系统调用转换成一个非阻塞的系统调用。</li>
+</ol>
+</blockquote>
+<p>在一个纯粹的内合辑线程程序中，有关线程管理的所有工作都由内核完成。内核为进程及其内部的每个线程维护上下文信息。调度由内核基于线程完成。</p>
+<blockquote>
+<p>使用内核级线程客服了用户级线程的两个基本缺陷。首先内核可以把同一个进程的多个线程调度到多个处理器；其次一个进程中的线程被阻塞，内核可以调度同一个进程的另一个线程。</p>
+<p>主要缺点是：把控制从一个线程传送到同一个进程内的另一个线程是，需要内核的状态切换。</p>
+</blockquote>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/iD4lEh-rtxW0iN5EzdzLYtyQr4LZlcFDiMOo06JLNuhC69DKDMjXgGRldy6ELJvV" alt="线程和进程的执行时间" loading="lazy"></figure>
+<p>某些操作系统提供了一种组合的用户级/内核级线程设施。在组合的系统中，线程创建完全在用户空间中完成，线程的调度和同步也是在应用程序中进行。一个应用程序中的多个用户级线程被映射到一些（小于或等于用户级线程的数目）内核级线程上。开发者可以为特定的应用程序和处理器调节内核级线程的数目，以达到最佳结果。</p>
+<h3 id="linux-的进程和线程管理">Linux 的进程和线程管理</h3>
+<p>Linux中的进程或任务由一个 <code>task_struct</code>数据结构表示，这个数据结构包含了以下信息：</p>
+<ul>
+<li>状态：进程的执行状态</li>
+<li>调度信息：Linux 调度进程所需的信息</li>
+<li>标识符</li>
+<li>进程间通信：Linux 支持 UNIX SVR4中的 IPC 机制。</li>
+<li>时间和计时器：包括进程创建的时刻和进程所消耗的处理器时间总量</li>
+<li>文件系统：包括指向被该进程打开的任何文件的指针和指向该进程当前和根目录的指针。</li>
+<li>地址空间：定义分配给该进程的虚拟空间</li>
+<li>处理器专用上下文：构成改进程上下文的寄存器和栈信息</li>
+<li>停止：进程被终止，并且只能由来自另一个进程的主动动作恢复</li>
+<li>僵死：进程已被终止，但由于某些原因，在进程表中仍然有它的任务结构</li>
+</ul>
+<p>Linux 提供一种不区分进程和线程的解决方案，用户级线程被映射到内核级进程上。组成一个用户级进程的多个用户级线程被映射到共享同一组 ID 的多个 Linux 内核级进程上。这使得这些进程可以共享文件和内存等资源，使得同一组中的进程调度切换是不需要切换上下文。</p>
+<p>在 Linux 中通过复制当前进程的属性可创建一个新进程。新进程被克隆出来，使得它可以共享资源。当两个进程共享相同虚拟内存时，它们可以被当做是一个进程中的线程。因此 Linux 中进程和线程没有区别。</p>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li>《操作系统-精髓与设计原理》</li>
+<li><a href="https://applied-programming.github.io/Operating-Systems-Notes/3-Threads-and-Concurrency/">Threads and Concurrency</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>想了解以下内容可以在公号输入相应关键字获取历史文章： <code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<table>
+<thead>
+<tr>
+<th>关注</th>
+<th>赞赏</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="http://media.gusibi.mobi/kel2L88yf9YXZYecLIn0LPZPSXc7zJfHyGUz5biWsZrGh7xF2JONZT93dgClGdMn" alt="" loading="lazy"></td>
+<td><img src="http://media.gusibi.mobi/VFjjmZ7cgkIkpieAFHYXcLVBB8f9snm2vAzc0GyLjSmCzok8mL3vqLNMzYVvrDha" alt="" loading="lazy"></td>
+</tr>
+</tbody>
+</table>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E7%BA%BF%E7%A8%8Bthread">线程（thread）</a>
+<ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%BF%E7%A8%8B">什么是线程</a></li>
+<li><a href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B">多线程</a></li>
+<li><a href="#%E8%BF%9B%E7%A8%8B-vs-%E7%BA%BF%E7%A8%8B">进程 VS 线程</a></li>
+<li><a href="#%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%BC%98%E7%82%B9">线程的优点</a></li>
+<li><a href="#%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81">线程状态</a></li>
+<li><a href="#%E7%94%A8%E6%88%B7%E7%BA%A7%E7%BA%BF%E7%A8%8B%E5%92%8C%E5%86%85%E6%A0%B8%E7%BA%A7%E7%BA%BF%E7%A8%8B">用户级线程和内核级线程</a></li>
+<li><a href="#linux-%E7%9A%84%E8%BF%9B%E7%A8%8B%E5%92%8C%E7%BA%BF%E7%A8%8B%E7%AE%A1%E7%90%86">Linux 的进程和线程管理</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/system-process-2/">
+              <h3 class="post-title">
+                操作系统进程描述
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

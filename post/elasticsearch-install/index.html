@@ -1,0 +1,415 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Elasticsearch 安装和使用 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Elasticsearch 安装和使用 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="安装使用 Elasticsearch 两种方法：
+方法1 手动安装 Elasticsearch
+安装到ubuntu
+Elasticsearch与Logstash需要Java作为运行环境
+安装Java 8
+将甲骨文Java PPA添加至apt..." />
+    <meta name="keywords" content="tutorial,工具" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Elasticsearch 安装和使用
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-05-18
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/FYxmHEtUvJ/" class="post-tag">
+                  # 工具
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>安装使用 Elasticsearch 两种方法：</p>
+<h3 id="方法1-手动安装-elasticsearch">方法1 手动安装 Elasticsearch</h3>
+<h5 id="安装到ubuntu">安装到ubuntu</h5>
+<p>Elasticsearch与Logstash需要Java作为运行环境</p>
+<h2 id="安装java-8">安装Java 8</h2>
+<p>将甲骨文Java PPA添加至apt：</p>
+<pre><code class="language-shell">sudo add-apt-repository -y ppa:webupd8team/java
+</code></pre>
+<p>更新apt软件包数据库：</p>
+<pre><code class="language-shell">sudo apt-get update
+</code></pre>
+<p>HUGOMORE42</p>
+<p>安装甲骨文Java 8的最新稳定版本，命令如下（在弹出的许可协议中点击接受）：</p>
+<pre><code class="language-shell">sudo apt-get -y install oracle-java8-installer
+</code></pre>
+<h2 id="安装elasticsearch">安装Elasticsearch</h2>
+<h3 id="方法1-通过添加elastic的软件包源列表利用软件包管理器安装elasticsearch">方法1 通过添加Elastic的软件包源列表利用软件包管理器安装Elasticsearch。</h3>
+<p>运行以下命令以将Elasticsearch公共GPG密钥导入apt：</p>
+<pre><code class="language-shell">wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+</code></pre>
+<p>接下来，创建Elasticsearch源列表：</p>
+<pre><code class="language-shell">echo &quot;deb http://packages.elastic.co/elasticsearch/${ELASTICSEARCH_VERSION}/debian stable main&quot; | sudo tee -a /etc/apt/sources.list.d/elk.list
+</code></pre>
+<p>更新apt软件包数据库：</p>
+<pre><code class="language-shell">sudo apt-get update
+</code></pre>
+<p>安装Elasticsearch</p>
+<pre><code class="language-shell">sudo apt-get -y install elasticsearch
+</code></pre>
+<p>Elasticsearch已经安装完成。下面编辑其配置文件：</p>
+<pre><code class="language-shell">sudo vi /etc/elasticsearch/elasticsearch.yml
+</code></pre>
+<p>限制来自外部的Elasticsearch实例访问活动（端口9200），找到指定network.host的一行，取消其注释并将其值替换为“localhost”：</p>
+<pre><code class="language-shell">elasticsearch.yml excerpt (updated)
+
+network.host: localhost
+</code></pre>
+<p>启动elasticsearch</p>
+<pre><code class="language-shell">sudo service elasticsearch restart
+</code></pre>
+<p>也可以使用 脚本 安装</p>
+<pre><code class="language-shell">#!/bin/bash
+
+### USAGE
+###
+### ./ElasticSearch.sh 1.7 will install Elasticsearch 1.7
+### ./ElasticSearch.sh will fail because no version was specified (exit code 1)
+###
+### CLI options Contributed by @janpieper
+### Check http://www.elasticsearch.org/download/ for latest version of ElasticSearch
+
+### ElasticSearch version
+if [ -z &quot;$1&quot; ]; then
+  echo &quot;&quot;
+  echo &quot;  Please specify the Elasticsearch version you want to install!&quot;
+  echo &quot;&quot;
+  echo &quot;    $ $0 1.7&quot;
+  echo &quot;&quot;
+  exit 1
+fi
+
+ELASTICSEARCH_VERSION=$1
+
+if [[ ! &quot;${ELASTICSEARCH_VERSION}&quot; =~ ^[0-9]+\.[0-9]+ ]]; then
+  echo &quot;&quot;
+  echo &quot;  The specified Elasticsearch version isn't valid!&quot;
+  echo &quot;&quot;
+  echo &quot;    $ $0 1.7&quot;
+  echo &quot;&quot;
+  exit 2
+fi
+
+### Install Java 8
+cd ~
+sudo apt-get install python-software-properties -y
+sleep 1
+sudo add-apt-repository ppa:webupd8team/java -y
+sleep 1
+sudo apt-get update
+sleep 1
+sudo apt-get install oracle-java8-installer -y
+
+### Download and install the Public Signing Key
+wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+
+### Setup Repository
+echo &quot;deb http://packages.elastic.co/elasticsearch/${ELASTICSEARCH_VERSION}/debian stable main&quot; | sudo tee -a /etc/apt/sources.list.d/elk.list
+
+### Install Elasticsearch
+sudo apt-get update &amp;&amp; sudo apt-get install elasticsearch -y
+
+### Start ElasticSearch
+sudo service elasticsearch start
+
+### Lets wait a little while ElasticSearch starts
+sleep 5
+
+### Make sure service is running
+curl http://localhost:9200
+
+### Should return something like this:
+# {
+#  &quot;status&quot; : 200,
+#  &quot;name&quot; : &quot;Storm&quot;,
+#  &quot;version&quot; : {
+#    &quot;number&quot; : &quot;1.3.1&quot;,
+#    &quot;build_hash&quot; : &quot;2de6dc5268c32fb49b205233c138d93aaf772015&quot;,
+#    &quot;build_timestamp&quot; : &quot;2014-07-28T14:45:15Z&quot;,
+#    &quot;build_snapshot&quot; : false,
+#    &quot;lucene_version&quot; : &quot;4.9&quot;
+#  },
+#  &quot;tagline&quot; : &quot;You Know, for Search&quot;
+# }
+
+</code></pre>
+<h5 id="安装到-mac">安装到 Mac</h5>
+<ol>
+<li>到 https://www.elastic.co/downloads/elasticsearch 下载elasticsearch</li>
+<li>解压 cd 到目录 执行</li>
+</ol>
+<pre><code class="language-shell">sudo bin/elasticsearch
+</code></pre>
+<h3 id="方法2-使用-docker">方法2 使用 docker</h3>
+<ol>
+<li>下载 elasticsearch 镜像</li>
+</ol>
+<pre><code class="language-shell">docker pull elasticsearch
+</code></pre>
+<ol start="2">
+<li>新建 docker-compose.yml 文件</li>
+</ol>
+<pre><code class="language-yml">es:
+   image: elasticsearch
+   volumes:
+     - /data:/usr/share/elasticsearch/data/
+   ports:
+     - &quot;9200:9200&quot;
+   mem_limit: 2g
+   environment:
+    ES_JAVA_OPTS: &quot;-Xmx1g -Xms1g&quot;
+</code></pre>
+<p>运行命令</p>
+<pre><code class="language-shell">docker-compose -f es-docker-compose.yml up -d
+</code></pre>
+<p>启动 elasticsearch</p>
+<h3 id="测试安装">测试安装</h3>
+<p>浏览器中访问http://localhost:9200/，看到一个json结果集，表明安装成功：</p>
+<pre><code class="language-json">{
+  &quot;name&quot; : &quot;g1WVNJ8&quot;,
+  &quot;cluster_name&quot; : &quot;elasticsearch&quot;,
+  &quot;cluster_uuid&quot; : &quot;RjwyeM4kRRajDZzE3Tcq8g&quot;,
+  &quot;version&quot; : {
+    &quot;number&quot; : &quot;5.4.0&quot;,
+    &quot;build_hash&quot; : &quot;780f8c4&quot;,
+    &quot;build_date&quot; : &quot;2017-04-28T17:43:27.229Z&quot;,
+    &quot;build_snapshot&quot; : false,
+    &quot;lucene_version&quot; : &quot;6.5.0&quot;
+  },
+  &quot;tagline&quot; : &quot;You Know, for Search&quot;
+}
+
+</code></pre>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E6%96%B9%E6%B3%951-%E6%89%8B%E5%8A%A8%E5%AE%89%E8%A3%85-elasticsearch">方法1 手动安装 Elasticsearch</a><br>
+*
+<ul>
+<li><a href="#%E5%AE%89%E8%A3%85%E5%88%B0ubuntu">安装到ubuntu</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%AE%89%E8%A3%85java-8">安装Java 8</a></li>
+<li><a href="#%E5%AE%89%E8%A3%85elasticsearch">安装Elasticsearch</a>
+<ul>
+<li><a href="#%E6%96%B9%E6%B3%951-%E9%80%9A%E8%BF%87%E6%B7%BB%E5%8A%A0elastic%E7%9A%84%E8%BD%AF%E4%BB%B6%E5%8C%85%E6%BA%90%E5%88%97%E8%A1%A8%E5%88%A9%E7%94%A8%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86%E5%99%A8%E5%AE%89%E8%A3%85elasticsearch">方法1 通过添加Elastic的软件包源列表利用软件包管理器安装Elasticsearch。</a><br>
+*
+<ul>
+<li><a href="#%E5%AE%89%E8%A3%85%E5%88%B0-mac">安装到 Mac</a></li>
+</ul>
+</li>
+<li><a href="#%E6%96%B9%E6%B3%952-%E4%BD%BF%E7%94%A8-docker">方法2 使用 docker</a></li>
+<li><a href="#%E6%B5%8B%E8%AF%95%E5%AE%89%E8%A3%85">测试安装</a></li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/Amazon-DynamoDB-UpdateItem/">
+              <h3 class="post-title">
+                Amazon DynamoDB 入门7：项目更新
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

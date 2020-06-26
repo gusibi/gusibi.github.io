@@ -1,0 +1,331 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>「工具推荐」golang 代码可视化工具 go-callvis | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="「工具推荐」golang 代码可视化工具 go-callvis | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="「工具推荐」go-callvis
+go-callvis是相对 以图片的形式展示了go程序的调用关系，这个工具在看复杂项目时尤其有用。
+
+亲测，借助它看祖传golang代码，头痛好多了。
+
+安装
+go get -u github.com/Tr..." />
+    <meta name="keywords" content="工具,golang" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              「工具推荐」golang 代码可视化工具 go-callvis
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-01-19
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/FYxmHEtUvJ/" class="post-tag">
+                  # 工具
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/dE3Sy1WOcy/" class="post-tag">
+                  # golang
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h2 id="工具推荐go-callvis">「工具推荐」<a href="https://github.com/TrueFurby/go-callvis">go-callvis</a></h2>
+<p>go-callvis是相对 以图片的形式展示了go程序的调用关系，这个工具在看复杂项目时尤其有用。</p>
+<blockquote>
+<p>亲测，借助它看祖传golang代码，头痛好多了。</p>
+</blockquote>
+<h3 id="安装">安装</h3>
+<pre><code class="language-sh">go get -u github.com/TrueFurby/go-callvis
+# or
+git clone https://github.com/TrueFurby/go-callvis.git
+cd go-callvis &amp;&amp; make install
+</code></pre>
+<p>运行依赖</p>
+<ul>
+<li><a href="https://golang.org/dl/">Go</a> 1.12+</li>
+<li><a href="http://www.graphviz.org/download/">Graphviz：http://www.graphviz.org/download/</a> Mac 可以直接 brew install graphviz</li>
+</ul>
+<p><a href="https://github.com/TrueFurby/go-callvis">项目地址：https://github.com/TrueFurby/go-callvis</a></p>
+<h3 id="使用命令">使用命令</h3>
+<p>命令特别简单，只需要简单的输入：</p>
+<pre><code class="language-sh">go-callvis [OPTIONS] &lt;main package&gt;
+</code></pre>
+<p>这里 main package 是包含代码的main函数所在的包，比如项目 https://github.com/gusibi/oneplus/tree/master/idgenerator</p>
+<p>目录结构为：</p>
+<pre><code class="language-sh">.
+├── README.md
+└── src
+    ├── dbs
+    ├── go.mod
+    ├── go.sum
+    ├── idg
+    │   ├── area_code.go
+    │   ├── idg.go
+    │   ├── idg_test.go
+    │   ├── index.go
+    │   ├── index_test.go
+    │   ├── sort.go
+    │   ├── sort_test.go
+    │   ├── wr.go
+    │   └── wr_test.go
+    ├── main.go
+    └── sorteDB
+</code></pre>
+<p>其中src目录是一个go package，运行go-callvis 时就需要先<strong>cd src/</strong>，然后再执行命令：</p>
+<pre><code class="language-sh">go-callvis  -group pkg,type md52id
+</code></pre>
+<blockquote>
+<p>md52id 是package name，已在go.mod中声明，pakage name是一个必须要带的参数。</p>
+</blockquote>
+<p>运行命令，默认会打开浏览器加载地址<strong>http://localhost:7878</strong></p>
+<blockquote>
+<p>图片格式为 svg，也可以添加 -format=png，指定以png形式展示</p>
+<p>推荐使用svg，svg格式的内容是可交互的，比如这里想查看gin包的内容就可以点击 对应的模块来看详情。</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/clJZosivjY3n-3G5Bm-kQu6BbuAAV5z_L8iMjR8CoJSknZWRTiF51g9X8hHVq0jk" alt="" loading="lazy"></figure>
+<p>结果如果所示，图像展示的结果就是这个包所有的调用关系，按包的调用层级由左向右排列。第二列上边是 gin 框架的代码，如果看代码时不想看这部分，可以使用 ignore 参数排除掉。</p>
+<p>命令为：</p>
+<pre><code class="language-sh">go-callvis -group pkg,type -ignore github.com/gin-gonic/gin md52id
+</code></pre>
+<blockquote>
+<p>这里 gin 包的名字是 <em>github.com/gin-gonic/gin</em>而不是 <em>gin</em></p>
+<p>如果要再排出idg 包，可以直接加在gin 包后边，用,（英文逗号）隔开。</p>
+<p>使用limit 命令可以得到相同的结果</p>
+<p>go-callvis  -group pkg,type -limit md52id md52id</p>
+</blockquote>
+<p>得到的结果为：</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/I8l10FfoYRXYj0VtxMqbTwsz-mpQ7jsgaiq4Exd_8WNglM_mYDbWF6sye9x2uO-c" alt="" loading="lazy"></figure>
+<p>如果想看idg包内部的调用关系，可以使用 focus 命令，指定idg 包，命令如下：</p>
+<pre><code class="language-sh">go-callvis -focus=md52id/idg -group pkg,type -limit md52id md52id
+</code></pre>
+<p>结果如图：	<img src="http://media.gusibi.mobi/7WYETqHNJ2ShtiLf-rHKyWqLOnGVdLnBzTGiA_JBdzL26WwnwwaTkZ4xFBTh4-D4" alt="" loading="lazy"></p>
+<p>详细命令可以参考：https://github.com/TrueFurby/go-callvis/tree/master/examples</p>
+<p>使用go-callvis ，直观的展示代码的调用关系，对于大项目的源码尤其有用，比如下图是gin stagic 包的调用关系：</p>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/VjziH07V8r_X33RlnVo2WeEWa0od4OvAnw9eJoCiAd1eLAAC-I3XuniOeWK0OVCW" alt="" loading="lazy"></figure>
+<p>通过图可以直观的看到，</p>
+<ol>
+<li>static 调用了 staticFS，而staticFS 只使用了 HEAD和GET 方法。</li>
+<li>所有的http method 最终都是通过调用handler来处理响应的。</li>
+</ol>
+<h3 id="go-callvis-的另类用法">### go-callvis 的另类用法</h3>
+<p>go-callvis 也可以用来评估系统设计是否合理，代码是否清晰，下图是docker 的调用图：</p>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/8vZ7dwD6bLOVUBecbWsC5ZMTDOSUeeLzRw2kfxL44TVO8BM0AFGHGzVO1iHJCFqd" alt="" loading="lazy"></figure>
+<blockquote>
+<p>原图地址：http://media.gusibi.mobi/8vZ7dwD6bLOVUBecbWsC5ZMTDOSUeeLzRw2kfxL44TVO8BM0AFGHGzVO1iHJCFqd</p>
+</blockquote>
+<p>可以看到，代码结构非常清晰，调用链也比较简单，项目成功果然每一环都做的非常完美。</p>
+<h3 id="references">References</h3>
+<p><code>[1]</code> go-callvis: <em>https://github.com/TrueFurby/go-callvis</em><br>
+<code>[2]</code> Go: <em>https://golang.org/dl/</em><br>
+<code>[3]</code> Graphviz：http://www.graphviz.org/download/: <em>http://www.graphviz.org/download/</em><br>
+<code>[4]</code> 项目地址：https://github.com/TrueFurby/go-callvis: <em>https://github.com/TrueFurby/go-callvis</em></p>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="5"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推">内推</h3>
+<p>以下是shopee内推广告，「深圳、新加坡、上海」的职位都有，感兴趣的可以留言或者识别二维码直接投递。</p>
+<figure data-type="image" tabindex="6"><img src="http://media.gusibi.mobi/3Z6eP3JKdGQkAdfFm3X9cgV1x46YLwIX8iP8Rvg7_QSwYKYTRjAyt0jVEHKdql3P" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%B7%A5%E5%85%B7%E6%8E%A8%E8%8D%90go-callvis">「工具推荐」go-callvis</a>
+<ul>
+<li><a href="#%E5%AE%89%E8%A3%85">安装</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E5%91%BD%E4%BB%A4">使用命令</a></li>
+<li><a href="#go-callvis-%E7%9A%84%E5%8F%A6%E7%B1%BB%E7%94%A8%E6%B3%95">### go-callvis 的另类用法</a></li>
+<li><a href="#references">References</a></li>
+<li><a href="#%E5%86%85%E6%8E%A8">内推</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/unit-test/">
+              <h3 class="post-title">
+                学习单元测试，告别祈祷式编程
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

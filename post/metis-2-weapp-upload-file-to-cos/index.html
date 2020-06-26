@@ -1,0 +1,465 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>小程序开发：上传图片到腾讯云 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="小程序开发：上传图片到腾讯云 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+这是小程序开发第二篇，主要介绍如何上传图片到腾讯云，之所以选择腾讯云，是因为腾讯云免费空间大😂
+
+准备工作
+上传图片主要是将图片上传到腾讯云对象存储（COS）。
+要使用对象存储 API，需要先执行以下步骤：
+
+购买腾讯云对象存储（COS..." />
+    <meta name="keywords" content="tutorial,python,小程序,weixin,swagger" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              小程序开发：上传图片到腾讯云
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-08-27
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/oe3pu-3GBGg/" class="post-tag">
+                  # 小程序
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/hHHzJqiTzdW/" class="post-tag">
+                  # weixin
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/T9A_O6Ryeb-/" class="post-tag">
+                  # swagger
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>这是小程序开发第二篇，主要介绍如何上传图片到腾讯云，之所以选择腾讯云，是因为腾讯云免费空间大😂</p>
+</blockquote>
+<h2 id="准备工作">准备工作</h2>
+<p>上传图片主要是将图片上传到腾讯云对象存储（COS）。</p>
+<p>要使用对象存储 API，需要先执行以下步骤：</p>
+<ol>
+<li>购买腾讯云对象存储（COS）服务</li>
+<li>在腾讯云 <a href="https://console.qcloud.com/cos4/index">对象存储控制台</a> 里创建一个 Bucket</li>
+<li>在控制台 <a href="https://console.qcloud.com/capi">个人 API 密钥</a> 页面里获取 AppID、SecretID、SecretKey 内容</li>
+<li>编写一个请求签名算法程序（或使用任何一种服务端 SDK）</li>
+<li>计算签名，调用 API 执行操作</li>
+</ol>
+<p>所以我们要做的准备工作有：</p>
+<ul>
+<li>进入<a href="https://www.qcloud.com">腾讯云官网</a>，注册帐号</li>
+<li>登录<a href="https://console.qcloud.com/cos4">云对象存储服务（COS）控制台</a>，开通COS服务，创建资源需要上传的Bucket</li>
+<li>在小程序官网上配置域名信息（否则无法在小程序中发起对该域名的请求）</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/dloLMnRv8lJosOZt_gv9apWHmFRKfBcUtw0bgXR-Q_uSnmuQK5uP822b6lrYqlxq" alt="image" loading="lazy"></figure>
+<p>这些配置过程这里就不做说明了，接下来主要介绍步骤4、5。</p>
+<p>小程序上传图片到 cos 流程如下图：</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/LC4VsGph5WEJrKEGK7pbyaJGRpshIMx9H4qh804WDJNiInrIirAmNMvQPXMltb0a" alt="图片上传流程图" loading="lazy"></figure>
+<p>在这个过程中我们需要实现的是，鉴权服务器返回签名的步骤以及小程序的相关步骤。</p>
+<h2 id="cos鉴权服务">COS鉴权服务</h2>
+<p>使用对象存储服务 COS 时，可通过 RESTful API 对 COS 发起 HTTP 匿名请求或 HTTP 签名请求，对于签名请求，COS 服务器端将会进行对请求发起者的身份验证。</p>
+<ul>
+<li>匿名请求：HTTP 请求不携带任何身份标识和鉴权信息，通过 RESTful API 进行 HTTP 请求操作。</li>
+<li>签名请求：HTTP 请求时添加签名，COS服务器端收到消息后，进行身份验证，验证成功则可接受并执行请求，否则将会返回错误信息并丢弃此请求。<br>
+腾讯云COS对象存储，基于密钥 HMAC (Hash Message Authentication Code) 的自定义 HTTP 方案进行身份验证。</li>
+</ul>
+<p>上传图片是一个签名请求，需要进行签名验证。之所以我们</p>
+<h3 id="签名流程">签名流程</h3>
+<p>客户通过对 HTTP 请求进行签名，并将签名后的请求发送至腾讯云进行签名验证，具体流程如下图所示。</p>
+<figure data-type="image" tabindex="3"><img src="https://mc.qcloudimg.com/static/img/4a1eb29033caa977c648cb84d9398fdd/image.png" alt="签名流程" loading="lazy"></figure>
+<p>我们使用 sdk 开发，这个流程大致了解下就行，签名的实现 sdk 已经包含，只需要调用方法即可。</p>
+<p>通过签名流程我们可以知道，签名需要 SecretId 和 SecretKey，这两个信息不适合存放在客户端中，这也是我们单独部署一个鉴权服务器的主要原因。</p>
+<h3 id="签名生成-api">签名生成 API</h3>
+<p>上一篇<a href="">小程序开发：python sanic 实现小程序登录注册</a> 我们介绍过，服务端使用 <a href="https://github.com/channelcat/sanic"><code>sanic</code></a> 框架 + <a href="https://github.com/guokr/swagger-py-codegen"><code>swagger_py_codegen</code></a> 生成 rest-api。</p>
+<p>添加签名生成 api 我们需要先在文档中添加 API 的相关描述。<a href="https://github.com/gusibi/Metis/blob/master/docs/v1.yml">文档代码：https://github.com/gusibi/Metis/blob/master/docs/v1.yml</a></p>
+<pre><code class="language-yml">    /qc_cos/config:
+        get:
+            summary: 腾讯云配置
+            description: 腾讯云配置
+            tags: [Config]
+            operationId: get_qc_cos_config
+            parameters:
+                - $ref: '#/parameters/AccessToken'
+                - $ref: '#/parameters/qcos_path_in_query'
+            responses:
+                200:
+                    schema:
+                        $ref: '#/definitions/QCOSConfig'
+                default:
+                    description: Unexpected error
+                    schema:
+                        $ref: '#/definitions/Error'
+            security:
+                - OAuth2: [open]
+</code></pre>
+<blockquote>
+<p>这个接口我们要求登录才能调用。<br>
+文档定义完成之后，调用</p>
+</blockquote>
+<pre><code class="language-sh">swagger_py_codegen -s  docs/v1.yml . -p apis -tlp sanic
+</code></pre>
+<p>生成代码模板，API 代码实现如下：</p>
+<pre><code class="language-python">    from qcloud_cos.cos_auth import Auth
+    
+    async def get(self, request):
+        auth = Auth(appid=Config.QCOS_APPID,
+                    secret_id=Config.QCOS_SECRET_ID,
+                    secret_key=Config.QCOS_SECRET_KEY)
+        expired = time() + 3600 # 签名有效时间 3600 秒
+        # 上传到 cos bucket 的目录
+        dir_name = request.raw_args.get('cos_path', '/xrzeti')
+        # 生成签名
+        sign = auth.sign_more(Config.QCOS_BUCKET_NAME,
+                              cos_path=dir_name,
+                              expired=expired)
+        return {&quot;sign&quot;: sign}, 200
+</code></pre>
+<blockquote>
+<p>由于 腾讯云COSv4 的Python SDK 只支持 python2，而 sanic 需要 python3.5+ 所以，这里我 fork 出来一份添加了 python3 的支持。<br>
+<a href="https://github.com/gusibi/cos-python-sdk-v4">https://github.com/gusibi/cos-python-sdk-v4</a>。使用 python3 环境的可以使用这个版本。</p>
+</blockquote>
+<h2 id="上传图片到-cos">上传图片到 cos</h2>
+<h3 id="选择图片">选择图片</h3>
+<blockquote>
+<p><code>wx.chooseImage(OBJECT)</code><br>
+从本地相册选择图片或使用相机拍照。</p>
+</blockquote>
+<p>调用这个方法，小程序会把选择的图片放到临时路径（在小程序本次启动期间可以正常使用，如需持久保存，需在主动调用 wx.saveFile，在小程序下次启动时才能访问得到），我们只能将临时路径的文件上传。</p>
+<p>核心代码如下：</p>
+<pre><code class="language-js">    uploadToCos: function () {
+        var that = this;
+
+        // 选择上传的图片
+        wx.chooseImage({
+            sizeType: ['original', 'compressed'], // 图片类型 original 原图，compressed 压缩图，默认二者都有
+            success: function (res) {
+
+                // 获取文件路径
+                var file = res.tempFiles[0];
+                console.log(file.size);
+
+                // 获取文件名
+                var fileName = file.path.match(/(wxfile:\/\/)(.+)/)
+                fileName = fileName[2]
+
+                // 获取到图片临时路径后，指定文件名 上传到cos
+                upload(file.path, fileName, that);
+            }
+        })
+    }
+    
+</code></pre>
+<p>这里图片选择成功后，我们取原图上传到 cos。</p>
+<h3 id="上传图片">上传图片</h3>
+<p>cos 上传图片的URL由 cos_region，appid，bucket_name和 cos_dir_name 拼接而成。<br>
+把以下字段配置成自己的cos相关信息，详情可看<a href="https://www.qcloud.com/document/product/436/6066">API文档</a></p>
+<pre><code class="language-js">cosUrl = &quot;https://&quot; + REGION + &quot;.file.myqcloud.com/files/v2/&quot; + APPID + &quot;/&quot; + BUCKET_NAME + DIR_NAME;
+</code></pre>
+<blockquote>
+<p><code>REGION</code>: cos上传的地区<br>
+<code>APPID</code>: 账号的appid<br>
+<code>BUCKET_NAME</code>: cos bucket的名字<br>
+<code>DIR_NAME</code>: 上传的文件目录</p>
+</blockquote>
+<pre><code class="language-js">var config = require('../config.js');
+// 先确定上传的 URL
+var cosUrl = &quot;https://&quot; + config.cos_region + &quot;.file.myqcloud.com/files/v2/&quot; + config.cos_appid + &quot;/&quot; + config.cos_bucket_name + config.cos_dir_name;
+
+//填写自己的鉴权服务器地址
+var cosSignatureUrl = config.host + '/v1/qc_cos/config?cos_path=' + config.cos_dir_name;
+
+/**
+ * 上传方法
+ * filePath: 上传的文件路径
+ * fileName： 上传到cos后的文件名
+ * that: 小程序所在当前页面的 object
+ */
+function upload(filePath, fileName, that) {
+    var data;
+
+    // 鉴权获取签名
+    wx.request({
+        url: cosSignatureUrl,
+        header: {
+            Authorization: 'JWT' + ' ' + that.data.jwt.access_token
+        },
+        success: function (cosRes) {
+            // 获取签名
+            var signature = cosRes.data.sign;
+
+            // 头部带上签名，上传文件至COS
+            var uploadTask = wx.uploadFile({
+                url: cosUrl + '/' + fileName,
+                filePath: filePath,
+                header: {
+                    'Authorization': signature
+                },
+                name: 'filecontent',
+                formData: {
+                    op: 'upload'
+                },
+                success: function (uploadRes) {
+                    // 上传成功后的操作
+                    var upload_res = JSON.parse(uploadRes.data)
+                    var files = that.data.files;
+                    files.push(upload_res.data.source_url);
+                    that.setData({
+                        upload_res: upload_res,
+                        files: files,
+                        test_image: upload_res.data.source_url
+                    })
+                },
+                fail: function (e) {
+                    console.log('e', e)
+                }
+            });
+            // 上传进度条
+            uploadTask.onProgressUpdate((res) =&gt; {
+                that.setData({
+                    upload_progress: res.progress
+                })
+                if (res.progress === 100){
+                    that.setData({
+                        upload_progress: 0
+                    })
+                }
+            })
+        }
+    })
+    return data
+}
+</code></pre>
+<p>小程序提供了 <code>uploadTask.onProgressUpdate()</code> 来获取图片的上传进度，这里我将图片的上传进度显示了出来。</p>
+<p>完整代码参考：<a href="https://github.com/gusibi/Metis-wxapp/tree/master/dist">metis-wxapp: https://github.com/gusibi/Metis-wxapp</a></p>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://github.com/tencentyun/wecos-ugc-upload-demo/blob/master/README.md">WeCOS-UGC-DEMO——微信小程序用户资源上传COS示例</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="5"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C">准备工作</a></li>
+<li><a href="#cos%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1">COS鉴权服务</a>
+<ul>
+<li><a href="#%E7%AD%BE%E5%90%8D%E6%B5%81%E7%A8%8B">签名流程</a></li>
+<li><a href="#%E7%AD%BE%E5%90%8D%E7%94%9F%E6%88%90-api">签名生成 API</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%8A%E4%BC%A0%E5%9B%BE%E7%89%87%E5%88%B0-cos">上传图片到 cos</a>
+<ul>
+<li><a href="#%E9%80%89%E6%8B%A9%E5%9B%BE%E7%89%87">选择图片</a></li>
+<li><a href="#%E4%B8%8A%E4%BC%A0%E5%9B%BE%E7%89%87">上传图片</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/python-decorator/">
+              <h3 class="post-title">
+                Python 装饰器使用指南
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

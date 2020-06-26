@@ -1,0 +1,833 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PostgreSQL jsonb 使用入门 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="PostgreSQL jsonb 使用入门 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="json 类型
+说明
+根据RFC 7159中的说明，JSON 数据类型是用来存储 JSON（JavaScript Object Notation）数据的。这种数据也可以被存储为text，但是 JSON 数据类型的优势在于能强制要求每个被存储..." />
+    <meta name="keywords" content="tutorial,database" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              PostgreSQL jsonb 使用入门
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-05-30
+              </span>
+              <span>
+                27 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/SS95MaqZ5J/" class="post-tag">
+                  # database
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h2 id="json-类型">json 类型</h2>
+<h3 id="说明">说明</h3>
+<p>根据<a href="https://tools.ietf.org/html/rfc7159">RFC 7159</a>中的说明，JSON 数据类型是用来存储 JSON（JavaScript Object Notation）数据的。这种数据也可以被存储为<code>text</code>，但是 JSON 数据类型的优势在于能强制要求每个被存储的值符合 JSON 规则。也有很多 JSON 相关的函数和操作符可以用于存储在这些数据类型中的数据</p>
+<p>PostgreSQL支持两种 JSON 数据类型：json 和 jsonb。它们几乎接受完全相同的值集合作为输入。两者最大的区别是效率。json数据类型存储输入文本的精准拷贝，处理函数必须在每 次执行时必须重新解析该数据。而jsonb数据被存储在一种分解好的二进制格式中，因为需要做附加的转换，它在输入时要稍慢一些。但是 jsonb在处理时要快很多，因为不需要重新解析。</p>
+<blockquote>
+<p>重点：jsonb支持索引</p>
+</blockquote>
+<p>由于json类型存储的是输入文本的准确拷贝，存储时会空格和JSON 对象内部的键的顺序。如果一个值中的 JSON 对象包含同一个键超过一次，所有的键/值对都会被保留（** 处理函数会把最后的值当作有效值**）。</p>
+<p>jsonb不保留空格、不保留对象键的顺序并且不保留重复的对象键。如果在输入中指定了重复的键，只有最后一个值会被保留。</p>
+<blockquote>
+<p>推荐把JSON 数据存储为jsonb</p>
+</blockquote>
+<p>在把文本 JSON 输入转换成jsonb时，JSON的基本类型（<a href="https://tools.ietf.org/html/rfc7159">RFC 7159 </a>）会被映射到原生的 PostgreSQL类型。因此，jsonb数据有一些次要额外约束。<br>
+<code>比如：</code>jsonb将拒绝除 PostgreSQL numeric数据类型范围之外的数字，而json则不会。</p>
+<p><strong>JSON 基本类型和相应的PostgreSQL类型</strong></p>
+<table>
+<thead>
+<tr>
+<th>JSON 基本类型</th>
+<th>PostgreSQL类型</th>
+<th>注释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>string</code></td>
+<td><code>text</code></td>
+<td>不允许<code>\u0000</code>，如果数据库编码不是 UTF8，非 ASCII Unicode 转义也是这样</td>
+</tr>
+<tr>
+<td><code>number</code></td>
+<td><code>numeric</code></td>
+<td>不允许<code>NaN</code> 和 <code>infinity</code>值</td>
+</tr>
+<tr>
+<td><code>boolean</code></td>
+<td><code>boolean</code></td>
+<td>只接受小写<code>true</code>和<code>false</code>拼写</td>
+</tr>
+<tr>
+<td><code>null</code></td>
+<td>(无)</td>
+<td>SQL <code>NULL</code>是一个不同的概念</td>
+</tr>
+</tbody>
+</table>
+<h3 id="json-输入输出语法">json 输入输出语法</h3>
+<pre><code class="language-sql">-- 简单标量/基本值
+-- 基本值可以是数字、带引号的字符串、true、false或者null
+SELECT '5'::json;
+
+-- 有零个或者更多元素的数组（元素不需要为同一类型）
+SELECT '[1, 2, &quot;foo&quot;, null]'::json;
+
+-- 包含键值对的对象
+-- 注意对象键必须总是带引号的字符串
+SELECT '{&quot;bar&quot;: &quot;baz&quot;, &quot;balance&quot;: 7.77, &quot;active&quot;: false}'::json;
+
+-- 数组和对象可以被任意嵌套
+SELECT '{&quot;foo&quot;: [true, &quot;bar&quot;], &quot;tags&quot;: {&quot;a&quot;: 1, &quot;b&quot;: null}}'::json;
+
+-- &quot;-&gt;&quot; 通过键获得 JSON 对象域 结果为json对象
+select '{&quot;nickname&quot;: &quot;goodspeed&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::json-&gt;'nickname' as nickname;
+ nickname
+-------------
+ &quot;goodspeed&quot;
+
+-- &quot;-&gt;&gt;&quot; 通过键获得 JSON 对象域 结果为text 
+select '{&quot;nickname&quot;: &quot;goodspeed&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::json-&gt;&gt;'nickname' as nickname;
+ nickname
+-----------
+ goodspeed
+ 
+-- &quot;-&gt;&quot; 通过键获得 JSON 对象域 结果为json对象
+select '{&quot;nickname&quot;: &quot;goodspeed&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb-&gt;'nickname' as nickname;
+ nickname
+-------------
+ &quot;goodspeed&quot;
+
+-- &quot;-&gt;&gt;&quot; 通过键获得 JSON 对象域 结果为text 
+select '{&quot;nickname&quot;: &quot;goodspeed&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb-&gt;&gt;'nickname' as nickname;
+ nickname
+-----------
+ goodspeed
+</code></pre>
+<p>当一个 JSON 值被输入并且接着不做任何附加处理就输出时， json会输出和输入完全相同的文本，而jsonb 则不会保留语义上没有意义的细节</p>
+<pre><code class="language-sql">SELECT '{&quot;bar&quot;: &quot;baz&quot;, &quot;balance&quot;: 7.77, &quot;active&quot;:false}'::json;
+                      json                       
+-------------------------------------------------
+ {&quot;bar&quot;: &quot;baz&quot;, &quot;balance&quot;: 7.77, &quot;active&quot;:false}
+
+-- jsonb 不会保留语义上的细节，key 的顺序也和原始数据不一致
+SELECT '{&quot;bar&quot;: &quot;baz&quot;, &quot;balance&quot;: 7.77, &quot;active&quot;:false}'::jsonb;
+                      jsonb                       
+--------------------------------------------------
+ {&quot;bar&quot;: &quot;baz&quot;, &quot;active&quot;: false, &quot;balance&quot;: 7.77}
+</code></pre>
+<h3 id="json-查询语法">json 查询语法</h3>
+<blockquote>
+<p>在使用JSON文档时，推荐 将JSON 文档存储为固定的结构。（该结构是非强制的，但是有一个可预测的结构会使集合的查询更容易。 ）<br>
+<code>设计JSON文档建议：</code>任何更新都在整行上要求一个行级锁。为了减少锁争夺，JSON 文档应该每个表示 一个原子数据（业务规则上的不可拆分，可独立修改的数据）。</p>
+</blockquote>
+<blockquote>
+<p><strong>这些常用的比较操作符只对jsonb 有效，而不适用于json</strong></p>
+</blockquote>
+<p><strong>常用的比较操作符</strong></p>
+<table>
+<thead>
+<tr>
+<th>操作符</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;</code></td>
+<td>小于</td>
+</tr>
+<tr>
+<td><code>&gt;</code></td>
+<td>大于</td>
+</tr>
+<tr>
+<td><code>&lt;=</code></td>
+<td>小于等于</td>
+</tr>
+<tr>
+<td><code>&gt;=</code></td>
+<td>大于等于</td>
+</tr>
+<tr>
+<td><code>=</code></td>
+<td>等于</td>
+</tr>
+<tr>
+<td><code>&lt;&gt;</code> or <code>!=</code></td>
+<td>不等于</td>
+</tr>
+</tbody>
+</table>
+<h4 id="包含和存在">包含和存在</h4>
+<h5 id="json-数据查询适用于jsonb">json 数据查询（适用于jsonb）</h5>
+<p><strong>json和jsonb 操作符</strong></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/PKR8RaA4jTwGLXslUgbb0BF9dM4fnKENY91UUx_BVSLZJ4wzg0s3eHuHbT6r2wgM" alt="" loading="lazy"></figure>
+<h6 id="-和-操作符"><code>-&gt; 和 -&gt;&gt;</code> 操作符</h6>
+<blockquote>
+<p>使用 -&gt;&gt; 查出的数据为text<br>
+使用 -&gt; 查出的数据为json 对象</p>
+</blockquote>
+<pre><code class="language-sql">-- nickname 为 gs 的用户 这里使用 -&gt;&gt; 查出的数据为text，所以匹配项也应该是text
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::json-&gt;&gt;'nickname' = 'gs';
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb-&gt;&gt;'nickname' = 'gs';
+
+-- 使用 -&gt; 查询，会抛出错误，这里无论匹配项是text类型的 'gs'  还是 json 类型的 '&quot;gs&quot;'::json都会抛出异常，json 类型不支持 等号（=）操作符
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::json-&gt;'nickname' = '&quot;gs&quot;';
+ERROR:  operator does not exist: json = unknown
+-- json 类型不支持 &quot;=&quot; 操作符
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::json-&gt;'nickname' = '&quot;gs&quot;'::json;
+ERROR:  operator does not exist: json = json
+
+-- jsonb 格式是可以查询成功的，这里使用 -&gt; 查出的数据为json 对象，所以匹配项也应该是json 对象
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb-&gt;'nickname' = '&quot;gs&quot;';
+</code></pre>
+<h6 id="和-操作符"><code>#&gt; 和 #&gt;&gt;</code> 操作符</h6>
+<blockquote>
+<p>使用 #&gt;&gt; 查出的数据为text<br>
+使用 #&gt; 查出的数据为json 对象</p>
+</blockquote>
+<pre><code class="language-sql">select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::json#&gt;'{tags,0}' as tag;
+   tag
+----------
+ &quot;python&quot;
+
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::json#&gt;&gt;'{tags,0}' as tag;
+  tag
+--------
+ python
+ 
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb#&gt;'{tags,0}' = '&quot;python&quot;';
+ ?column?
+----------
+ t
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb#&gt;&gt;'{tags,0}' = 'python';
+ ?column?
+----------
+ t
+
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::json#&gt;&gt;'{tags,0}' = 'python';
+ ?column?
+----------
+ t
+-- 会抛出错误，这里无论匹配项是text类型的 'python'  还是 json 类型的 '&quot;python&quot;'::json都会抛出异常，json 类型不支持 等号（=）操作符
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::json#&gt;'{tags,0}' = '&quot;python&quot;';
+ERROR:  operator does not exist: json = unknown
+</code></pre>
+<h5 id="jsonb-数据查询不适用于json">jsonb 数据查询（不适用于json）</h5>
+<p>** 额外的jsonb操作符**</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/-xkIrM_CZ63Hsh7QQdcQsDe35gDFNOrmSKpmZ9_UoYPawclXzGGg0cD-Ar6wQvR1" alt="" loading="lazy"></figure>
+<h6 id="操作符"><code>@&gt;</code>操作符</h6>
+<pre><code class="language-sql">-- nickname 为 nickname 的用户
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb @&gt; '{&quot;nickname&quot;: &quot;gs&quot;}'::jsonb;
+
+-- 等同于以下查询
+-- 这里使用 -&gt; 查出的数据为json 对象，所以匹配项也应该是json 对象
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb-&gt;'nickname' = '&quot;gs&quot;';
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb-&gt;&gt;'nickname' = 'gs';
+
+-- 查询有 python 和 golang 标签的数据
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb @&gt; '{&quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;]}';
+ ?column?
+----------
+ t
+</code></pre>
+<h6 id="操作符-操作符和操作符"><code>?</code>操作符、<code>?|</code>操作符和<code>?&amp;</code>操作符</h6>
+<pre><code class="language-sql">-- 查询有 avatar 属性的用户
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb ? 'avatar';
+-- 查询有 avatar 属性 并且avatar 数据不为空的数据
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: null, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb-&gt;&gt;'avatar' is not null;
+
+-- 查询 有 avatar 或 tags 的数据
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb ?| array['avatar', 'tags'];
+ ?column?
+----------
+ t
+
+-- 查询 既有 avatar 又有 tags 的用户
+select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb ?&amp; array['avatar', 'tags'];
+ ?column?
+----------
+ f
+ 
+ -- 查询 tags 中包含 python 标签的数据
+ select '{&quot;nickname&quot;: &quot;gs&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}'::jsonb-&gt;'tags' ? 'python';
+ ?column?
+----------
+ t
+</code></pre>
+<h3 id="json-更新">json 更新</h3>
+<pre><code class="language-sql">-- 更新 account content 字段（覆盖式更新）
+update account set content = jsonb_set(content, '{}', '{&quot;nickname&quot;: &quot;gs&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;db&quot;]}', false);
+
+-- 修改nickanme为nickanme 的用户标签
+update account set content = jsonb_set(content, '{tags}', '[&quot;test&quot;, &quot;心理&quot;]', true) where content @&gt; '{&quot;nickname&quot;: &quot;nickname&quot;}'::jsonb;
+
+update account set content = jsonb_set(content, '{tags}', '[&quot;test&quot;, &quot;心理&quot;, &quot;医疗&quot;]', true) where content @&gt; '{&quot;nickname&quot;: &quot;nickname&quot;}'::jsonb;
+
+-- 更新account content字段中 weixin_mp 的值（如果没有会创建）
+
+update account set content = jsonb_set(content, '{weixin_mp}', '&quot;weixin_mp5522bd28-ed4d-11e8-949c-7200014964f0&quot;', true) where id='5522bd28-ed4d-11e8-949c-7200014964f0';
+
+-- 更新account 去除content 中weixin 字段（如果没有weixin 字段也不会抛出异常）
+update account set content= content - 'weixin' where id='5522bd28-ed4d-11e8-949c-7200014964f0';
+</code></pre>
+<h3 id="json-函数">json 函数</h3>
+<h4 id="jsonb_pretty">jsonb_pretty</h4>
+<blockquote>
+<p>作为缩进JSON文本返回from_json。</p>
+</blockquote>
+<pre><code class="language-sql">select jsonb_pretty('[{&quot;f1&quot;:1,&quot;f2&quot;:null},2,null,3]');
+    jsonb_pretty
+--------------------
+ [                 +
+     {             +
+         &quot;f1&quot;: 1,  +
+         &quot;f2&quot;: null+
+     },            +
+     2,            +
+     null,         +
+     3             +
+ ]
+(1 row)
+</code></pre>
+<h4 id="jsonb_set">jsonb_set</h4>
+<p>jsonb_set() 函数参数如下：</p>
+<pre><code class="language-c">jsonb_set(target         jsonb,  // 需要修改的数据
+          path           text[], // 数据路径
+          new_value      jsonb,  // 新数据
+          create_missing boolean default true)
+</code></pre>
+<blockquote>
+<p>如果create_missing 是true （缺省是true），并且path指定的路径在target 中不存在，那么target将包含path指定部分， new_value替换部分， 或者new_value添加部分。</p>
+</blockquote>
+<pre><code class="language-sql">-- target 结构
+select jsonb_pretty('[{&quot;f1&quot;:1,&quot;f2&quot;:null},2]');
+    jsonb_pretty
+--------------------
+ [                 +
+     {             +
+         &quot;f1&quot;: 1,  +
+         &quot;f2&quot;: null+
+     },            +
+     2             +
+ ]
+
+-- 更新 target 第0 个元素 key 为 f1 的值，如果f1 不存在 忽略
+select jsonb_set('[{&quot;f1&quot;:1,&quot;f2&quot;:null},2,null,3]', '{0,f1}','[2,3,4]', false);
+                  jsonb_set
+---------------------------------------------
+ [{&quot;f1&quot;: [2, 3, 4], &quot;f2&quot;: null}, 2, null, 3]
+
+-- 更新 target 第0 个元素 key 为 f3 的值，如果f3 不存在 创建 
+select jsonb_set('[{&quot;f1&quot;:1,&quot;f2&quot;:null},2]', '{0,f3}','[2,3,4]');
+                  jsonb_set
+---------------------------------------------
+ [{&quot;f1&quot;: 1, &quot;f2&quot;: null, &quot;f3&quot;: [2, 3, 4]}, 2]
+ 
+ -- 更新 target 第0 个元素 key 为 f3 的值，如果f3 不存在 忽略
+select jsonb_set('[{&quot;f1&quot;:1,&quot;f2&quot;:null},2]', '{0,f3}','[2,3,4]', false);
+                  jsonb_set
+---------------------------------------------
+ [{&quot;f1&quot;: 1, &quot;f2&quot;: null}, 2]
+</code></pre>
+<p>详细的json 函数和操作符可以参考文档：<a href="http://www.postgres.cn/docs/9.5/functions-json.html">JSON 函数和操作符</a></p>
+<h2 id="jsonb-性能分析">jsonb 性能分析</h2>
+<p>我们使用下面的例子来说明一下json 的查询性能</p>
+<h3 id="表结构">表结构</h3>
+<pre><code class="language-sql">-- account 表 id 使用uuid 类型，需要先添加uuid-ossp模块。
+CREATE EXTENSION IF NOT EXISTS &quot;uuid-ossp&quot;;
+
+-- create table
+create table account (id UUID NOT NULL PRIMARY KEY default uuid_generate_v1(), content jsonb, created_at timestamptz DEFAULT CURRENT_TIMESTAMP, updated_at timestamptz DEFAULT CURRENT_TIMESTAMP);
+json=&gt; \d account
+                               Table &quot;public.account&quot;
+    Column    |           Type           | Collation | Nullable |      Default
+--------------+--------------------------+-----------+----------+--------------------
+ id           | uuid                     |           | not null |uuid_generate_v1()
+ content      | jsonb                    |           |          |
+ created_at   | timestamp with time zone |           |          | CURRENT_TIMESTAMP
+ updated_at   | timestamp with time zone |           |          | CURRENT_TIMESTAMP
+Indexes:
+    &quot;account_pkey&quot; PRIMARY KEY, btree (id)
+</code></pre>
+<blockquote>
+<p>一个好的实践是把 created_at和 updated_at 也放入jsonb 字段，这里只是示例</p>
+</blockquote>
+<p>content 数据结构为：</p>
+<pre><code class="language-json">content = {
+    &quot;nickname&quot;: {&quot;type&quot;: &quot;string&quot;},
+    &quot;avatar&quot;: {&quot;type&quot;: &quot;string&quot;},
+    &quot;weixin&quot;: {&quot;type&quot;: &quot;string&quot;},
+    &quot;tags&quot;: {&quot;type&quot;: &quot;array&quot;, &quot;items&quot;: {&quot;type&quot;: &quot;string&quot;}},
+}
+</code></pre>
+<h3 id="准备数据">准备数据</h3>
+<p><strong>批量插入数据</strong></p>
+<pre><code class="language-sql">-- 插入100w条有 nickname avatar tags 为[&quot;python&quot;, &quot;golang&quot;, &quot;c&quot;]的数据
+insert into account select uuid_generate_v1(), ('{&quot;nickname&quot;: &quot;nn-' || round(random()*20000000) || '&quot;, &quot;avatar&quot;: &quot;avatar_url&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;, &quot;c&quot;]}')::jsonb from (select * from generate_series(1,100000)) as tmp;
+
+-- 插入100w条有 nickname tags 为[&quot;python&quot;, &quot;golang&quot;]的数据
+insert into account select uuid_generate_v1(), ('{&quot;nickname&quot;: &quot;nn-' || round(random()*2000000) || '&quot;, &quot;tags&quot;: [&quot;python&quot;, &quot;golang&quot;]}')::jsonb from (select * from generate_series(1,1000000)) as tmp;
+
+-- 插入100w条有 nickname tags 为[&quot;python&quot;]的数据
+insert into account select uuid_generate_v1(), ('{&quot;nickname&quot;: &quot;nn-' || round(random()*2000000) || '&quot;, &quot;tags&quot;: [&quot;python&quot;]}')::jsonb from (select * from generate_series(1,1000000)) as tmp;
+</code></pre>
+<h3 id="测试查询">测试查询</h3>
+<ul>
+<li>EXPLAIN：显示PostgreSQL计划程序为提供的语句生成的执行计划。</li>
+<li>ANALYZE：收集有关数据库中表的内容的统计信息。</li>
+</ul>
+<pre><code class="language-sql">
+--content 中有avatar key 的数据条数 count(*) 查询不是一个好的测试语句，就算是有索引，也只能起到过滤的作用，如果结果集比较大，查询速度还是会很慢
+explain analyze select count(*) from account where content::jsonb ? 'avatar';
+                   QUERY PLAN
+----------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=29280.40..29280.41 rows=1 width=8) (actual time=170.366..170.366 rows=1 loops=1)
+   -&gt;  Gather  (cost=29280.19..29280.40 rows=2 width=8) (actual time=170.119..174.451 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         -&gt;  Partial Aggregate  (cost=28280.19..28280.20 rows=1 width=8) (actual time=166.034..166.034 rows=1 loops=3)
+               -&gt;  Parallel Seq Scan on account  (cost=0.00..28278.83 rows=542 width=0) (actual time=0.022..161.937 rows=33333 loops=3)
+                     Filter: (content ? 'avatar'::text)
+                     Rows Removed by Filter: 400000
+ Planning Time: 0.048 ms
+ Execution Time: 174.486 ms
+
+
+-- content 中没有avatar key 的数据条数
+explain analyze select count(*) from account where content::jsonb ? 'avatar' = false;
+                QUERY PLAN
+----------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=30631.86..30631.87 rows=1 width=8) (actual time=207.770..207.770 rows=1 loops=1)
+   -&gt;  Gather  (cost=30631.65..30631.86 rows=2 width=8) (actual time=207.681..212.357 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         -&gt;  Partial Aggregate  (cost=29631.65..29631.66 rows=1 width=8) (actual time=203.565..203.565 rows=1 loops=3)
+               -&gt;  Parallel Seq Scan on account  (cost=0.00..28278.83 rows=541125 width=0) (actual time=0.050..163.629 rows=400000 loops=3)
+                     Filter: (NOT (content ? 'avatar'::text))
+                     Rows Removed by Filter: 33333
+ Planning Time: 0.050 ms
+ Execution Time: 212.393 ms
+</code></pre>
+<pre><code class="language-sql">--查询content 中nickname 为nn-194318的数据
+explain analyze select * from account where content@&gt;'{&quot;nickname&quot;: &quot;nn-194318&quot;}';
+                                                         QUERY PLAN
+----------------------------------------------------------------------------------------
+ Gather  (cost=1000.00..29408.83 rows=1300 width=100) (actual time=0.159..206.990 rows=1 loops=1)
+   Workers Planned: 2
+   Workers Launched: 2
+   -&gt;  Parallel Seq Scan on account  (cost=0.00..28278.83 rows=542 width=100) (actual time=130.867..198.081 rows=0 loops=3)
+         Filter: (content @&gt; '{&quot;nickname&quot;: &quot;nn-194318&quot;}'::jsonb)
+         Rows Removed by Filter: 433333
+ Planning Time: 0.047 ms
+ Execution Time: 207.007 ms
+ 
+-- 对应的查询id 为 'b5b3ed06-7d35-11e9-b3ea-00909e9dab1d' 的数据
+explain analyze select * from account where id='b5b3ed06-7d35-11e9-b3ea-00909e9dab1d';
+                                                       QUERY PLAN
+----------------------------------------------------------------------------------------
+ Index Scan using account_pkey on account  (cost=0.43..8.45 rows=1 width=100) (actual time=0.912..0.914 rows=1 loops=1)
+   Index Cond: (id = 'b5b3ed06-7d35-11e9-b3ea-00909e9dab1d'::uuid)
+ Planning Time: 0.348 ms
+ Execution Time: 0.931 ms
+</code></pre>
+<p>通过结果可以看到 使用 jsonb 查询和使用主键查询速度差异巨大，通过看查询分析记录可以看到，这两个语句最大的差别在于使用主键的查询用到了索引，而content nickname 的查询没有索引可以使用。<br>
+接下来测试一下使用索引时的查询速度。</p>
+<h3 id="索引">索引</h3>
+<h4 id="gin-索引介绍">GIN 索引介绍</h4>
+<p>JSONB 最常用的是<code>GIN</code> 索引，GIN 索引可以被用来有效地搜索在大量jsonb文档（数据）中出现 的键或者键值对。</p>
+<blockquote>
+<p>GIN(Generalized Inverted Index, 通用倒排索引) 是一个存储对(key, posting list)集合的索引结构，其中key是一个键值，而posting list 是一组出现过key的位置。如(‘hello', '14:2 23:4')中，表示hello在14:2和23:4这两个位置出现过，在PG中这些位置实际上就是元组的tid(行号，包括数据块ID（32bit）,以及item point(16 bit) )。</p>
+<p>在表中的每一个属性，在建立索引时，都可能会被解析为多个键值，所以同一个元组的tid可能会出现在多个key的posting list中。</p>
+<p>通过这种索引结构可以快速的查找到包含指定关键字的元组，因此GIN索引特别适用于多值类型的元素搜索，比如支持全文搜索，数组中元素的搜索，而PG的GIN索引模块最初也是为了支持全文搜索而开发的。</p>
+</blockquote>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/olurF8ptRiSWx6WsIThgzKL-QkLlIJB_qF0QTYy5fvhce4-e-ATPQ4O8byaE75IE" alt="gin 索引数据结构" loading="lazy"></figure>
+<p><code>jsonb</code>的默认 GIN 操作符类支持使用顶层键存在运算符<code>?</code>、<code>?&amp;</code>以及<code>?|</code> 操作符和路径/值存在运算符<code>@&gt;</code>的查询。</p>
+<pre><code class="language-sql">-- 创建默认索引
+CREATE INDEX idxgin ON api USING GIN (jdoc);
+</code></pre>
+<p>非默认的 GIN 操作符类<code>jsonb_path_ops</code>只支持索引<code>@&gt;</code>操作符。</p>
+<pre><code class="language-sql">-- 创建指定路径的索引
+CREATE INDEX idxginp ON api USING GIN (jdoc jsonb_path_ops);
+-- create index  ix_account_content_nickname_gin on account using gin (content, (content-&gt;'nickname'));
+-- create index  ix_account_content_tags_gin on account using gin (content, (content-&gt;'nickname'));
+-- create index  ix_account_content_tags_gin on account using gin ((content-&gt;'tags'));
+</code></pre>
+<h4 id="多索引支持">多索引支持</h4>
+<blockquote>
+<p>PostgreSQL 拥有开放的索引接口，使得PG支持非常丰富的索引方法，例如btree , hash , gin , gist , sp-gist , brin , bloom , rum , zombodb , bitmap (greenplum extend)，用户可以根据不同的数据类型，以及查询的场景，选择不同的索引。</p>
+</blockquote>
+<h4 id="查询优化">查询优化</h4>
+<p><strong>创建默认索引</strong></p>
+<pre><code class="language-sql">-- 创建简单索引
+create index ix_account_content on account USING GIN (content);
+</code></pre>
+<p>现在下面这样的查询就能使用该索引：</p>
+<pre><code class="language-sql">-- content 中有avatar key 的数据条数
+explain analyze select count(*) from account where content::jsonb ? 'avatar';
+                                                                QUERY PLAN
+------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=4180.49..4180.50 rows=1 width=8) (actual time=43.462..43.462 rows=1 loops=1)
+   -&gt;  Bitmap Heap Scan on account  (cost=30.07..4177.24 rows=1300 width=0) (actual time=8.362..36.048 rows=100000 loops=1)
+         Recheck Cond: (content ? 'avatar'::text)
+         Heap Blocks: exact=2032
+         -&gt;  Bitmap Index Scan on ix_account_content  (cost=0.00..29.75 rows=1300 width=0) (actual time=8.125..8.125 rows=100000 loops=1)
+               Index Cond: (content ? 'avatar'::text)
+ Planning Time: 0.078 ms
+ Execution Time: 43.503 ms
+</code></pre>
+<p>和之前没有添加索引时速度提升了3倍。</p>
+<pre><code class="language-sql">-- 查询content 中nickname 为nn-194318的数据
+explain analyze select * from account where content@&gt;'{&quot;nickname&quot;: &quot;nn-194318&quot;}';
+                                                          QUERY PLAN
+----------------------------------------------------------------------------------------
+ Bitmap Heap Scan on account  (cost=46.08..4193.24 rows=1300 width=100) (actual time=0.097..0.097 rows=1 loops=1)
+   Recheck Cond: (content @&gt; '{&quot;nickname&quot;: &quot;nn-194318&quot;}'::jsonb)
+   Heap Blocks: exact=1
+   -&gt;  Bitmap Index Scan on ix_account_content  (cost=0.00..45.75 rows=1300 width=0) (actual time=0.091..0.091 rows=1 loops=1)
+         Index Cond: (content @&gt; '{&quot;nickname&quot;: &quot;nn-194318&quot;}'::jsonb)
+ Planning Time: 0.075 ms
+ Execution Time: 0.132 ms
+</code></pre>
+<p>这个查询效率提升更明显，竟然比使用主键还要高效。</p>
+<p><strong>但是下面这种查询并不能使用索引</strong>：</p>
+<pre><code class="language-sql">-- 查询content 中不存在 avatar key 的数据条数
+explain analyze select count(*) from account where content::jsonb ? 'avatar' = false;
+                                                                 QUERY PLAN
+----------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=30631.86..30631.87 rows=1 width=8) (actual time=207.641..207.641 rows=1 loops=1)
+   -&gt;  Gather  (cost=30631.65..30631.86 rows=2 width=8) (actual time=207.510..211.062 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         -&gt;  Partial Aggregate  (cost=29631.65..29631.66 rows=1 width=8) (actual time=203.739..203.739 rows=1 loops=3)
+               -&gt;  Parallel Seq Scan on account  (cost=0.00..28278.83 rows=541125 width=0) (actual time=0.024..163.444 rows=400000 loops=3)
+                     Filter: (NOT (content ? 'avatar'::text))
+                     Rows Removed by Filter: 33333
+ Planning Time: 0.068 ms
+ Execution Time: 211.097 ms
+</code></pre>
+<p>该索引也不能被用于下面这样的查询，因为尽管操作符<code>?</code> 是可索引的，但它不能直接被应用于被索引列content：</p>
+<pre><code class="language-sql">explain analyze select count(1) from account where content -&gt; 'tags' ? 'c';
+                                                               QUERY PLAN
+----------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=30634.57..30634.58 rows=1 width=8) (actual time=184.864..184.864 rows=1 loops=1)
+   -&gt;  Gather  (cost=30634.35..30634.56 rows=2 width=8) (actual time=184.754..189.652 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         -&gt;  Partial Aggregate  (cost=29634.35..29634.36 rows=1 width=8) (actual time=180.755..180.755 rows=1 loops=3)
+               -&gt;  Parallel Seq Scan on account  (cost=0.00..29633.00 rows=542 width=0) (actual time=0.022..177.051 rows=33333 loops=3)
+                     Filter: ((content -&gt; 'tags'::text) ? 'c'::text)
+                     Rows Removed by Filter: 400000
+ Planning Time: 0.074 ms
+ Execution Time: 189.716 ms
+</code></pre>
+<p><strong>使用表达式索引</strong></p>
+<pre><code class="language-sql">-- 创建路径索引
+create index ix_account_content_tags on account USING GIN ((content-&gt;'tags'));
+</code></pre>
+<pre><code class="language-sql">-- 测试查询性能
+explain analyze select count(1) from account where content -&gt; 'tags' ? 'c';
+                                                                   QUERY PLAN
+----------------------------------------------------------------------------------------
+ Aggregate  (cost=4631.74..4631.75 rows=1 width=8) (actual time=49.274..49.275 rows=1 loops=1)
+   -&gt;  Bitmap Heap Scan on account  (cost=478.07..4628.49 rows=1300 width=0) (actual time=8.655..42.074 rows=100000 loops=1)
+         Recheck Cond: ((content -&gt; 'tags'::text) ? 'c'::text)
+         Heap Blocks: exact=2032
+         -&gt;  Bitmap Index Scan on ix_account_content_tags  (cost=0.00..477.75 rows=1300 width=0) (actual time=8.417..8.417 rows=100000 loops=1)
+               Index Cond: ((content -&gt; 'tags'::text) ? 'c'::text)
+ Planning Time: 0.216 ms
+ Execution Time: 49.309 ms
+</code></pre>
+<p>现在，WHERE 子句<code>content -&gt; 'tags' ? 'c'</code> 将被识别为可索引操作符?在索引表达式<code>content -&gt; 'tags'</code> 上的应用。</p>
+<p>也可以利用包含查询的方式，例如：</p>
+<pre><code class="language-sql">-- 查寻 &quot;tags&quot; 包含数组元素 &quot;c&quot; 的数据的个数
+select count(1) from account where content @&gt; '{&quot;tags&quot;: [&quot;c&quot;]}';
+</code></pre>
+<p>content 列上的简单 GIN 索引（默认索引）就能支持索引查询。 但是索引将会<strong>存储content列中每一个键 和值的拷贝</strong>，<br>
+<strong>表达式索引</strong>只存储tags 键下找到的数据。</p>
+<blockquote>
+<p>虽然简单索引的方法更加灵活（因为它支持有关任意键的查询），但定向的表达式索引更小并且搜索速度比简单索引更快。<br>
+尽管jsonb_path_ops操作符类只支持用 @&gt;操作符的查询，但它比起默认的操作符类 jsonb_ops有更客观的性能优势。一个 jsonb_path_ops索引通常也比一个相同数据上的 jsonb_ops要小得多，并且搜索的专一性更好，特 别是当查询包含频繁出现在该数据中的键时。因此，其上的搜索操作 通常比使用默认操作符类的搜索表现更好。</p>
+</blockquote>
+<h2 id="总结">总结</h2>
+<ul>
+<li>PG 有两种 JSON 数据类型：<code>json</code> 和 <code>jsonb</code>，jsonb 性能优于json，且jsonb 支持索引。</li>
+<li>jsonb 写入时会处理写入数据，写入相对较慢，json会保留原始数据（包括无用的空格）</li>
+<li>jsonb 查询优化时一个好的方式是添加GIN 索引
+<ul>
+<li>简单索引和路径索引相比更灵活，但是占用空间多</li>
+<li>路径索引比简单索引更高效，占用空间更小</li>
+</ul>
+</li>
+</ul>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://tools.ietf.org/html/rfc7159">RFC 7159 The JavaScript Object Notation (JSON) Data Interchange Format</a></li>
+<li><a href="http://www.postgres.cn/docs/10/datatype-json.html">PostgreSQL 文档： JSON 类型</a></li>
+<li><a href="http://www.postgres.cn/docs/9.5/functions-json.html">JSON 函数和操作符</a></li>
+<li><a href="https://stackoverflow.com/questions/18209625/how-do-i-modify-fields-inside-the-new-postgresql-json-datatype">How do I modify fields inside the new PostgreSQL JSON datatype?</a></li>
+<li><a href="https://yq.aliyun.com/articles/111793">PostgreSQL 9种索引的原理和应用场景</a></li>
+<li><a href="https://github.com/digoal/blog/blob/master/201702/20170204_01.md">PostgreSQL GIN索引实现原理</a></li>
+<li><a href="https://bitnine.net/blog-postgresql/postgresql-internals-jsonb-type-and-its-indexes/">PostgreSQL internals: JSONB type and its indexes</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95">倒排索引</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="5"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#json-%E7%B1%BB%E5%9E%8B">json 类型</a>
+<ul>
+<li><a href="#%E8%AF%B4%E6%98%8E">说明</a></li>
+<li><a href="#json-%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E8%AF%AD%E6%B3%95">json 输入输出语法</a></li>
+<li><a href="#json-%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95">json 查询语法</a>
+<ul>
+<li><a href="#%E5%8C%85%E5%90%AB%E5%92%8C%E5%AD%98%E5%9C%A8">包含和存在</a>
+<ul>
+<li><a href="#json-%E6%95%B0%E6%8D%AE%E6%9F%A5%E8%AF%A2%E9%80%82%E7%94%A8%E4%BA%8Ejsonb">json 数据查询（适用于jsonb）</a>
+<ul>
+<li><a href="#-%E5%92%8C-%E6%93%8D%E4%BD%9C%E7%AC%A6"><code>-&gt; 和 -&gt;&gt;</code> 操作符</a></li>
+<li><a href="#%E5%92%8C-%E6%93%8D%E4%BD%9C%E7%AC%A6"><code>#&gt; 和 #&gt;&gt;</code> 操作符</a></li>
+</ul>
+</li>
+<li><a href="#jsonb-%E6%95%B0%E6%8D%AE%E6%9F%A5%E8%AF%A2%E4%B8%8D%E9%80%82%E7%94%A8%E4%BA%8Ejson">jsonb 数据查询（不适用于json）</a>
+<ul>
+<li><a href="#%E6%93%8D%E4%BD%9C%E7%AC%A6"><code>@&gt;</code>操作符</a></li>
+<li><a href="#%E6%93%8D%E4%BD%9C%E7%AC%A6-%E6%93%8D%E4%BD%9C%E7%AC%A6%E5%92%8C%E6%93%8D%E4%BD%9C%E7%AC%A6"><code>?</code>操作符、<code>?|</code>操作符和<code>?&amp;</code>操作符</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#json-%E6%9B%B4%E6%96%B0">json 更新</a></li>
+<li><a href="#json-%E5%87%BD%E6%95%B0">json 函数</a>
+<ul>
+<li><a href="#jsonb_pretty">jsonb_pretty</a></li>
+<li><a href="#jsonb_set">jsonb_set</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#jsonb-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90">jsonb 性能分析</a>
+<ul>
+<li><a href="#%E8%A1%A8%E7%BB%93%E6%9E%84">表结构</a></li>
+<li><a href="#%E5%87%86%E5%A4%87%E6%95%B0%E6%8D%AE">准备数据</a></li>
+<li><a href="#%E6%B5%8B%E8%AF%95%E6%9F%A5%E8%AF%A2">测试查询</a></li>
+<li><a href="#%E7%B4%A2%E5%BC%95">索引</a>
+<ul>
+<li><a href="#gin-%E7%B4%A2%E5%BC%95%E4%BB%8B%E7%BB%8D">GIN 索引介绍</a></li>
+<li><a href="#%E5%A4%9A%E7%B4%A2%E5%BC%95%E6%94%AF%E6%8C%81">多索引支持</a></li>
+<li><a href="#%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96">查询优化</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/Design-in-software-construction/">
+              <h3 class="post-title">
+                创建高质量的代码--软件构建中的设计
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,558 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>python协程1：协程 10分钟入门 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="python协程1：协程 10分钟入门 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+最近找到一本python好书《流畅的python》，是到现在为止看到的对python高级特性讲述最详细的一本。
+看了协程一章，做个读书笔记，加深印象。
+
+协程定义
+协程的底层架构是在pep342 中定义，并在python2.5 实现的。
+..." />
+    <meta name="keywords" content="读书笔记,tutorial,python" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              python协程1：协程 10分钟入门
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-06-12
+              </span>
+              <span>
+                11 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>最近找到一本python好书《流畅的python》，是到现在为止看到的对python高级特性讲述最详细的一本。<br>
+看了协程一章，做个读书笔记，加深印象。</p>
+</blockquote>
+<h2 id="协程定义">协程定义</h2>
+<p>协程的底层架构是在pep342 中定义，并在python2.5 实现的。</p>
+<p>HUGOMORE42</p>
+<p>python2.5 中，yield关键字可以在表达式中使用，而且生成器API中增加了 .send(value)方法。生成器可以使用.send(...)方法发送数据，发送的数据会成为生成器函数中yield表达式的值。</p>
+<p>协程是指一个过程，这个过程与调用方协作，产出有调用方提供的值。因此，生成器可以作为协程使用。</p>
+<blockquote>
+<p>除了 .send(...)方法，pep342 和添加了 .throw(...)（让调用方抛出异常，在生成器中处理）和.close()（终止生成器）方法。</p>
+</blockquote>
+<p>python3.3后，pep380对生成器函数做了两处改动：</p>
+<ul>
+<li>生成器可以返回一个值；以前，如果生成器中给return语句提供值，会抛出SyntaxError异常。</li>
+<li>引入yield from 语法，使用它可以把复杂的生成器重构成小型的嵌套生成器，省去之前把生成器的工作委托给子生成器所需的大量模板代码。</li>
+</ul>
+<h2 id="协程生成器的基本行为">协程生成器的基本行为</h2>
+<p>首先说明一下，协程有四个状态，可以使用inspect.getgeneratorstate(...)函数确定：</p>
+<ul>
+<li>GEN_CREATED    # 等待开始执行</li>
+<li>GEN_RUNNING    # 解释器正在执行（只有在多线程应用中才能看到这个状态）</li>
+<li>GEN_SUSPENDED  # 在yield表达式处暂停</li>
+<li>GEN_CLOSED     # 执行结束</li>
+</ul>
+<pre><code class="language-python">#! -*- coding: utf-8 -*-
+import inspect
+
+# 协程使用生成器函数定义：定义体中有yield关键字。
+def simple_coroutine():
+    print('-&gt; coroutine started')
+    # yield 在表达式中使用；如果协程只需要从客户那里接收数据，yield关键字右边不需要加表达式（yield默认返回None）
+    x = yield
+    print('-&gt; coroutine received:', x)
+
+my_coro = simple_coroutine()
+my_coro # 和创建生成器的方式一样，调用函数得到生成器对象。
+# 协程处于 GEN_CREATED (等待开始状态)
+print(inspect.getgeneratorstate(my_coro))
+
+my_coro.send(None)
+# 首先要调用next()函数，因为生成器还没有启动，没有在yield语句处暂停，所以开始无法发送数据
+# 发送 None 可以达到相同的效果 my_coro.send(None) 
+next(my_coro)
+# 此时协程处于 GEN_SUSPENDED (在yield表达式处暂停)
+print(inspect.getgeneratorstate(my_coro))
+
+# 调用这个方法后，协程定义体中的yield表达式会计算出42；现在协程会恢复，一直运行到下一个yield表达式，或者终止。
+my_coro.send(42)
+print(inspect.getgeneratorstate(my_coro))
+</code></pre>
+<p>运行上述代码，输出结果如下</p>
+<pre><code class="language-python">GEN_CREATED
+-&gt; coroutine started
+GEN_SUSPENDED
+-&gt; coroutine received: 42
+
+# 这里，控制权流动到协程定义体的尾部，导致生成器像往常一样抛出StopIteration异常
+Traceback (most recent call last):
+  File &quot;/Users/gs/coroutine.py&quot;, line 18, in &lt;module&gt; 
+    my_coro.send(42)
+StopIteration
+</code></pre>
+<blockquote>
+<p>send方法的参数会成为暂停yield表达式的值，所以，仅当协程处于暂停状态是才能调用send方法。<br>
+如果协程还未激活（GEN_CREATED 状态）要调用next(my_coro) 激活协程，也可以调用my_coro.send(None)</p>
+</blockquote>
+<p>如果创建协程对象后立即把None之外的值发给它，会出现下述错误：</p>
+<pre><code class="language-python">&gt;&gt;&gt; my_coro = simple_coroutine()
+&gt;&gt;&gt; my_coro.send(123)
+
+Traceback (most recent call last):
+  File &quot;/Users/gs/coroutine.py&quot;, line 14, in &lt;module&gt;
+    my_coro.send(123)
+TypeError: can't send non-None value to a just-started generator
+</code></pre>
+<p>仔细看错误消息</p>
+<blockquote>
+<p>can't send non-None value to a just-started generator</p>
+</blockquote>
+<p>最先调用next(my_coro) 这一步通常称为”预激“（prime）协程---即，让协程向前执行到第一个yield表达式，准备好作为活跃的协程使用。</p>
+<h4 id="再看一个两个值得协程">再看一个两个值得协程</h4>
+<pre><code class="language-python">def simple_coro2(a):
+    print('-&gt; coroutine started: a =', a)
+    b = yield a
+    print('-&gt; Received: b =', b)
+    c = yield a + b
+    print('-&gt; Received: c =', c)
+
+my_coro2 = simple_coro2(14)
+print(inspect.getgeneratorstate(my_coro2))
+# 这里inspect.getgeneratorstate(my_coro2) 得到结果为 GEN_CREATED （协程未启动）
+
+next(my_coro2)
+# 向前执行到第一个yield 处 打印 “-&gt; coroutine started: a = 14”
+# 并且产生值 14 （yield a 执行 等待为b赋值）
+print(inspect.getgeneratorstate(my_coro2))
+# 这里inspect.getgeneratorstate(my_coro2) 得到结果为 GEN_SUSPENDED （协程处于暂停状态）
+
+my_coro2.send(28)
+# 向前执行到第二个yield 处 打印 “-&gt; Received: b = 28”
+# 并且产生值 a + b = 42（yield a + b 执行 得到结果42 等待为c赋值）
+print(inspect.getgeneratorstate(my_coro2))
+# 这里inspect.getgeneratorstate(my_coro2) 得到结果为 GEN_SUSPENDED （协程处于暂停状态）
+
+my_coro2.send(99)
+# 把数字99发送给暂停协程，计算yield 表达式，得到99，然后把那个数赋值给c 打印 “-&gt; Received: c = 99”
+# 协程终止，抛出StopIteration
+</code></pre>
+<p>运行上述代码，输出结果如下</p>
+<pre><code class="language-python">GEN_CREATED
+-&gt; coroutine started: a = 14
+GEN_SUSPENDED
+-&gt; Received: b = 28
+-&gt; Received: c = 99
+
+Traceback (most recent call last):
+  File &quot;/Users/gs/coroutine.py&quot;, line 37, in &lt;module&gt;
+    my_coro2.send(99)
+StopIteration
+</code></pre>
+<p>simple_coro2 协程的执行过程分为3个阶段，如下图所示</p>
+<figure data-type="image" tabindex="1"><img src="http://omuo4kh1k.bkt.clouddn.com/3b3UCuR_iYj3-r_V4PUErxrFm0v1uIo7p4yoplxnqaQt7PK4iUO8CAWlg7chZyW_" alt="" loading="lazy"></figure>
+<ol>
+<li>调用next(my_coro2)，打印第一个消息，然后执行yield a，产出数字14.</li>
+<li>调用my_coro2.send(28)，把28赋值给b，打印第二个消息，然后执行 yield a + b 产生数字42</li>
+<li>调用my_coro2.send(99)，把99赋值给c，然后打印第三个消息，协程终止。</li>
+</ol>
+<h2 id="使用装饰器预激协程">使用装饰器预激协程</h2>
+<p>我们已经知道，协程如果不预激，不能使用send() 传入非None 数据。所以，调用my_coro.send(x)之前，一定要调用next(my_coro)。<br>
+为了简化，我们会使用装饰器预激协程。</p>
+<pre><code class="language-python">from functools import wraps
+
+def coroutinue(func):
+    '''
+    装饰器： 向前执行到第一个`yield`表达式，预激`func`
+    :param func: func name
+    :return: primer
+    '''
+
+    @wraps(func)
+    def primer(*args, **kwargs):
+        # 把装饰器生成器函数替换成这里的primer函数；调用primer函数时，返回预激后的生成器。
+        gen = func(*args, **kwargs)
+        # 调用被被装饰函数，获取生成器对象
+        next(gen)  # 预激生成器
+        return gen  # 返回生成器
+    return primer
+
+
+# 使用方法如下
+
+@coroutinue
+def simple_coro(a):
+    a = yield
+
+simple_coro(12)  # 已经预激
+</code></pre>
+<h2 id="终止协程和异常处理">终止协程和异常处理</h2>
+<p>协程中，为处理的异常会向上冒泡，传递给next函数或send方法的调用方，未处理的异常会导致协程终止。</p>
+<p>看下边这个例子</p>
+<pre><code class="language-python">#! -*- coding: utf-8 -*-
+
+from functools import wraps
+
+def coroutinue(func):
+    '''
+    装饰器： 向前执行到第一个`yield`表达式，预激`func`
+    :param func: func name
+    :return: primer
+    '''
+
+    @wraps(func)
+    def primer(*args, **kwargs):
+        # 把装饰器生成器函数替换成这里的primer函数；调用primer函数时，返回预激后的生成器。
+        gen = func(*args, **kwargs)
+        # 调用被被装饰函数，获取生成器对象
+        next(gen)  # 预激生成器
+        return gen  # 返回生成器
+    return primer
+
+
+@coroutinue
+def averager():
+    # 使用协程求平均值
+    total = 0.0
+    count = 0
+    average = None
+    while True:
+        term = yield average
+        total += term
+        count += 1
+        average = total/count
+
+coro_avg = averager()
+print(coro_avg.send(40))
+print(coro_avg.send(50))
+print(coro_avg.send('123')) # 由于发送的不是数字，导致内部有异常抛出。
+</code></pre>
+<p>执行上述代码结果如下</p>
+<pre><code class="language-python">40.0
+45.0
+Traceback (most recent call last):
+  File &quot;/Users/gs/coro_exception.py&quot;, line 37, in &lt;module&gt;
+    print(coro_avg.send('123'))
+  File &quot;/Users/gs/coro_exception.py&quot;, line 30, in averager
+    total += term
+TypeError: unsupported operand type(s) for +=: 'float' and 'str'
+</code></pre>
+<p>出错的原因是发送给协程的'123'值不能加到total变量上。<br>
+出错后，如果再次调用 coro_avg.send(x) 方法 会抛出 StopIteration 异常。</p>
+<p>由上边的例子我们可以知道，如果想让协程退出，可以发送给它一个特定的值。比如None和Ellipsis。（推荐使用Ellipsis，因为我们不太使用这个值）<br>
+从Python2.5 开始，我们可以在生成器上调用两个方法，显式的把异常发给协程。<br>
+这两个方法是throw和close。</p>
+<pre><code class="language-python">generator.throw(exc_type[, exc_value[, traceback]])
+</code></pre>
+<p>这个方法使生成器在暂停的yield表达式处抛出指定的异常。如果生成器处理了抛出的异常，代码会向前执行到下一个yield表达式，而产出的值会成为调用throw方法得到的返回值。如果没有处理，则向上冒泡，直接抛出。</p>
+<pre><code class="language-python">generator.close()
+</code></pre>
+<p>生成器在暂停的yield表达式处抛出GeneratorExit异常。<br>
+如果生成器没有处理这个异常或者抛出了StopIteration异常，调用方不会报错。如果收到GeneratorExit异常，生成器一定不能产出值，否则解释器会抛出RuntimeError异常。</p>
+<h4 id="示例-使用close和throw方法控制协程">示例： 使用close和throw方法控制协程。</h4>
+<pre><code class="language-python">import inspect
+
+
+class DemoException(Exception):
+    pass
+
+
+@coroutinue
+def exc_handling():
+    print('-&gt; coroutine started')
+    while True:
+        try:
+            x = yield
+        except DemoException:
+            print('*** DemoException handled. Conginuing...')
+        else:
+            # 如果没有异常显示接收到的值
+            print('--&gt; coroutine received: {!r}'.format(x))
+    raise RuntimeError('This line should never run.')  # 这一行永远不会执行 
+
+
+exc_coro = exc_handling()
+
+exc_coro.send(11)
+exc_coro.send(12)
+exc_coro.send(13)
+exc_coro.close()
+print(inspect.getgeneratorstate(exc_coro))
+</code></pre>
+<blockquote>
+<p>raise RuntimeError('This line should never run.') 永远不会执行，因为只有未处理的异常才会终止循环，而一旦出现未处理的异常，协程会立即终止。</p>
+</blockquote>
+<p>执行上述代码得到结果为：</p>
+<pre><code class="language-python">-&gt; coroutine started
+--&gt; coroutine received: 11
+--&gt; coroutine received: 12
+--&gt; coroutine received: 13
+GEN_CLOSED    # 协程终止
+</code></pre>
+<p>上述代码，如果传入DemoException，协程不会中止，因为做了异常处理。</p>
+<pre><code class="language-python">exc_coro = exc_handling()
+
+exc_coro.send(11)
+exc_coro.send(12)
+exc_coro.send(13)
+exc_coro.throw(DemoException) # 协程不会中止，但是如果传入的是未处理的异常，协程会终止
+print(inspect.getgeneratorstate(exc_coro))
+exc_coro.close()
+print(inspect.getgeneratorstate(exc_coro))
+
+## output
+
+-&gt; coroutine started
+--&gt; coroutine received: 11
+--&gt; coroutine received: 12
+--&gt; coroutine received: 13
+*** DemoException handled. Conginuing...
+GEN_SUSPENDED
+GEN_CLOSED
+</code></pre>
+<p>如果不管协程如何结束都想做些处理工作，要把协程定义体重的相关代码放入try/finally块中。</p>
+<pre><code class="language-python">@coroutinue
+def exc_handling():
+    print('-&gt; coroutine started')
+    try:
+        while True:
+            try:
+                x = yield
+            except DemoException:
+                print('*** DemoException handled. Conginuing...')
+            else:
+                # 如果没有异常显示接收到的值
+                print('--&gt; coroutine received: {!r}'.format(x))
+    finally:
+        print('-&gt; coroutine ending')
+</code></pre>
+<p>上述部分介绍了：</p>
+<ul>
+<li>生成器作为协程使用时的行为和状态</li>
+<li>使用装饰器预激协程</li>
+<li>调用方如何使用生成器对象的 .throw(...)和.close() 方法控制协程</li>
+</ul>
+<p>下一部分将介绍：</p>
+<ul>
+<li>协程终止时如何返回值</li>
+<li>yield新句法的用途和语义</li>
+</ul>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%8D%8F%E7%A8%8B%E5%AE%9A%E4%B9%89">协程定义</a></li>
+<li><a href="#%E5%8D%8F%E7%A8%8B%E7%94%9F%E6%88%90%E5%99%A8%E7%9A%84%E5%9F%BA%E6%9C%AC%E8%A1%8C%E4%B8%BA">协程生成器的基本行为</a><br>
+*
+<ul>
+<li><a href="#%E5%86%8D%E7%9C%8B%E4%B8%80%E4%B8%AA%E4%B8%A4%E4%B8%AA%E5%80%BC%E5%BE%97%E5%8D%8F%E7%A8%8B">再看一个两个值得协程</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E8%A3%85%E9%A5%B0%E5%99%A8%E9%A2%84%E6%BF%80%E5%8D%8F%E7%A8%8B">使用装饰器预激协程</a></li>
+<li><a href="#%E7%BB%88%E6%AD%A2%E5%8D%8F%E7%A8%8B%E5%92%8C%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86">终止协程和异常处理</a><br>
+*
+<ul>
+<li><a href="#%E7%A4%BA%E4%BE%8B-%E4%BD%BF%E7%94%A8close%E5%92%8Cthrow%E6%96%B9%E6%B3%95%E6%8E%A7%E5%88%B6%E5%8D%8F%E7%A8%8B">示例： 使用close和throw方法控制协程。</a></li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/css-learing-1-how-it-workds/">
+              <h3 class="post-title">
+                CSS入门指南-1：工作原理
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

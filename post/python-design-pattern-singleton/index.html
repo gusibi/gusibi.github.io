@@ -1,0 +1,436 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>python设计模式-单例模式 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="python设计模式-单例模式 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+问题：现代化的巧克力工厂具备计算机控制的巧克力锅炉。锅炉做的事情就是把巧克力和牛奶融在一起，然后送到下一个阶段，以制成巧克力棒。下边是一个巧克力公司锅炉控制器的代码，仔细观察一下，这段代码有什么问题？
+
+class ChocolateBo..." />
+    <meta name="keywords" content="读书笔记,python,设计模式" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              python设计模式-单例模式
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-11-26
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/tWtXVJcNMyg/" class="post-tag">
+                  # 设计模式
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p><code>问题：</code>现代化的巧克力工厂具备计算机控制的巧克力锅炉。锅炉做的事情就是把巧克力和牛奶融在一起，然后送到下一个阶段，以制成巧克力棒。下边是一个巧克力公司锅炉控制器的代码，仔细观察一下，这段代码有什么问题？</p>
+</blockquote>
+<pre><code class="language-python">class ChocolateBoiler(object):
+
+    def __init__(self):
+        self.empty = True
+        self.boiled = False
+
+    def fill(self):
+        # 向锅炉填充巧克力和牛奶混合物
+        # 在锅炉内填充原料时，锅炉必须是空的。
+        # 一旦填入原料，就要把empty 和 boiled 标志设置好
+        if self.empty:
+            self.empty = False
+            self.boiled = False
+
+    def drain(self):
+        # 排出煮沸的巧克力和牛奶
+        # 锅炉排出时，必须是满的且煮沸的。
+        # 排出完毕empty 设置为 true
+        if not self.empty and self.boiled:
+            self.empty = True
+
+    def boil(self):
+        # 将颅内物煮沸
+        # 煮混合物时，锅炉内必须是满的且没有煮沸过
+        # 一旦煮沸，就把 boiled 设置为 true
+        if not self.empty and not self.boiled:
+            self.boiled = True
+</code></pre>
+<p>从代码可以看出，他们加入了多种判断，以防止不好的事情发生。如果同时存在两个<code>ChocolateBoiler</code>实例，那这么多判断岂不是失去作用了。那我们改如何实现这个需求呢？这个问题的核心是，我们要先判断实例是不是已经存在，如果存在就不再创建。</p>
+<pre><code class="language-python">_chocolate_boiler_instance = None  # 声明实例
+
+def chocolate_boiler():
+    global _chocolate_boiler_instance  # 使用全局变量
+
+    if _chocolate_boiler_instance is not None: # 判断是否存在，如果存在，直接返回
+        return _chocolate_boiler_instance
+    else:
+        # 如果不存在，创建一个新的
+        _chocolate_boiler_instance = ChocolateBoiler()
+        return _chocolate_boiler_instance
+</code></pre>
+<p>现在我们需要获取 <code>ChocolateBoiler</code> 实例的时候只需要调用 chocolate_boiler 方法获取实例即可保证同时只有一个 <code>ChocolateBoiler</code>实例。</p>
+<p>这种保证 <code>ChocolateBoiler</code>类只有一个实例，并提供一个全局访问点的模式，就是<code>单例模式</code>。</p>
+<h2 id="单例模式">单例模式</h2>
+<h3 id="定义">定义</h3>
+<blockquote>
+<p><code>单例模式：</code>确保一个类只有一个实例，并提供一个全局访问点。</p>
+</blockquote>
+<ul>
+<li>也就是说，我们使用单例模式要把某个类设计成自己管理的一个单独实例，同时也避免其他类再自行产生实例。并且只允许通过单例类获取单例的实例。</li>
+<li>我们也提供对这个实例的全局访问点：当你需要实例时，像类查询，它会返回单个实例。</li>
+</ul>
+<h3 id="实现">实现</h3>
+<p>python 实现单例模式有多种方案：</p>
+<h4 id="使用-metaclass">使用 metaclass</h4>
+<p>《python cookbook》提供了非常易用的 <code>Singleton</code> 类，只要继承它，就会成为单例。</p>
+<pre><code class="language-python"># python 3 代码实现
+class Singleton(type):
+
+    def __init__(self, *args, **kwargs):
+        self.__instance = None
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, *args, **kwargs):
+        if self.__instance is None:
+            # 如果 __instance 不存在，创建新的实例
+            self.__instance = super().__call__(*args, **kwargs)
+            return self.__instance
+        else:
+            # 如果存在，直接返回
+            return self.__instance
+
+
+class Spam(metaclass=Singleton):
+
+    def __init__(self):
+        print('Creating Spam')
+
+a = Spam()
+b = Spam()
+
+print(a is b)  # 这里输出为 True
+</code></pre>
+<p>元类（metaclass）可以控制类的创建过程，它主要做三件事：</p>
+<ul>
+<li>拦截类的创建</li>
+<li>修改类的定义</li>
+<li>返回修改后的类</li>
+</ul>
+<p>例子中我们构造了一个Singleton元类，并使用__call__方法使其能够模拟函数的行为。构造类 Spam 时，将其元类设为Singleton，那么创建类对象 Spam 时，行为发生如下：</p>
+<p>Spam = Singleton(name,bases,class_dict)，Spam 其实为Singleton类的一个实例。</p>
+<p>创建 Spam 的实例时，Spam()=Singleton(name,bases,class_dict)()=Singleton(name,bases,class_dict).<strong>call</strong>()，这样就将 Spam 的所有实例都指向了 Spam 的属性 __instance上。</p>
+<h4 id="使用-new">使用 <strong>new</strong></h4>
+<p>我们可以使用 <strong>new</strong> 来控制实例的创建过程，代码如下:</p>
+<pre><code class="language-python">class Singleton(object):
+
+    __instance = None
+
+    def __new__(cls, *args, **kw):
+        if not cls.__instance:
+            cls.__instance = super().__new__(cls, *args, **kw)
+        return cls.__instance
+
+class Foo(Singleton):
+    a = 1
+
+one = Foo()
+two = Foo()
+assert one == two
+assert one is two
+assert id(one) == id(two)
+</code></pre>
+<p>通过 <strong>new</strong> 方法，将类的实例在创建的时候绑定到类属性 __instance 上。如果cls.__instance 为None，说明类还未实例化，实例化并将实例绑定到cls.<strong>instance 以后每次实例化的时候都返回第一次实例化创建的实例。注意从Singleton派生子类的时候，不要重载__new</strong>。</p>
+<h4 id="使用装饰器">使用装饰器</h4>
+<pre><code class="language-python">import functools
+
+def singleton(cls):
+    ''' Use class as singleton. '''
+    # 首先将 __new__ 方法赋值给 __new_original__
+    cls.__new_original__ = cls.__new__
+
+    @functools.wraps(cls.__new__)
+    def singleton_new(cls, *args, **kw):
+        # 尝试从 __dict__ 取 __it__
+        it =  cls.__dict__.get('__it__')
+        if it is not None: # 如果有值，说明实例已经创建，返回实例
+            return it
+        # 如果实例不存在，使用 __new_original__ 创建实例，并将实例赋值给 __it__
+        cls.__it__ = it = cls.__new_original__(cls, *args, **kw)
+        it.__init_original__(*args, **kw)
+        return it
+    # class 将原有__new__ 方法用 singleton_new 替换
+    cls.__new__ = singleton_new
+    cls.__init_original__ = cls.__init__
+    cls.__init__ = object.__init__
+
+    return cls
+
+#
+# 使用示例
+#
+@singleton
+class Foo:
+    def __new__(cls):
+        cls.x = 10
+        return object.__new__(cls)
+
+    def __init__(self):
+        assert self.x == 10
+        self.x = 15
+
+
+assert Foo().x == 15
+Foo().x = 20
+assert Foo().x == 20
+</code></pre>
+<p>这种方法的内部实现和使用 <code>__new__</code> 类似：</p>
+<ul>
+<li>首先，将 <strong>new</strong> 方法赋值给 <strong>new_original</strong>，原有 <strong>new</strong> 方法用 singleton_new 替换，定义  <strong>init_original</strong> 并将 cls.<strong>init</strong> 赋值给 <strong>init_original</strong></li>
+<li>在 singleton_new 方法内部，尝试从 <strong>dict</strong> 取 <strong>it</strong>（实例）</li>
+<li>如果实例不存在，使用 <strong>new_original</strong> 创建实例，并将实例赋值给 <strong>it</strong>，然后返回实例</li>
+</ul>
+<h4 id="最简单的方式">最简单的方式</h4>
+<p>将名字singleton绑定到实例上，singleton就是它自己类的唯一对象了。</p>
+<pre><code class="language-python">class singleton(object):
+    pass
+singleton = singleton()
+</code></pre>
+<p><a href="https://github.com/gusibi/Metis/blob/master/apis/v1/schemas.py#L107">https://github.com/gusibi/Metis/blob/master/apis/v1/schemas.py#L107</a> 使用的就是这种方式，用来获取全局的 request</p>
+<blockquote>
+<p>Python 的模块就是天然的单例模式，因为模块在第一次导入时，会生成 .pyc 文件，当第二次导入时，就会直接加载 .pyc 文件，而不会再次执行模块代码。因此，我们只需把相关的函数和数据定义在一个模块中，就可以获得一个单例对象了。</p>
+</blockquote>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python#">Creating a singleton in Python</a></li>
+<li><a href="https://www.cnblogs.com/linxiyue/p/3902256.html">Python单例模式</a></li>
+<li><a href="https://stackoverflow.com/questions/674304/why-is-init-always-called-after-new">Why is <strong>init</strong>() always called after <strong>new</strong>()?</a></li>
+</ul>
+<hr>
+<p>最后，感谢女朋友支持。</p>
+<table>
+<thead>
+<tr>
+<th>欢迎关注(April_Louisa)</th>
+<th>请我喝芬达</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="http://media.gusibi.mobi/Hy8XHexmzppNKuekLuGxWy8LjdGrQAzZA3mH_e9xltoiYgTFWdvlpZwGWxZESrbK" alt="欢迎关注" loading="lazy"></td>
+<td><img src="http://media.gusibi.mobi/CO9DwU6ZHnXHD5xuG3GqTsY_IYPl-JdpQrDaOo6tl6PiAGEBDeYFHO7sGQi_VVFc" alt="请我喝芬达" loading="lazy"></td>
+</tr>
+</tbody>
+</table>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F">单例模式</a>
+<ul>
+<li><a href="#%E5%AE%9A%E4%B9%89">定义</a></li>
+<li><a href="#%E5%AE%9E%E7%8E%B0">实现</a>
+<ul>
+<li><a href="#%E4%BD%BF%E7%94%A8-metaclass">使用 metaclass</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8-new">使用 <strong>new</strong></a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E8%A3%85%E9%A5%B0%E5%99%A8">使用装饰器</a></li>
+<li><a href="#%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84%E6%96%B9%E5%BC%8F">最简单的方式</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/python-design-pattern-builder/">
+              <h3 class="post-title">
+                python设计模式-建造者模式
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

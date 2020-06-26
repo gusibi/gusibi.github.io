@@ -1,0 +1,482 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>python设计模式-观察者模式 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="python设计模式-观察者模式 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+题目：现在你有一个数字，默认格式化程序是以十进制格式展示此数值，但需要提供一个功能，这个程序要支持添加/注册更多的格式化程序（比如：添加一个十六进制格式化程序和一个二进制格式化程序）。每次数值更新时，已注册的程序就会收到通知，并显示更新后..." />
+    <meta name="keywords" content="读书笔记,python,设计模式" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              python设计模式-观察者模式
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-09-24
+              </span>
+              <span>
+                10 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/tWtXVJcNMyg/" class="post-tag">
+                  # 设计模式
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p><code>题目</code>：现在你有一个数字，默认格式化程序是以十进制格式展示此数值，但需要提供一个功能，这个程序要支持添加/注册更多的格式化程序（比如：添加一个十六进制格式化程序和一个二进制格式化程序）。每次数值更新时，已注册的程序就会收到通知，并显示更新后的值。</p>
+</blockquote>
+<p>我们看下需求：</p>
+<ol>
+<li>NumberFormatter 有一个 number 属性</li>
+<li>当 number 值修改时，相关的格式化方式展示结果要改变</li>
+<li>此系统必须可扩展已适应其他格式化方式的使用。</li>
+</ol>
+<p>一个错误的实现可能是这样的：</p>
+<pre><code class="language-python">class NumberFormatter(object):
+    def __init__(self, number):
+        self.number = number
+        
+    def show_data(self):
+        self.default_formatter()
+        self.hex_formatter()
+        self.binary_formatter()
+        
+    def default_formatter(self):
+        pass
+        
+    def hex_formatter(self):
+        pass
+        
+    def binary_formatter(self):
+        pass
+</code></pre>
+<p>我们可以这么使用：</p>
+<pre><code class="language-python">number = NumberFormatter(10)
+number.show_data()
+</code></pre>
+<p>但是这样会有一个问题：<code>这种针对实现的编程会导致我们在增加或者删除需要格式化方式时必须修改代码。</code>比如我们现在不再需要十六进制数字格式的显示，就需要把 <code>hex_formatter</code> 相关的代码删除或者注释掉。</p>
+<p>要解决这个问题，就可以用到我们这次要介绍的<code>观察者模式</code>了。</p>
+<h2 id="什么是观察者模式">什么是观察者模式</h2>
+<h3 id="认识观察者模式">认识观察者模式</h3>
+<p>我们先看看报纸和杂志的订阅是怎么回事：</p>
+<ol>
+<li>报社的业务就是出版报纸</li>
+<li>向某家报社订阅报纸，只要他们有新报纸，就会给你送来，只要你是他们的订户，你就会一直受到新报纸。</li>
+<li>当你不再想看的时候，取消订阅，他们就不会在送新报纸给你</li>
+<li>只要报社还在运营，就会一直有人向他们订阅报纸或取消订阅。</li>
+</ol>
+<p>我们用图表示一下，这里<code>出版者</code> 改称为<code>主题(Subject)</code>，<code>订阅者</code>改称为<code>观察者(Observer)</code>：</p>
+<p><code>1.</code> 开始的时候，鸭子对象不是观察者<br>
+<img src="http://media.gusibi.mobi/FfEgRxfZ2c7lzOINxR1JJ9uarNvN0AjO15HBfKxEBoVdr4GANZIFjFmAwq6L9fM-" alt="" loading="lazy"><br>
+<code>2.</code> 鸭子对象过来告诉主题，它想当一个观察者（鸭子其实想说的是：我对你的数据改变感兴趣，一有变化请通知我）<br>
+<img src="http://media.gusibi.mobi/2KE6cyN1-K24iLlk-l_WWxjAC894wqhqDWMrfk780kRArv1QQMD7AU66WabDnHZ4" alt="" loading="lazy"><br>
+<code>3.</code> 鸭子对象已经是观察者了（鸭子静候通知，一旦接到通知，就会得到一个整数）。<br>
+<img src="http://media.gusibi.mobi/si9qkWv1-wgocRkh8v1gXPbZJlfqpJCsYqXZaQX-8WnY-DbTHGqv_eVLGyy3yfab" alt="" loading="lazy"><br>
+<code>4.</code> 主题有了新的数据（现在鸭子和其他所有观察者都会受到通知：<code>主题已经改变</code>）<br>
+<img src="http://media.gusibi.mobi/9HhHmLzCUctRb46Te5j1A3OUosE-1f_qp37gC7pLJfQI-OFdxpFgosEfIjV9K8I4" alt="" loading="lazy"><br>
+<code>5.</code> 老鼠对象要求从观察者中把自己除名（老鼠已经观察次主题太久，决定不再当观察者了）。<br>
+<img src="http://media.gusibi.mobi/3crIE4jTaaDE3bUWrp3tHL0jb2cKI0pQhaZeJPKh0HTYl_lY7D30uTeaybry0bRZ" alt="" loading="lazy"><br>
+<code>6.</code> 老鼠离开了（主题知道老鼠的请求后，把它从观察者中移除了）。<br>
+<img src="http://media.gusibi.mobi/lnPq4IXxYH1fZURcPK2SiLXXbndcgA3f31F9UZ6BSi9QyWO5ZrkswwZ-cxI9_xL5" alt="" loading="lazy"><br>
+<code>7.</code> 主题有了一个新的整数（除了老鼠之外，每个观察者都会收到通知，如果老鼠又想当观察者了，它还可以再回来）<br>
+<img src="http://media.gusibi.mobi/_PeyLBIegB7aBqh7oLad5fUs8l1ANeqEEd1zEBkcrY02cN768EIDD33rL75YopbU" alt="" loading="lazy"></p>
+<h3 id="定义观察者模式">定义观察者模式</h3>
+<p>当你试图勾勒观察者模式时，可以利用报纸订阅服务，以及出版这和订阅者比你这一切。在程序设计中，观察者模式通常被定义为：</p>
+<blockquote>
+<p><code>观察者模式</code>定义了对象之间的一对多依赖，这样一来，当一个对象改变状态是，它的所有依赖者都会收到通知并自动更新。</p>
+</blockquote>
+<p>我们和之前的例子做个对比：</p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/5ictzh2edjji9GITg0JJXtR9bLqEmPN6XDytKrevXzKKdhtpLbZLRFElxRR3GOo3" alt="" loading="lazy"></figure>
+<p>主题和观察者定义了一对多的关系。观察者依赖于此主题，只要主题状态一有变化，观察者就会被通知。根据通知的风格，观察者可能因此新值而更新。</p>
+<p><code>现在你可能有疑问，这和一对多的关系有何关联？</code></p>
+<blockquote>
+<p>利用观察者模式，主题是具有状态的对象，并且可以控制这些状态。也就是说，有<code>一个</code>具有状态的主题。另一方面，观察者使用这些状态，虽然这些状态不属于他们。有许多观察者，依赖主题告诉他们状态何时改变了。这就产生了一个关系：<code>一个主题对多个观察者的关系</code>。</p>
+</blockquote>
+<p><code>观察者和主题之间的依赖关系是如何产生的？</code></p>
+<blockquote>
+<p>主题是真正拥有数据的人，观察者是主题的依赖者，在数据变化时更新，这样比起让许多对象控制同一份数据来，可以得到更干净的 OO 设计。</p>
+</blockquote>
+<h3 id="观察者模式的应用案例">观察者模式的应用案例</h3>
+<p>观察者模式在实际应用中有许多的案例，比如信息的聚合。无论格式为 RSS、Atom 还是其它，思想多事一样的：你追随某个信息源，当它每次更新时，你都会收到关于更新的通知。<br>
+事件驱动系统是一个可以使用观察者模式的例子。在这种系统中，监听者被用于监听特定的事件。监听者的事件被创建出来时就会触发它们。这个事件可以使键入某个特定的键、移动鼠标或者其他。事件扮演发布者的角色，监听者则扮演观察者的角色。</p>
+<h2 id="python-实现">Python 实现</h2>
+<p>现在，让我们回到文章开始的那个问题。</p>
+<p>这里我们可以实现一个基类 Publisher，包括添加、删除及通知观察者这些公用功能。DefaultFormatter 类继承自 Publisher，并添加格式化程序特定的功能。</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/pRyxskK89xODXjfsCdPVnnPiJhyP2iyYmYHryZb3taKTnpZxtZZ8TINFsCroP0Y_" alt="文章开头问题的类图" loading="lazy"></figure>
+<p>Publisher 的代码如下：</p>
+<pre><code class="language-python">import itertools
+
+'''
+观察者模式实现
+'''
+
+class Publisher:
+
+    def __init__(self):
+        self.observers = set()
+
+    def add(self, observer, *observers):
+        for observer in itertools.chain((observer, ), observers):
+            self.observers.add(observer)
+            observer.update(self)
+        else:
+            print('Failed to add: {}'.format(observer))
+
+    def remove(self, observer):
+        try:
+            self.observers.discard(observer)
+        except ValueError:
+            print('Failed to remove: {}'.format(observer))
+
+    def notify(self):
+        [observer.update(self) for observer in self.observers]
+</code></pre>
+<p>现在，打算使用观察者模式的模型或类都应该继承 Publisher 类。该类用 set 来保存观察者对象。当用户向 Publisher 注册新的观察者对象时，观察者的 update() 方法会执行，这使得它能够用模型当前的状态初始化自己。模型状态发生变化时，应该调用继承而来的 notify() 方法，这样的话，就会执行每个观察者对象的 update() 方法，以确保他们都能反映出模型的最新状态。</p>
+<blockquote>
+<p><code>add()</code> 方法的写法值得注意，这里是为了支持可以接受一个或多个观察者对象。这里我们采用了<code>itertools.chain()</code> 方法，它可以接受任意数量的  <code>iterable</code>，并返回单个<code>iterable</code>。遍历这个 iterable，也就相当于依次遍历参数里的那些 iterable。</p>
+</blockquote>
+<p>接下来是 <code>DefaultFomatter</code> 类。<code>__init__()</code> 做的第一件事就是调用基类的<code>__init__()</code> 方法，因为这在 Python 中没法自动完成。<code>DefaultFormatter</code> 实例有自己的名字，这样便于我们跟踪其状态。对于<code>_data</code> 变量，我们使用了名称改编来声明不能直接访问该变量。<code>DefaultFormatter</code> 把<code>_data</code> 变量用作一个整数，默认值为0。</p>
+<pre><code class="language-python">class DefaultFormatter(Publisher):
+
+    def __init__(self, name):
+        Publisher.__init__(self)
+        self.name = name
+        self._data = 0
+
+    def __str__(self):
+        return &quot;{}: '{}' has data = {}&quot;.format(type(self).__name__, self.name, self._data)
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, new_value):
+        try:
+            self._data = int(new_value)
+        except ValueError as e:
+            print('Error: {}'.format(e))
+        else:
+            self.notify()
+</code></pre>
+<ul>
+<li>
+<p><code>__str__()</code> 方法返回关于发布者名称和 <code>_data</code> 值的信息。type(self).__name 是一种获取类名的方便技巧，避免硬编码类名。（不过这会降低代码的可读性）</p>
+</li>
+<li>
+<p><code>data()</code> 方法有两个，第一个使用了 <code>@property</code> 装饰器来提供_data 变量的读访问方式。这样，我们就能使用 <code>object.data</code> 来代替 <code>object._data</code>。第二个 data() 方法使用了<code>@setter</code> 装饰器，改装饰器会在每次使用赋值操作符(=)为<code>_data</code> 变量赋值时被调用。该方法也会尝试把新值强制转换为一个整数，并在转换失败时处理异常。</p>
+</li>
+</ul>
+<p>接下来是添加观察者。<code>HexFormatter</code> 和 <code>BinaryFormatter</code> 功能基本相似。唯一的不同在于如何格式化从发布者那获取到的数据值，即十六进制和二进制格式化。</p>
+<pre><code class="language-python">class HexFormatter:
+
+    def update(self, publisher):
+        print(&quot;{}: '{}' has now hex data= {}&quot;.format(type(self).__name__,
+                                                     publisher.name, hex(publisher.data)))
+
+class BinaryFormatter:
+
+    def update(self, publisher):
+        print(&quot;{}: '{}' has now bin data= {}&quot;.format(type(self).__name__,
+                                                     publisher.name, bin(publisher.data)))
+</code></pre>
+<p>接下来我们添加一下测试数据，运行代码观察一下结果：</p>
+<pre><code class="language-python">def main():
+    df = DefaultFormatter('test1')
+    print(df)
+
+    print()
+    hf = HexFormatter()
+    df.add(hf)
+    df.data = 3
+    print(df)
+
+    print()
+    bf = BinaryFormatter()
+    df.add(bf)
+    df.data = 21
+    print(df)
+
+    print()
+    df.remove(hf)
+    df.data = 40
+    print(df)
+
+    print()
+    df.remove(hf)
+    df.add(bf)
+
+    df.data = 'hello'
+    print(df)
+
+    print()
+    df.data = 4.2
+    print(df)
+
+
+if __name__ == '__main__':
+    main()
+
+</code></pre>
+<p>完整代码参考：<a href="https://gist.github.com/gusibi/93a000c79f3d943dd58dcd39c4b547f1">https://gist.github.com/gusibi/93a000c79f3d943dd58dcd39c4b547f1</a></p>
+<p>运行代码：</p>
+<pre><code class="language-shell">python observer.py    
+## output
+DefaultFormatter: 'test1' has data = 0
+
+HexFormatter: 'test1' has now hex data= 0x0
+Failed to add: &lt;__main__.HexFormatter object at 0x10277da20&gt;
+HexFormatter: 'test1' has now hex data= 0x3
+DefaultFormatter: 'test1' has data = 3
+
+BinaryFormatter: 'test1' has now bin data= 0b11
+Failed to add: &lt;__main__.BinaryFormatter object at 0x10277da90&gt;
+BinaryFormatter: 'test1' has now bin data= 0b10101
+HexFormatter: 'test1' has now hex data= 0x15
+DefaultFormatter: 'test1' has data = 21
+
+BinaryFormatter: 'test1' has now bin data= 0b101000
+DefaultFormatter: 'test1' has data = 40
+
+BinaryFormatter: 'test1' has now bin data= 0b101000
+Failed to add: &lt;__main__.BinaryFormatter object at 0x10277da90&gt;
+Error: invalid literal for int() with base 10: 'hello'
+DefaultFormatter: 'test1' has data = 40
+
+BinaryFormatter: 'test1' has now bin data= 0b100
+DefaultFormatter: 'test1' has data = 4
+
+</code></pre>
+<p>在输出中我们看到，添加额外的观察者，就会出现更多的输出；一个观察者被删除后就不再被通知到。</p>
+<h2 id="总结">总结</h2>
+<p>这一篇我们介绍了观察者模式的原理以及 Python 代码的实现。在实际的项目开发中，观察者模式广泛的运用于 GUI 编程，而且在仿真及服务器等其他时间处理架构中也能用到，比如：<code>数据库触发器</code>、<code>Django 的信号系统</code>、<code>Qt GUI 应用程序框架的信号（signal）与槽（slot）机智</code>以及<code>WebSocket</code>的许多用例。</p>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="http://www.giantflyingsaucer.com/blog/?p=5117">The 10 Minute Guide to the Observer Pattern in Python：http://www.giantflyingsaucer.com/blog/?p=5117</a></li>
+<li><a href="http://python-3-patterns-idioms-test.readthedocs.io/en/latest/Observer.html">Observer：http://python-3-patterns-idioms-test.readthedocs.io/en/latest/Observer.html</a></li>
+</ul>
+<hr>
+<p>最后，感谢女朋友支持。</p>
+<table>
+<thead>
+<tr>
+<th>欢迎关注(April_Louisa)</th>
+<th>请我喝芬达</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="http://media.gusibi.mobi/Hy8XHexmzppNKuekLuGxWy8LjdGrQAzZA3mH_e9xltoiYgTFWdvlpZwGWxZESrbK" alt="欢迎关注" loading="lazy"></td>
+<td><img src="http://media.gusibi.mobi/CO9DwU6ZHnXHD5xuG3GqTsY_IYPl-JdpQrDaOo6tl6PiAGEBDeYFHO7sGQi_VVFc" alt="请我喝芬达" loading="lazy"></td>
+</tr>
+</tbody>
+</table>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F">什么是观察者模式</a>
+<ul>
+<li><a href="#%E8%AE%A4%E8%AF%86%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F">认识观察者模式</a></li>
+<li><a href="#%E5%AE%9A%E4%B9%89%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F">定义观察者模式</a></li>
+<li><a href="#%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%BA%94%E7%94%A8%E6%A1%88%E4%BE%8B">观察者模式的应用案例</a></li>
+</ul>
+</li>
+<li><a href="#python-%E5%AE%9E%E7%8E%B0">Python 实现</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/redis-note/">
+              <h3 class="post-title">
+                redis 学习笔记
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

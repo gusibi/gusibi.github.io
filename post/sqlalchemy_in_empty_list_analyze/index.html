@@ -1,0 +1,455 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SQLAlchemy in 空列表问题分析 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="SQLAlchemy in 空列表问题分析 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="SQLAlchemy in 空列表问题
+问题场景
+有model Account，SQLAlchemy 查询语句如下：
+query = Account.query.filter(Account.id.in_(account_ids)).ord..." />
+    <meta name="keywords" content="python,后端,development" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              SQLAlchemy in 空列表问题分析
+            </h2>
+            <div class="post-info">
+              <span>
+                2018-10-04
+              </span>
+              <span>
+                8 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/f-Wl7DIwGU/" class="post-tag">
+                  # 后端
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/7_5AGYXh_qT/" class="post-tag">
+                  # development
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>SQLAlchemy in 空列表问题</p>
+<h3 id="问题场景">问题场景</h3>
+<p>有model <code>Account</code>，SQLAlchemy 查询语句如下：</p>
+<pre><code class="language-python">query = Account.query.filter(Account.id.in_(account_ids)).order_by(Account.date_created.desc())
+</code></pre>
+<p>这里 account_ids 如果为空，执行查询会有如下警告：</p>
+<pre><code class="language-bash">/usr/local/lib/python2.7/site-packages/sqlalchemy/sql/default_comparator.py:35: SAWarning: The IN-predicate on &quot;account.id&quot; was invoked with an empty sequence. This results in a contradiction, which nonetheless can be expensive to evaluate.  Consider alternative strategies for improved performance.
+  return o[0](self, self.expr, op, *(other + o[1:]), **kwargs)
+</code></pre>
+<blockquote>
+<p>这里的意思是使用一个空的列表会花费较长的时间，需要优化以提高性能。</p>
+</blockquote>
+<p><strong>为什么会有这个提示呢？一个空列表为什么会影响性能呢？</strong></p>
+<p>首先打印 query 可得到如下 sql 语句：</p>
+<pre><code class="language-sql">SELECT *   // 字段使用 “*” 代替
+FROM account
+WHERE account.id != account.id ORDER BY account.date_created DESC
+</code></pre>
+<p>会发现生成的语句中过滤条件是 <code>WHERE account.id != account.id</code>，使用 <code>PostgreSQL Explain ANALYZE 命令</code>，</p>
+<ul>
+<li>EXPLAIN：显示PostgreSQL计划程序为提供的语句生成的执行计划。</li>
+<li>ANALYZE：收集有关数据库中表的内容的统计信息。</li>
+</ul>
+<p>分析查询成本结果如下：</p>
+<pre><code class="language-bash">postgres=&gt; EXPLAIN ANALYZE SELECT *
+FROM account
+WHERE account.id != account.id ORDER BY account.date_created DESC;
+                                    QUERY PLAN
+----------------------------------------------------------------------------------
+ Sort  (cost=797159.14..808338.40 rows=4471702 width=29) (actual time=574.002..574.002 rows=0 loops=1)
+   Sort Key: date_created DESC
+   Sort Method: quicksort  Memory: 25kB
+   -&gt;  Seq Scan on account  (cost=0.00..89223.16 rows=4471702 width=29) (actual time=573.991..573.991 rows=0 loops=1)
+         Filter: (id &lt;&gt; id)
+         Rows Removed by Filter: 4494173
+ Planning time: 0.162 ms
+ Execution time: 574.052 ms
+(8 rows)
+</code></pre>
+<p>先看Postgresql提供的语句生成的执行计划，通过结果可以看到，虽然返回值为空，但是查询成本却还是特别高，执行计划部分几乎所有的时间都耗费在排序上，但是和执行时间相比，查询计划的时间可以忽略不计。（结果是先遍历全表，查出所有数据，然后再使用 <code>Filter: (id &lt;&gt; id)</code> 把所有数据过滤。）</p>
+<p>按照这个思路，有两种查询方案：</p>
+<ol>
+<li>如果 account_ids 为空，那么直接返回空列表不进行任何操作，查询语句变为：</li>
+</ol>
+<pre><code class="language-python">if account_ids:
+    query = Account.query.filter(Account.id.in_(account_ids)).order_by(Account.date_created.desc())
+</code></pre>
+<ol start="2">
+<li>如果 account_ids 为空，那么过滤方式，查询语句变为：</li>
+</ol>
+<pre><code class="language-python">query = Account.query
+if account_ids:
+    query = query.filter(Account.id.in_(account_ids))
+else:
+    query = query.filter(False)
+    
+query = query.order_by(Account.date_created.desc())
+</code></pre>
+<p>如果 account_ids 为空，此时生成的 SQL 语句结果为：</p>
+<pre><code class="language-sql">SELECT *
+FROM account
+WHERE 0 = 1 ORDER BY account.date_created DESC
+</code></pre>
+<p>分析结果为：</p>
+<pre><code class="language-sql">postgres=&gt; EXPLAIN ANALYZE SELECT *
+FROM account
+WHERE 0 = 1 ORDER BY account.date_created DESC;
+                                            QUERY PLAN
+---------------------------------------------------------------------------------------------------
+ Sort  (cost=77987.74..77987.75 rows=1 width=29) (actual time=0.011..0.011 rows=0 loops=1)
+   Sort Key: date_created DESC
+   Sort Method: quicksort  Memory: 25kB
+   -&gt;  Result  (cost=0.00..77987.73 rows=1 width=29) (actual time=0.001..0.001 rows=0 loops=1)
+         One-Time Filter: false
+         -&gt;  Seq Scan on account  (cost=0.00..77987.73 rows=1 width=29) (never executed)
+ Planning time: 0.197 ms
+ Execution time: 0.061 ms
+(8 rows)
+</code></pre>
+<p>可以看到，查询计划和执行时间都有大幅提高。</p>
+<h4 id="一个测试">一个测试</h4>
+<blockquote>
+<p>如果只是去掉方案1排序，查看一下分析结果</p>
+</blockquote>
+<p>使用 <code>PostgreSQL Explain ANALYZE 命令</code>分析查询成本结果如下：</p>
+<pre><code class="language-sh">postgres=&gt; EXPLAIN ANALYZE SELECT *
+FROM account
+WHERE account.id != account.id;
+                                 QUERY PLAN
+----------------------------------------------------------------------------
+ Seq Scan on account  (cost=0.00..89223.16 rows=4471702 width=29) (actual time=550.999..550.999 rows=0 loops=1)
+   Filter: (id &lt;&gt; id)
+   Rows Removed by Filter: 4494173
+ Planning time: 0.134 ms
+ Execution time: 551.041 ms
+</code></pre>
+<p>可以看到，时间和有排序时差别不大。</p>
+<h3 id="如何计算查询成本">如何计算查询成本</h3>
+<p>执行一个分析，结果如下：</p>
+<pre><code class="language-sql">postgres=&gt; explain select * from account where date_created ='2016-04-07 18:51:30.371495+08';
+                                      QUERY PLAN
+--------------------------------------------------------------------------------------
+ Seq Scan on account  (cost=0.00..127716.33 rows=1 width=211)
+   Filter: (date_created = '2016-04-07 18:51:30.371495+08'::timestamp with time zone)
+(2 rows)
+</code></pre>
+<p>EXPLAIN引用的数据是：</p>
+<ol>
+<li>0.00 预计的启动开销(在输出扫描开始之前消耗的时间，比如在一个排序节点里做排续的时间)。</li>
+<li>127716.33 预计的总开销。</li>
+<li>1 预计的该规划节点输出的行数。</li>
+<li>211 预计的该规划节点的行平均宽度(单位：字节)。</li>
+</ol>
+<p>这里开销(cost)的计算单位是磁盘页面的存取数量，如1.0将表示一次顺序的磁盘页面读取。其中上层节点的开销将包括其所有子节点的开销。这里的输出行数(rows)并不是规划节点处理/扫描的行数，通常会更少一些。一般而言，顶层的行预计数量会更接近于查询实际返回的行数。<br>
+这里表示的就是在只有单 CPU 内核的情况下，评估成本是127716.33;</p>
+<h4 id="计算成本postgresql-首先看表的字节数大小">计算成本，Postgresql 首先看表的字节数大小</h4>
+<p>这里 account 表的大小为：</p>
+<pre><code class="language-sql">postgres=&gt; select pg_relation_size('account');
+
+pg_relation_size
+------------------
+        737673216
+(1 row)
+</code></pre>
+<h4 id="查看块的大小">查看块的大小</h4>
+<p>Postgresql 会为每个要一次读取的快添加成本点，使用 <code>show block_size</code>查看块的大小：</p>
+<pre><code class="language-sql">postgres=&gt; show block_size;
+
+block_size
+------------
+ 8192
+(1 row)
+</code></pre>
+<h4 id="计算块的个数">计算块的个数</h4>
+<p>可以看到每个块的大小为8kb，那么可以计算从表从读取的顺序块成本值为：</p>
+<pre><code>blocks = pg_relation_size/block_size = 90048
+</code></pre>
+<p><code>90048</code> 是account 表所占用块的数量。</p>
+<h4 id="查看每个块需要的成本">查看每个块需要的成本</h4>
+<pre><code class="language-sql">postgres=&gt; show seq_page_cost;
+ seq_page_cost
+---------------
+ 1
+(1 row)
+</code></pre>
+<p>这里的意思是 Postgresql 为每个块分配一个成本点，也就是说上面的查询需要从90048个成本点。</p>
+<h4 id="处理每条数据-cpu-所需时间">处理每条数据 cpu 所需时间</h4>
+<ul>
+<li>cpu_tuple_cost：处理每条记录的CPU开销（tuple：关系中的一行记录）</li>
+<li>cpu_operator_cost：操作符或函数带来的CPU开销。</li>
+</ul>
+<pre><code class="language-sql">postgres=&gt; show cpu_operator_cost;
+ cpu_operator_cost
+-------------------
+ 0.0025
+(1 row)
+
+postgres=&gt; show cpu_tuple_cost;
+ cpu_tuple_cost
+----------------
+ 0.01
+(1 row)
+</code></pre>
+<h4 id="计算">计算</h4>
+<p>cost 计算公式为：</p>
+<blockquote>
+<p>cost = 磁盘块个数 * 块成本（1） + 行数 * cpu_tuple_cost（系统参数值）+ 行数 * cpu_operator_cost</p>
+</blockquote>
+<p>现在用所有值来计算explain 语句中得到的值：</p>
+<pre><code class="language-python">number_of_records = 3013466  # account 表 count
+
+block_size = 8192  # block size in bytes
+
+pg_relation_size=737673216
+
+blocks = pg_relation_size/block_size = 90048
+
+seq_page_cost = 1
+cpu_tuple_cost = 0.01
+cpu_operator_cost = 0.0025
+
+cost = blocks * seq_page_cost + number_of_records * cpu_tuple_cost + number_of_records * cpu_operator_cost
+</code></pre>
+<h4 id="如何降低查询成本">如何降低查询成本？</h4>
+<p>直接回答，使用索引。</p>
+<pre><code class="language-sql">postgres=&gt; explain select * from account where id=20039;
+                                       QUERY PLAN
+----------------------------------------------------------------------------------------
+ Index Scan using account_pkey on account  (cost=0.43..8.45 rows=1 width=211)
+   Index Cond: (id = 20039)
+(2 rows)
+</code></pre>
+<p>通过这个查询可以看到，在使用有索引的字段查询时，查询成本显著降低。</p>
+<blockquote>
+<p>索引扫描的计算比顺序扫描的计算要复杂一些。它由两个阶段组成。<br>
+PostgreSQL会考虑random_page_cost和cpu_index_tuple_cost 变量，并返回一个基于索引树的高度的值。</p>
+</blockquote>
+<h3 id="参考链接">参考链接</h3>
+<ul>
+<li><a href="https://stackoverflow.com/questions/23523147/sqlalchemy-and-empty-in-clause">sqlalchemy-and-empty-in-clause</a></li>
+<li><a href="https://www.linuxidc.com/Linux/2017-07/145768.htm">PostgreSQL查询性能分析和优化</a></li>
+<li><a href="http://www.cnblogs.com/stephen-liu74/archive/2011/12/25/2301064.html">PostgreSQL学习手册(性能提升技巧)</a></li>
+<li><a href="https://mp.weixin.qq.com/s/iBbVfmrTCxINlrbBS9u1Qw">PostgreSQL 查询成本模型</a></li>
+<li><a href="https://blog.csdn.net/luojinbai/article/details/43085383">PostgreSQL 查询计划时间的计算详解</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/ah0mqMXMtdJb9Yj03suu-NGEyVRxyEuOIT5bXSv7ip5aqtHkiRjTTl8SMRMv3Qp5" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E9%97%AE%E9%A2%98%E5%9C%BA%E6%99%AF">问题场景</a>
+<ul>
+<li><a href="#%E4%B8%80%E4%B8%AA%E6%B5%8B%E8%AF%95">一个测试</a></li>
+</ul>
+</li>
+<li><a href="#%E5%A6%82%E4%BD%95%E8%AE%A1%E7%AE%97%E6%9F%A5%E8%AF%A2%E6%88%90%E6%9C%AC">如何计算查询成本</a>
+<ul>
+<li><a href="#%E8%AE%A1%E7%AE%97%E6%88%90%E6%9C%ACpostgresql-%E9%A6%96%E5%85%88%E7%9C%8B%E8%A1%A8%E7%9A%84%E5%AD%97%E8%8A%82%E6%95%B0%E5%A4%A7%E5%B0%8F">计算成本，Postgresql 首先看表的字节数大小</a></li>
+<li><a href="#%E6%9F%A5%E7%9C%8B%E5%9D%97%E7%9A%84%E5%A4%A7%E5%B0%8F">查看块的大小</a></li>
+<li><a href="#%E8%AE%A1%E7%AE%97%E5%9D%97%E7%9A%84%E4%B8%AA%E6%95%B0">计算块的个数</a></li>
+<li><a href="#%E6%9F%A5%E7%9C%8B%E6%AF%8F%E4%B8%AA%E5%9D%97%E9%9C%80%E8%A6%81%E7%9A%84%E6%88%90%E6%9C%AC">查看每个块需要的成本</a></li>
+<li><a href="#%E5%A4%84%E7%90%86%E6%AF%8F%E6%9D%A1%E6%95%B0%E6%8D%AE-cpu-%E6%89%80%E9%9C%80%E6%97%B6%E9%97%B4">处理每条数据 cpu 所需时间</a></li>
+<li><a href="#%E8%AE%A1%E7%AE%97">计算</a></li>
+<li><a href="#%E5%A6%82%E4%BD%95%E9%99%8D%E4%BD%8E%E6%9F%A5%E8%AF%A2%E6%88%90%E6%9C%AC">如何降低查询成本？</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/solidity-simple-guide/">
+              <h3 class="post-title">
+                Solidity 简易教程
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

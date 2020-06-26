@@ -1,0 +1,574 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Solidity 简易教程 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Solidity 简易教程 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+Solidity是以太坊的主要编程语言，它是一种静态类型的 JavaScript-esque 语言，是面向合约的、为实现智能合约而创建的高级编程语言，设计的目的是能在以太坊虚拟机（EVM）上运行。
+本文基于CryptoZombies，教程..." />
+    <meta name="keywords" content="tutorial,区块链,以太坊" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Solidity 简易教程
+            </h2>
+            <div class="post-info">
+              <span>
+                2018-09-04
+              </span>
+              <span>
+                12 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/Sgmw7chWDE4/" class="post-tag">
+                  # 区块链
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/i90rYuTuM7C/" class="post-tag">
+                  # 以太坊
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>Solidity是以太坊的主要编程语言，它是一种静态类型的 JavaScript-esque 语言，是面向合约的、为实现智能合约而创建的高级编程语言，设计的目的是能在以太坊虚拟机（EVM）上运行。</p>
+<p>本文基于CryptoZombies，教程地址为：https://cryptozombies.io/zh/</p>
+</blockquote>
+<h3 id="合约">合约</h3>
+<p>Solidity 的代码都包裹在<strong>合约</strong>里面. 一份<code>合约</code>就是以太应币应用的基本模块， 所有的变量和函数都属于一份合约, 它是你所有应用的起点.</p>
+<p>一份名为 <code>HelloWorld</code> 的空合约如下:</p>
+<pre><code class="language-javascript">contract HelloWorld {
+
+}
+</code></pre>
+<h4 id="hello-world">hello world</h4>
+<p>首先看一个简单的智能合约。</p>
+<pre><code class="language-javascript">pragma solidity ^0.4.0;
+
+contract SimpleStorage {
+    uint storedData; // 声明一个类型为 uint (256位无符号整数）的状态变量，叫做 storedData
+
+    function set(uint x) public {
+        storedData = x; // 状态变量可以直接访问，不需要使用 this. 或者 self. 这样的前缀
+    }
+
+    function get() public view returns (uint) {
+        return storedData;
+    }
+}
+</code></pre>
+<p>所有的 Solidity 源码都必须冠以 &quot;version pragma&quot; — 标明 Solidity 编译器的版本. 以避免将来新的编译器可能破坏你的代码。</p>
+<p>例如: <code>pragma solidity ^0.4.0;</code> (当前 Solidity 的最新版本是 0.4.0).</p>
+<blockquote>
+<p>关键字 <code>pragma</code> 的含义是，一般来说，pragmas（编译指令）是告知编译器如何处理源代码的指令的（例如， <a href="https://en.wikipedia.org/wiki/Pragma_once">pragma once</a> ）。</p>
+</blockquote>
+<p>Solidity中合约的含义就是一组代码（它的 <em>函数</em> )和数据（它的 <em>状态</em> ），它们位于以太坊区块链的一个特定地址上。</p>
+<p>该合约能完成的事情并不多：它能允许任何人在合约中存储一个单独的数字，并且这个数字可以被世界上任何人访问，且没有可行的办法阻止你发布这个数字。当然，任何人都可以再次调用 <code>set</code> ，传入不同的值，覆盖你的数字，但是这个数字仍会被存储在区块链的历史记录中。</p>
+<blockquote>
+<p>Solidity 语句以分号（<strong>;</strong>）结尾</p>
+</blockquote>
+<h3 id="状态变量">状态变量</h3>
+<p><strong>状态变量</strong>是被永久地保存在合约中。也就是说它们被写入以太币区块链中，想象成写入一个数据库。</p>
+<pre><code class="language-javascript">contract HelloWorld {
+   // 这个无符号整数将会永久的被保存在区块链中
+   uint myUnsignedInteger = 100;
+}
+</code></pre>
+<p>在上面的例子中，定义 <code>myUnsignedInteger</code> 为 <code>uint</code> 类型，并赋值100。</p>
+<blockquote>
+<p><code>uint</code> 无符号数据类型， 指<strong>其值不能是负数</strong>，对于有符号的整数存在名为 <code>int</code> 的数据类型。</p>
+<p>Solidity中， <code>uint</code> 实际上是 <code>uint256</code>代名词， 一个256位的无符号整数。</p>
+</blockquote>
+<p>程序有时需要对不同类型的数据进行操作，因为 Solidity 是静态类型语言，对不同类型的数据进行运算会抛出异常，比如：</p>
+<pre><code class="language-go">uint8 a = 5;
+uint b = 6;
+// 将会抛出错误，因为 a * b 返回 uint, 而不是 uint8:
+uint8 c = a * b;
+</code></pre>
+<p><code>a * b</code> 返回类型是 <code>uint</code>, 但是当我们尝试用 <code>uint8</code> 类型接收时, 就会造成潜在的错误。这时，就需要显式的进行数据类型转换：</p>
+<pre><code class="language-go">// 我们需要将 b 转换为 uint8:
+uint8 c = a * uint8(b);
+</code></pre>
+<blockquote>
+<p>把它的数据类型转换为 <code>uint8</code>, 就可以了，编译器也不会出错。</p>
+</blockquote>
+<p>Solidity 支持多种数据类型，比如：</p>
+<ul>
+<li>string（字符串）：字符串用于保存任意长度的 UTF-8 编码数据</li>
+<li>fixedArray（静态数组）：固定长度的数组</li>
+<li>dynamicArray（动态数组）：长度不固定，可以动态添加元素的数组</li>
+<li>enum（枚举）</li>
+<li>mapping</li>
+<li>等</li>
+</ul>
+<h3 id="数学运算">数学运算</h3>
+<p>在 Solidity 中，数学运算很直观明了，与其它程序设计语言相同:</p>
+<ul>
+<li>加法: <code>x + y</code></li>
+<li>减法: <code>x - y</code>,</li>
+<li>乘法: <code>x * y</code></li>
+<li>除法: <code>x / y</code></li>
+<li>取模 / 求余: <code>x % y</code> <em>(例如, 13 % 5 余 3, 因为13除以5，余3)</em></li>
+<li>乘方: <code>x ** y</code></li>
+</ul>
+<h3 id="结构体">结构体</h3>
+<p>Solidity 提供了 <code>结构体</code>，用来表示更复杂的数据类型。</p>
+<pre><code class="language-c">struct Person {
+  uint age;
+  string name;
+}
+</code></pre>
+<p>结构体允许你生成一个更复杂的数据类型，它有多个属性。</p>
+<p>创建结构体方式为：</p>
+<pre><code class="language-go">// 创建一个新的Person:
+Person satoshi = Person(172, &quot;Satoshi&quot;);
+</code></pre>
+<h3 id="数组">数组</h3>
+<p>Solidity 提供两种类型的数组：<code>静态数组</code>和<code>动态数组</code>。</p>
+<pre><code class="language-go">// 固定长度为2的静态数组:
+uint[2] fixedArray;
+// 固定长度为5的string类型的静态数组:
+string[5] stringArray;
+// 动态数组，长度不固定，可以动态添加元素:
+uint[] dynamicArray;
+</code></pre>
+<p>使用 push 函数向数组中添加值：</p>
+<pre><code class="language-javascript">fixedArray.push[123] 
+fixedArray.push[234]
+// fixedArray 值为 [123, 234]
+</code></pre>
+<blockquote>
+<p><code>array.push()</code> 在数组的 <strong>尾部</strong> 加入新元素 ，所以元素在数组中的顺序就是添加的顺序<br>
+<code>array.push()</code> 会返回数组的长度。</p>
+</blockquote>
+<p>Solidity 数组支持多种类型，比如结构体：</p>
+<pre><code class="language-c">struct Person {
+  uint age;
+  string name;
+}
+
+Person[] people; // dynamic Array, we can keep adding to it
+</code></pre>
+<p>结构体类型的数组添加值的方式为：</p>
+<pre><code class="language-c">people.push(Person(16, &quot;Vitalik&quot;));
+// 也可以使用下面的方式，推荐使用上述一行简洁的方式
+
+Person satoshi = Person(172, &quot;Satoshi&quot;);
+people.push(satoshi);
+</code></pre>
+<h4 id="公共数组">公共数组</h4>
+<p>也可以使用<code>public</code>定义公共数组，Solidity 会自动创建<code>getter</code>方法。语法如下：</p>
+<pre><code class="language-c">struct Person {
+  uint age;
+  string name;
+}
+
+Person[] public people; // dynamic Array, we can keep adding to it
+</code></pre>
+<blockquote>
+<p>公共数组支持其它的合约读取数据（但不能写入数据），所以这在合约中是一个有用的保存公共数据的模式。（有点像全局变量，所有合约共享同一个“内存空间“，厉害了！）</p>
+</blockquote>
+<h3 id="函数">函数</h3>
+<p>Solidity 中，函数定义如下：</p>
+<pre><code class="language-javascript">function eatHamburgers(string _name, uint _amount) {
+
+}
+</code></pre>
+<blockquote>
+<p><code>Solidity</code>  习惯上函数里的变量都是以(<strong>_</strong>)开头 (但不是硬性规定) 以区别全局变量。</p>
+</blockquote>
+<p>这是一个名为 <code>eatHamburgers</code> 的函数，它接受两个参数：一个 <code>string</code>类型的 和 一个 <code>uint</code>类型的。现在函数内部还是空的。</p>
+<p>函数调用如下：</p>
+<pre><code class="language-go">eatHamburgers(&quot;vitalik&quot;, 100);
+</code></pre>
+<h4 id="私有公共函数">私有/公共函数</h4>
+<p>Solidity 函数分为私有函数和共有函数。</p>
+<blockquote>
+<p>Solidity 定义的函数的属性默认为<code>公共</code>。 这就意味着任何一方 (或其它合约) 都可以调用你合约里的函数。</p>
+</blockquote>
+<p>显然，不是什么时候都需要这样，而且这样的合约易于受到攻击。所以将自己的函数定义为<code>私有</code>是一个好的编程习惯，只有当你需要外部世界调用它时才将它设置为<code>公共</code>。</p>
+<blockquote>
+<p>可以把所有的函数都显式的声明 <code>public</code>和<code>private</code>来规避这个问题。</p>
+</blockquote>
+<p>定义私有函数比较简单，只需要在函数参数后添加 <code>private</code>关键字即可。示例如下：</p>
+<pre><code class="language-go">uint[] numbers;
+
+function _addToArray(uint _number) private {
+  numbers.push(_number);
+}
+</code></pre>
+<p>这意味着只有我们合约中的其它函数才能够调用这个函数，给 <code>numbers</code>数组添加新成员。</p>
+<blockquote>
+<p>和函数的参数类似，私有函数的名字用(<code>_</code>)起始。</p>
+</blockquote>
+<blockquote>
+<p><code>注意：</code>在智能合约中你所用的一切都是公开可见的，即便是局部变量和被标记成 <code>private</code> 的状态变量也是如此。</p>
+</blockquote>
+<h4 id="返回值">返回值</h4>
+<p>和其它语言一样，Solidity 函数也有返回值，示例如下：</p>
+<pre><code class="language-go">string greeting = &quot;What's up dog&quot;;
+
+function sayHello() public returns (string) {
+  return greeting;
+}
+</code></pre>
+<p>返回值使用 <code>returns</code>关键字标注。（已经是非常奇怪的写法了。。）</p>
+<h4 id="修饰符">修饰符</h4>
+<h5 id="view">view</h5>
+<blockquote>
+<p><code>constant</code> 是 <code>view</code> 的别名</p>
+</blockquote>
+<pre><code class="language-go">string greeting = &quot;What's up dog&quot;;
+
+function sayHello() public returns (string) {
+  return greeting;
+}
+</code></pre>
+<p>像 <code>sayHello</code> 函数这种实际上没有改变合约中数据内容的情况，可以把函数定义为<code>view</code>，这意味着此函数只读不修改数据。可以使用以下声明方式：</p>
+<pre><code class="language-javascript">function sayHello() public view returns (string) {}
+</code></pre>
+<p>可以将函数声明为 <code>view</code> 类型，这种情况下要保证不修改状态。</p>
+<p>下面的语句被认为是修改状态：</p>
+<ol>
+<li>修改状态变量。</li>
+<li><a href="https://solidity-cn.readthedocs.io/zh/develop/contracts.html#events">产生事件</a>。</li>
+<li><a href="https://solidity-cn.readthedocs.io/zh/develop/control-structures.html#creating-contracts">创建其它合约</a>。</li>
+<li>使用 <code>selfdestruct</code>。</li>
+<li>通过调用发送以太币。</li>
+<li>调用任何没有标记为 <code>view</code> 或者 <code>pure</code> 的函数。</li>
+<li>使用低级调用。</li>
+<li>使用包含特定操作码的内联汇编。</li>
+</ol>
+<h5 id="pure">pure</h5>
+<p>pure 比 view 更轻量，使用这个修饰符修饰的函数甚至都不会读取合约中的数据，例如：</p>
+<pre><code class="language-javascript">function _multiply(uint a, uint b) private pure returns (uint) { return a * b; }
+</code></pre>
+<p>这个函数没有读取应用里的状态，它的返回值只和它输入的参数相关。</p>
+<blockquote>
+<p>Solidity 编辑器会给出提示，提醒你使用 pure/view修饰符。</p>
+</blockquote>
+<p>函数可以声明为 <code>pure</code> ，在这种情况下，承诺不读取或修改状态。</p>
+<p>除了上面解释的状态修改语句列表之外，以下被认为是从状态中读取：</p>
+<ol>
+<li>读取状态变量。</li>
+<li>访问 <code>this.balance</code> 或者 <code>&lt;address&gt;.balance</code>。</li>
+<li>访问 <code>block</code>，<code>tx</code>， <code>msg</code> 中任意成员 （除 <code>msg.sig</code> 和 <code>msg.data</code> 之外）。</li>
+<li>调用任何未标记为 <code>pure</code> 的函数。</li>
+<li>使用包含某些操作码的内联汇编。</li>
+</ol>
+<h5 id="payable">payable</h5>
+<p>payable 关键字用来说明，这个函数可以接受以太币，如果没有这个关键字，函数会自动拒绝所有发送给它的以太币。</p>
+<h3 id="事件">事件</h3>
+<p><strong>事件</strong> 是合约和区块链通讯的一种机制。你的前端应用“监听”某些事件，并做出反应。例如：</p>
+<pre><code class="language-javascript">// 这里建立事件
+event IntegersAdded(uint x, uint y, uint result);
+
+function add(uint _x, uint _y) public {
+  uint result = _x + _y;
+  //触发事件，通知app
+  IntegersAdded(_x, _y, result);
+  return result;
+}
+</code></pre>
+<p>用户界面（当然也包括服务器应用程序）可以监听区块链上正在发送的事件，而不会花费太多成本。一旦它被发出，监听该事件的listener都将收到通知。而所有的事件都包含了 <code>from</code> ， <code>to</code> 和 <code>amount</code> 三个参数，可方便追踪事务。 为了监听这个事件，你可以使用如下代码（javascript 实现）：</p>
+<pre><code class="language-javascript">var abi = /* abi 由编译器产生 */;
+var ClientReceipt = web3.eth.contract(abi);
+var clientReceipt = ClientReceipt.at(&quot;0x1234...ab67&quot; /* 地址 */);
+
+var event = clientReceipt.IntegersAdded();
+
+// 监视变化
+event.watch(function(error, result){
+    // 结果包括对 `Deposit` 的调用参数在内的各种信息。
+    if (!error)
+        console.log(result);
+});
+
+// 或者通过回调立即开始观察
+var event = clientReceipt.IntegersAdded(function(error, result) {
+    if (!error)
+        console.log(result);
+});
+</code></pre>
+<h3 id="代码示例">代码示例</h3>
+<p>下面是一个完整的代码示例：</p>
+<pre><code class="language-javascript">pragma solidity ^0.4.19;
+
+contract ZombieFactory {
+
+    // 建立事件
+    event NewZombie(uint zombieId, string name, uint dna);
+
+    uint dnaDigits = 16;  // 定义状态变量
+    uint dnaModulus = 10 ** dnaDigits;
+
+    struct Zombie {  // 定义结构体
+        string name;
+        uint dna;
+    }
+
+    Zombie[] public zombies;  // 定义动态数组
+
+    // 创建私有函数，私有函数命名使用 _ 前缀
+    function _createZombie(string _name, uint _dna) private {
+        // 函数参数命名 使用 _ 作为前缀
+        // arrays.push() 将元素加入到数组尾部，并且返回数组的长度
+        uint id = zombies.push(Zombie(_name, _dna)) - 1;
+        // 触发事件
+        NewZombie(id, _name, _dna);
+    }
+
+    // view 为函数修饰符，表示此函数不需要更新或创建状态变量
+    // pure 表示函数不需要使用状态变量
+    function _generateRandomDna(string _str) private view returns (uint) {
+        // 使用 keccak256 创建一个伪随机数
+        uint rand = uint(keccak256(_str));
+        return rand % dnaModulus;
+    }
+
+    function createRandomZombie(string _name) public {
+        uint randDna = _generateRandomDna(_name);
+        _createZombie(_name, randDna);
+    }
+
+}
+
+</code></pre>
+<blockquote>
+<p>Ethereum 内部有一个散列函数keccak256，它用了SHA3版本。一个散列函数基本上就是把一个字符串转换为一个256位的16进制数字。<br>
+在智能合约中使用随机数很难保证节点不作弊， 这是因为智能合约中的随机数一般要依赖计算节点的本地时间得到， 而本地时间是可以被恶意节点伪造的，因此这种方法并不安全。 通行的做法是采用 链外off-chain 的第三方服务，比如 Oraclize 来获取随机数）。</p>
+</blockquote>
+<h3 id="参考链接">参考链接</h3>
+<ul>
+<li><a href="https://solidity-cn.readthedocs.io/zh/develop/index.html">Solidity 文档: https://solidity-cn.readthedocs.io/zh/develop/index.html</a></li>
+<li><a href="https://cryptozombies.io/zh/">cryptozombie-lessons: https://cryptozombies.io/zh/</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/ah0mqMXMtdJb9Yj03suu-NGEyVRxyEuOIT5bXSv7ip5aqtHkiRjTTl8SMRMv3Qp5?" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%90%88%E7%BA%A6">合约</a>
+<ul>
+<li><a href="#hello-world">hello world</a></li>
+</ul>
+</li>
+<li><a href="#%E7%8A%B6%E6%80%81%E5%8F%98%E9%87%8F">状态变量</a></li>
+<li><a href="#%E6%95%B0%E5%AD%A6%E8%BF%90%E7%AE%97">数学运算</a></li>
+<li><a href="#%E7%BB%93%E6%9E%84%E4%BD%93">结构体</a></li>
+<li><a href="#%E6%95%B0%E7%BB%84">数组</a>
+<ul>
+<li><a href="#%E5%85%AC%E5%85%B1%E6%95%B0%E7%BB%84">公共数组</a></li>
+</ul>
+</li>
+<li><a href="#%E5%87%BD%E6%95%B0">函数</a>
+<ul>
+<li><a href="#%E7%A7%81%E6%9C%89%E5%85%AC%E5%85%B1%E5%87%BD%E6%95%B0">私有/公共函数</a></li>
+<li><a href="#%E8%BF%94%E5%9B%9E%E5%80%BC">返回值</a></li>
+<li><a href="#%E4%BF%AE%E9%A5%B0%E7%AC%A6">修饰符</a>
+<ul>
+<li><a href="#view">view</a></li>
+<li><a href="#pure">pure</a></li>
+<li><a href="#payable">payable</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E4%BA%8B%E4%BB%B6">事件</a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81%E7%A4%BA%E4%BE%8B">代码示例</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/gc-reference-counting/">
+              <h3 class="post-title">
+                垃圾回收算法|引用计数法
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

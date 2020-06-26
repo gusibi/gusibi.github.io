@@ -1,0 +1,521 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>redis 学习笔记 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="redis 学习笔记 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+这篇 redis 学习笔记主要介绍 redis 的数据结构和数据类型，并讨论数据结构的选择以及应用场景的优化。
+
+redis 是什么
+
+Redis是一种面向“键/值”对类型数据的分布式NoSQL数据库系统，特点是高性能，持久存储，适应高并..." />
+    <meta name="keywords" content="nosql,database,redis" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              redis 学习笔记
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-09-17
+              </span>
+              <span>
+                12 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/vnysOkbn9w/" class="post-tag">
+                  # nosql
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/SS95MaqZ5J/" class="post-tag">
+                  # database
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/moC-RiSa5_G/" class="post-tag">
+                  # redis
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>这篇 redis 学习笔记主要介绍 redis 的数据结构和数据类型，并讨论数据结构的选择以及应用场景的优化。</p>
+</blockquote>
+<h3 id="redis-是什么">redis 是什么</h3>
+<blockquote>
+<p>Redis是一种面向“键/值”对类型数据的分布式NoSQL数据库系统，特点是高性能，持久存储，适应高并发的应用场景。</p>
+</blockquote>
+<h3 id="redis-数据结构">Redis 数据结构</h3>
+<ul>
+<li>动态字符串 (Sds)</li>
+<li>双端列表   (LINKEDLIST)</li>
+<li>字典</li>
+<li>跳跃表    (SKIPLIST)</li>
+<li>整数集合  (INTSET)</li>
+<li>压缩列表  (ZIPLIST)</li>
+</ul>
+<p>HUGOMORE42</p>
+<h4 id="动态字符串"><a href="http://origin.redisbook.com/internal-datastruct/sds.html">动态字符串</a></h4>
+<p>Sds (Simple Dynamic String,简单动态字符串)是 Redis 底层所使用的字符串表示,它被用 在几乎所有的 Redis 模块中</p>
+<p>Redis 是一个键值对数据库(key-value DB),数据库的值可以是字符串、集合、列表等多种类 型的对象,而数据库的键则总是字符串对象</p>
+<p>在 Redis 中, 一个字符串对象除了可以保存字符串值之外,还可以保存 long 类型的值当字符串对象保存的是字符串时,它包含的才是 sds 值,否则的话,它就 是一个 long 类型的值</p>
+<h5 id="动态字符串主要有两个作用">动态字符串主要有两个作用:</h5>
+<ol>
+<li>实现字符串对象(StringObject)</li>
+<li>在 Redis 程序内部用作 char * 类型的替代品</li>
+</ol>
+<h4 id="双端列表-httporiginredisbookcominternal-datastructadlisthtml">[双端列表] (http://origin.redisbook.com/internal-datastruct/adlist.html)</h4>
+<p>双端链表还是 Redis 列表类型的底层实现之一，当对列表类型的键进行操作——比如执行 RPUSH 、LPOP 或 LLEN 等命令时,程序在底层操作的可能就是双端链表</p>
+<h5 id="双端链表主要有两个作用">双端链表主要有两个作用:</h5>
+<ul>
+<li>作为 Redis 列表类型的底层实现之一;</li>
+<li>作为通用数据结构,被其他功能模块所使用;</li>
+</ul>
+<h4 id="字典"><a href="http://origin.redisbook.com/internal-datastruct/dict.html">字典</a></h4>
+<p>字典(dictionary),又名映射(map)或关联数组(associative array), 它是一种抽象数据结 构,由一集键值对(key-value pairs)组成,各个键值对的键各不相同,程序可以将新的键值对 添加到字典中,或者基于键进行查找、更新或删除等操作</p>
+<h5 id="字典的应用">字典的应用</h5>
+<ol>
+<li>实现数据库键空间(key space);</li>
+<li>用作 Hash 类型键的其中一种底层实现;</li>
+</ol>
+<blockquote>
+<p>Redis 是一个键值对数据库,数据库中的键值对就由字典保存:每个数据库都有一个与之相对应的字典,这个字典被称之为键空间(key space)。</p>
+</blockquote>
+<p>Redis 的 Hash 类型键使用<strong>字典和压缩列表</strong>两种数据结构作为底层实现</p>
+<h4 id="跳跃表"><a href="http://origin.redisbook.com/internal-datastruct/skiplist.html">跳跃表</a></h4>
+<p>跳跃表(skiplist)是一种随机化的数据,由 William Pugh 在论文《Skip lists: a probabilistic alternative to balanced trees》中提出,这种数据结构以有序的方式在层次化的链表中保存元素,它的效率可以和平衡树媲美——查找、删除、添加等操作都可以在对数期望时间下完成, 并且比起平衡树来说,跳跃表的实现要简单直观得多</p>
+<p>和字典、链表或者字符串这几种在 Redis 中大量使用的数据结构不同,跳跃表在 Redis 的唯一作用,就是实现有序集数据类型<br>
+跳跃表将指向有序集的 score 值和 member 域的指针作为元素,并以 score 值为索引,对有序集元素进行排序。</p>
+<h4 id="整数集合"><a href="http://origin.redisbook.com/compress-datastruct/intset.html">整数集合</a></h4>
+<p>整数集合(intset)用于有序、无重复地保存多个整数值,它会根据元素的值,自动选择该用什么长度的整数类型来保存元素</p>
+<p>Intset 是集合键的底层实现之一,如果一个集合:</p>
+<ol>
+<li>只保存着整数元素;</li>
+<li>元素的数量不多;<br>
+那么 Redis 就会使用 intset 来保存集合元素。</li>
+</ol>
+<h4 id="压缩列表"><a href="http://origin.redisbook.com/compress-datastruct/ziplist.html">压缩列表</a></h4>
+<p>Ziplist 是由一系列特殊编码的内存块构成的列表,一个 ziplist 可以包含多个节点(entry),每个节点可以保存一个长度受限的字符数组(不以 \0 结尾的 char 数组)或者整数</p>
+<h3 id="redis-数据类型">Redis 数据类型</h3>
+<h4 id="redisobject"><a href="http://origin.redisbook.com/datatype/object.html#redisobject-redis">RedisObject</a></h4>
+<p>redisObject 是 Redis 类型系统的核心,数据库中的每个键、值,以及 Redis 本身处理的参数,都表示为这种数据类型</p>
+<p>redisObject 的定义位于 redis.h :</p>
+<pre><code class="language-c">/*
+* Redis 对象
+*/
+typedef struct redisObject {
+    // 类型
+    unsigned type:4;
+    // 对齐位
+    unsigned notused:2;
+    // 编码方式
+    unsigned encoding:4;
+    // LRU 时间(相对于 server.lruclock)
+    unsigned lru:22;
+    // 引用计数
+    int refcount;
+    // 指向对象的值
+    void *ptr;
+} robj;
+</code></pre>
+<p>type 、encoding 和 ptr 是最重要的三个属性。</p>
+<p>type 记录了对象所保存的值的类型,它的值可能是以下常量的其中一个</p>
+<pre><code class="language-c">/*
+* 对象类型
+*/
+#define REDIS_STRING 0 // 字符串
+#define REDIS_LIST 1   // 列表
+#define REDIS_SET 2    // 集合
+#define REDIS_ZSET 3   // 有序集
+#define REDIS_HASH 4   // 哈希表
+</code></pre>
+<p>encoding 记录了对象所保存的值的编码,它的值可能是以下常量的其中一个</p>
+<pre><code class="language-c">/*
+* 对象编码
+*/
+#define REDIS_ENCODING_RAW 0    // 编码为字符串
+#define REDIS_ENCODING_INT 1    // 编码为整数
+#define REDIS_ENCODING_HT 2     // 编码为哈希表
+#define REDIS_ENCODING_ZIPMAP 3 // 编码为 zipmap(2.6 后不再使用)
+#define REDIS_ENCODING_LINKEDLIST 4 // 编码为双端链表
+#define REDIS_ENCODING_ZIPLIST 5    // 编码为压缩列表
+#define REDIS_ENCODING_INTSET 6     // 编码为整数集合
+#define REDIS_ENCODING_SKIPLIST 7    // 编码为跳跃表
+</code></pre>
+<p>ptr 是一个指针,指向实际保存值的数据结构,这个数据结构由 type 属性和 encoding 属性决定。</p>
+<p>当执行一个处理数据类型的命令时,Redis 执行以下步骤:</p>
+<ol>
+<li>根据给定key,在数据库字典中查找和它像对应的redisObject,如果没找到,就返回 NULL 。</li>
+<li>检查redisObject的type属性和执行命令所需的类型是否相符,如果不相符,返回类 型错误。</li>
+<li>根据redisObject的encoding属性所指定的编码,选择合适的操作函数来处理底层的 数据结构。</li>
+<li>返回数据结构的操作结果作为命令的返回值。</li>
+</ol>
+<h4 id="字符串"><a href="http://redisdoc.com/string/index.html">字符串</a></h4>
+<p>REDIS_STRING (字符串)是 Redis 使用得最为广泛的数据类型,它除了是 SET 、GET 等命令 的操作对象之外,数据库中的所有键,以及执行命令时提供给 Redis 的参数,都是用这种类型 保存的。</p>
+<p>字符串类型分别使用 REDIS_ENCODING_INT 和 REDIS_ENCODING_RAW 两种编码</p>
+<blockquote>
+<p>只有能表示为 long 类型的值,才会以整数的形式保存,其他类型 的整数、小数和字符串,都是用 sdshdr 结构来保存</p>
+</blockquote>
+<h4 id="哈希表"><a href="http://redisdoc.com/hash/index.html">哈希表</a></h4>
+<p>REDIS_HASH (哈希表)是HSET 、HLEN 等命令的操作对象</p>
+<p>它使用 REDIS_ENCODING_ZIPLIST和REDIS_ENCODING_HT 两种编码方式</p>
+<p>Redis 中每个hash可以存储232-1键值对（40多亿）</p>
+<h4 id="列表"><a href="http://redisdoc.com/list/index.html">列表</a></h4>
+<p>REDIS_LIST(列表)是LPUSH 、LRANGE等命令的操作对象</p>
+<p>它使用 REDIS_ENCODING_ZIPLIST和REDIS_ENCODING_LINKEDLIST 这两种方式编码</p>
+<p>一个列表最多可以包含232-1 个元素(4294967295, 每个列表超过40亿个元素)。</p>
+<h4 id="集合"><a href="http://redisdoc.com/set/index.html">集合</a></h4>
+<p>REDIS_SET (集合) 是 SADD 、 SRANDMEMBER 等命令的操作对象</p>
+<p>它使用 REDIS_ENCODING_INTSET 和 REDIS_ENCODING_HT 两种方式编码</p>
+<p>Redis 中集合是通过哈希表实现的，所以添加，删除，查找的复杂度都是O(1)。</p>
+<p>集合中最大的成员数为 232 - 1 (4294967295, 每个集合可存储40多亿个成员)</p>
+<h4 id="有序集"><a href="http://redisdoc.com/sorted_set/index.html">有序集</a></h4>
+<p>REDIS_ZSET (有序集)是ZADD 、ZCOUNT 等命令的操作对象</p>
+<p>它使用 REDIS_ENCODING_ZIPLIST和REDIS_ENCODING_SKIPLIST 两种方式编码</p>
+<p>不同的是每个元素都会关联一个double类型的分数。redis正是通过分数来为集合中的成员进行从小到大的排序。</p>
+<p>有序集合的成员是唯一的,但分数(score)却可以重复。</p>
+<p>集合是通过哈希表实现的，所以添加，删除，查找的复杂度都是O(1)。 集合中最大的成员数为 232 - 1 (4294967295, 每个集合可存储40多亿个成员)</p>
+<h4 id="redis各种数据类型_以及它们的编码方式">Redis各种数据类型_以及它们的编码方式</h4>
+<figure data-type="image" tabindex="1"><img src="http://hangjia.qiniudn.com/Fj2h6yEVRaDHEshO9OC5mVzm9Sht" alt="Redis各种数据类型_以及它们的编码方式" loading="lazy"></figure>
+<h3 id="过期时间">过期时间</h3>
+<p>在数据库中,所有键的过期时间都被保存在 redisDb 结构的 expires 字典里:</p>
+<pre><code class="language-c">typedef struct redisDb {
+	// ...
+	dict *expires;
+	// ...
+} redisDb;
+</code></pre>
+<p>expires 字典的键是一个指向 dict 字典(键空间)里某个键的指针,而字典的值则是键所指 向的数据库键的到期时间,这个值以 long long 类型表示</p>
+<h4 id="过期时间设置">过期时间设置</h4>
+<p>Redis 有四个命令可以设置键的生存时间(可以存活多久)和过期时间(什么时候到期):</p>
+<ul>
+<li>EXPIRE 以秒为单位设置键的生存时间;</li>
+<li>PEXPIRE 以毫秒为单位设置键的生存时间;</li>
+<li>EXPIREAT 以秒为单位,设置键的过期 UNIX 时间戳;</li>
+<li>PEXPIREAT 以毫秒为单位,设置键的过期 UNIX 时间戳。</li>
+</ul>
+<blockquote>
+<p>虽然有那么多种不同单位和不同形式的设置方式,但是 expires 字典的值只保存“以毫秒为单位的过期 UNIX 时间戳” ,这就是说,通过进行转换,所有命令的效果最后都和 PEXPIREAT 命令的效果一样。</p>
+</blockquote>
+<p><strong>如果一个键是过期的,那它什么时候会被删除?</strong></p>
+<p>下边是参考答案</p>
+<ol>
+<li>定时删除:在设置键的过期时间时,创建一个定时事件,当过期时间到达时,由事件处理 器自动执行键的删除操作。</li>
+<li>惰性删除:放任键过期不管,但是在每次从 dict 字典中取出键值时,要检查键是否过 期,如果过期的话,就删除它,并返回空;如果没过期,就返回键值。</li>
+<li>定期删除:每隔一段时间,对expires字典进行检查,删除里面的过期键</li>
+</ol>
+<p>Redis 使用的过期键删除策略是惰性删除加上定期删除</p>
+<h3 id="应用场景">应用场景</h3>
+<ul>
+<li>缓存</li>
+<li>队列</li>
+<li>需要精准设定过期时间的应用</li>
+</ul>
+<blockquote>
+<p>比如你可以把上面说到的sorted set的score值设置成过期时间的时间戳，那么就可以简单地通过过期时间排序，定时清除过期数据了，不仅是清除Redis中的过期数据，你完全可以把Redis里这个过期时间当成是对数据库中数据的索引，用Redis来找出哪些数据需要过期删除，然后再精准地从数据库中删除相应的记录</p>
+</blockquote>
+<ul>
+<li>排行榜应用，取TOP N操作</li>
+</ul>
+<blockquote>
+<p>这个需求与上面需求的不同之处在于，前面操作以时间为权重，这个是以某个条件为权重，比如按顶的次数排序，这时候就需要我们的sorted set出马了，将你要排序的值设置成sorted set的score，将具体的数据设置成相应的value，每次只需要执行一条ZADD命令即可</p>
+</blockquote>
+<ul>
+<li>统计页面访问次数</li>
+</ul>
+<blockquote>
+<p>使用 incr 命令 定时使用 getset 命令 读取数据 并设置新的值 0</p>
+</blockquote>
+<ul>
+<li>使用set 设置标签</li>
+</ul>
+<p>例如假设我们的话题D 1000被加了三个标签tag 1,2,5和77，就可以设置下面两个集合：</p>
+<pre><code class="language-shell">$ redis-cli sadd topics:1000:tags 1
+(integer) 1
+$ redis-cli sadd topics:1000:tags 2
+(integer) 1
+$ redis-cli sadd topics:1000:tags 5
+(integer) 1
+$ redis-cli sadd topics:1000:tags 77
+(integer) 1
+$ redis-cli sadd tag:1:objects 1000
+(integer) 1
+$ redis-cli sadd tag:2:objects 1000
+(integer) 1
+$ redis-cli sadd tag:5:objects 1000
+(integer) 1
+$ redis-cli sadd tag:77:objects 1000
+(integer) 1
+</code></pre>
+<p>要获取一个对象的所有标签：</p>
+<pre><code class="language-bash">$ redis-cli smembers topics:1000:tags
+1. 5
+2. 1
+3. 77
+4. 2
+</code></pre>
+<p>获得一份同时拥有标签1, 2,10和27的对象列表。<br>
+这可以用SINTER命令来做，他可以在不同集合之间取出交集</p>
+<h3 id="内存优化">内存优化</h3>
+<p><code>问题</code>:  Instagram的照片数量已经达到3亿，而在Instagram里，我们需要知道每一张照片的作者是谁，下面就是Instagram团队如何使用Redis来解决这个问题并进行内存优化的。</p>
+<p>具体方法，参考下边这篇文章：<a href="http://blog.nosqlfan.com/html/3379.html">节约内存：Instagram的Redis实践</a>。</p>
+<h4 id="参考链接">参考链接</h4>
+<ul>
+<li><a href="http://redisdoc.com/index.html">Redis 文档：http://redisdoc.com/index.html</a></li>
+<li><a href="http://origin.redisbook.com/">Redis 设计与实践：http://origin.redisbook.com/</a></li>
+<li><a href="http://get.jobdeer.com/523.get">Redis 数据结构使用场景：http://get.jobdeer.com/523.get</a></li>
+<li><a href="http://blog.nosqlfan.com/html/2235.html">Redis作者谈Redis应用场景：http://blog.nosqlfan.com/html/2235.html</a></li>
+<li><a href="http://www.restran.net/2015/02/17/redis-practice/">一次使用 Redis 优化查询性能的实践：http://www.restran.net/2015/02/17/redis-practice/</a></li>
+<li><a href="http://blog.nosqlfan.com/html/3379.html">节约内存：Instagram的Redis实践：http://blog.nosqlfan.com/html/3379.html</a></li>
+</ul>
+<p>最后，感谢女朋友支持。</p>
+<table>
+<thead>
+<tr>
+<th>欢迎关注(April_Louisa)</th>
+<th>请我喝芬达</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="http://media.gusibi.mobi/Hy8XHexmzppNKuekLuGxWy8LjdGrQAzZA3mH_e9xltoiYgTFWdvlpZwGWxZESrbK" alt="欢迎关注" loading="lazy"></td>
+<td><img src="http://media.gusibi.mobi/CO9DwU6ZHnXHD5xuG3GqTsY_IYPl-JdpQrDaOo6tl6PiAGEBDeYFHO7sGQi_VVFc" alt="请我喝芬达" loading="lazy"></td>
+</tr>
+</tbody>
+</table>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#redis-%E6%98%AF%E4%BB%80%E4%B9%88">redis 是什么</a></li>
+<li><a href="#redis-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">Redis 数据结构</a>
+<ul>
+<li><a href="#%E5%8A%A8%E6%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2">动态字符串</a>
+<ul>
+<li><a href="#%E5%8A%A8%E6%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%BB%E8%A6%81%E6%9C%89%E4%B8%A4%E4%B8%AA%E4%BD%9C%E7%94%A8">动态字符串主要有两个作用:</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%8C%E7%AB%AF%E5%88%97%E8%A1%A8-httporiginredisbookcominternal-datastructadlisthtml">[双端列表] (http://origin.redisbook.com/internal-datastruct/adlist.html)</a>
+<ul>
+<li><a href="#%E5%8F%8C%E7%AB%AF%E9%93%BE%E8%A1%A8%E4%B8%BB%E8%A6%81%E6%9C%89%E4%B8%A4%E4%B8%AA%E4%BD%9C%E7%94%A8">双端链表主要有两个作用:</a></li>
+</ul>
+</li>
+<li><a href="#%E5%AD%97%E5%85%B8">字典</a>
+<ul>
+<li><a href="#%E5%AD%97%E5%85%B8%E7%9A%84%E5%BA%94%E7%94%A8">字典的应用</a></li>
+</ul>
+</li>
+<li><a href="#%E8%B7%B3%E8%B7%83%E8%A1%A8">跳跃表</a></li>
+<li><a href="#%E6%95%B4%E6%95%B0%E9%9B%86%E5%90%88">整数集合</a></li>
+<li><a href="#%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8">压缩列表</a></li>
+</ul>
+</li>
+<li><a href="#redis-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B">Redis 数据类型</a>
+<ul>
+<li><a href="#redisobject">RedisObject</a></li>
+<li><a href="#%E5%AD%97%E7%AC%A6%E4%B8%B2">字符串</a></li>
+<li><a href="#%E5%93%88%E5%B8%8C%E8%A1%A8">哈希表</a></li>
+<li><a href="#%E5%88%97%E8%A1%A8">列表</a></li>
+<li><a href="#%E9%9B%86%E5%90%88">集合</a></li>
+<li><a href="#%E6%9C%89%E5%BA%8F%E9%9B%86">有序集</a></li>
+<li><a href="#redis%E5%90%84%E7%A7%8D%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B_%E4%BB%A5%E5%8F%8A%E5%AE%83%E4%BB%AC%E7%9A%84%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F">Redis各种数据类型_以及它们的编码方式</a></li>
+</ul>
+</li>
+<li><a href="#%E8%BF%87%E6%9C%9F%E6%97%B6%E9%97%B4">过期时间</a>
+<ul>
+<li><a href="#%E8%BF%87%E6%9C%9F%E6%97%B6%E9%97%B4%E8%AE%BE%E7%BD%AE">过期时间设置</a></li>
+</ul>
+</li>
+<li><a href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF">应用场景</a></li>
+<li><a href="#%E5%86%85%E5%AD%98%E4%BC%98%E5%8C%96">内存优化</a>
+<ul>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/python-data-structures-tuple-and-slice/">
+              <h3 class="post-title">
+                Python 元组和分片
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

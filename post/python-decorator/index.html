@@ -1,0 +1,1045 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Python 装饰器使用指南 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Python 装饰器使用指南 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+装饰器是可调用的对象，其参数是另一个函数（被装饰的函数）。
+
+装饰器基础知识
+首先看一下这段代码
+def deco(fn):
+    print &quot;I am %s!&quot; % fn.__name__
+
+@deco
+def ..." />
+    <meta name="keywords" content="读书笔记,tutorial,python" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Python 装饰器使用指南
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-08-15
+              </span>
+              <span>
+                19 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>装饰器是可调用的对象，其参数是另一个函数（被装饰的函数）。</p>
+</blockquote>
+<h2 id="装饰器基础知识">装饰器基础知识</h2>
+<p>首先看一下这段代码</p>
+<pre><code class="language-python">def deco(fn):
+    print &quot;I am %s!&quot; % fn.__name__
+
+@deco
+def func():
+    pass
+
+# output
+I am func!
+
+# 没有执行func 函数 但是 deco 被执行了
+</code></pre>
+<p>HUGOMORE42</p>
+<p>在用某个@decorator来修饰某个函数func时</p>
+<pre><code class="language-python">@decorator
+def func():
+    pass
+
+</code></pre>
+<p>其解释器会解释成下面这样的语句：</p>
+<p><code>func = decorator(func)</code></p>
+<blockquote>
+<p>其实就是把一个函数当参数传到另一个函数中，然后再回调，但是值得注意的是装饰器必须返回一个函数给func</p>
+</blockquote>
+<p>装饰器的一大特性是，能把被装饰的函数替换成其他函数。第二大特性是，装饰器在加载模块时立即执行。</p>
+<h3 id="装饰器何时执行">装饰器何时执行</h3>
+<p>装饰器的一个关键特性是，它们在被装饰的函数定义后立即运行。这通常在导入是（python 加载模块时）。</p>
+<p>看下下面的示例：</p>
+<pre><code class="language-python">registry = []  # registry 保存被@register 装饰的函数的引用
+
+def register(func):  # register 的参数是一个函数
+    print('running register(%s)' % func)  # 打印被装饰的函数
+    registry.append(func)  # 把 func 存入 `registery`
+    return func  # 返回 func：必须返回函数，这里返回的函数与通过参数传入的一样
+
+@register  # `f1` 和 `f2`被 `@register` 装饰
+def f1():
+    print('running f1()')
+
+@register
+def f2():
+    print('running f2()')
+
+def f3():  # &lt;7&gt;
+    print('running f3()')
+
+def main():  # main 打印 `registry`，然后调用 f1()、f2()和 f3()
+    print('running main()')
+    print('registry -&gt;', registry)
+    f1()
+    f2()
+    f3()
+
+if __name__=='__main__':
+    main()  # &lt;9&gt;
+</code></pre>
+<p>运行代码结果如下：</p>
+<pre><code class="language-python">running register(&lt;function f1 at 0x1023fb378&gt;)
+running register(&lt;function f2 at 0x1023fb400&gt;)
+running main()
+registry -&gt; [&lt;function f1 at 0x1023fb378&gt;, &lt;function f2 at 0x1023fb400&gt;]
+running f1()
+running f2()
+running f3()
+</code></pre>
+<p>从结果可以发现<code>register</code> 在模块中其他函数之前运行了两次。调用 register 时，传给它的参数是被装饰的函数（例如&lt;function f1 at 0x1023fb378&gt;）。</p>
+<p>看完上边的示例我们知道，函数被装饰器装饰后会变成装饰器函数的一个参数，那这时就不得不说变量的作用域了。</p>
+<h2 id="变量作用域">变量作用域</h2>
+<p>先看下下边这段代码：</p>
+<pre><code class="language-python">def f1(a):
+    print(locals())
+    print(a)
+    print(b)
+    
+    
+f1(3)
+# output
+{'a': 3}
+3
+Traceback(most recent call last):
+    File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+    File &quot;&lt;stdin&gt;&quot;, line 3, in f1
+NameError: global name 'b' is not defined
+</code></pre>
+<p>这里的错误是因为全局变量 <code>b</code> 没有定义，如果我们先在函数外部给 b 赋值，再调用这个方法就不会报错了。</p>
+<blockquote>
+<p>函数运行时会创建一个新的作用域（命名空间）。函数的命名空间随着函数调用开始而开始，结束而销毁。<br>
+这个例子中 f1 的命名空间中只有 {'a': 3}，所以 <code>b</code> 会被认为是全局变量。</p>
+</blockquote>
+<p>再看一个例子：</p>
+<pre><code class="language-python">b = 6
+def f2(a):
+    print(a)
+    print(globals())
+    print(locals())
+    print(b)
+    b = 9
+    
+f2(3)
+# output
+3
+{
+    '__name__': '__main__',
+    '__doc__': None, 
+    '__package__': None, 
+    '__loader__': &lt;_frozen_importlib_external.SourceFileLoader object at 0x10c7f2dd8&gt;, 
+    '__spec__': None, 
+    '__annotations__': {}, 
+    '__builtins__': &lt;module 'builtins' (built-in)&gt;, 
+    '__file__': '~/var_local.py', 
+    '__cached__': None, 
+    'b': 6, 
+    'f2': &lt;function f2 at 0x10c7e7598&gt;
+}
+{'a': 3}
+3
+Traceback(most recent call last):
+    File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+    File &quot;&lt;stdin&gt;&quot;, line 3, in f1
+UnboundLocalError: local variable 'b' referenced before assignment
+</code></pre>
+<p>这个例子和上一个例子不同是，我现在函数外部定义了全局变量<code>b</code>，但是执行<code>f2</code> 这个方法并没有打印6，这是为什么呢？<br>
+这是因为执行函数时 Python 会尝试从局部变量中获取 <code>b</code>，函数对于已经引用但未赋值的变量并不会自动声明为局部变量，所以解释器发现后边的赋值之前有引用就会抛出 <code>UnboundLocalError</code> 错误。</p>
+<blockquote>
+<p>Python 不要求声明变量，但是假定在函数定义体中赋值的变量是局部变量。</p>
+</blockquote>
+<p>如果要让解释器把<code>b</code>当做全局变量，要使用<code>global</code>声明：</p>
+<pre><code class="language-python">b = 6
+def f3(a):
+    global b
+    print(a)
+    print(b)
+    b = 9
+    
+f2(3)
+# output
+3
+6
+</code></pre>
+<h2 id="闭包">闭包</h2>
+<blockquote>
+<p><code>闭包</code>是一种函数，它会保留定义函数时存在的自由变量的绑定，这样调用函数时，虽然定义作用域不可用，但仍能使用那些绑定。</p>
+</blockquote>
+<p>介绍闭包前先要说明一下 Python 的函数参数</p>
+<h3 id="函数的两种参数">函数的两种参数</h3>
+<p>函数有两种参数</p>
+<ol>
+<li>位置参数</li>
+<li>命名参数</li>
+</ol>
+<pre><code class="language-python">def foo(x, y=0):
+	return x - y
+</code></pre>
+<h3 id="python-中一切都是对象">python 中一切都是对象</h3>
+<p>函数和python中其他一样都是对象</p>
+<pre><code class="language-python">In [7]: class A(object):
+   ...:     pass
+
+
+In [8]: A
+Out[8]: __main__.A
+In [9]: type(A)
+Out[9]: type
+In [10]: def foo():
+   ....:     pass
+
+
+In [11]: type(foo)
+Out[11]: function
+
+In [12]: A.__class__
+Out[12]: type
+
+In [13]: foo.__class__
+Out[13]: function
+
+In [14]: a = 1
+In [15]: a.__class__
+Out[15]: int
+
+# 类 是对象
+In [16]: issubclass(A.__class__, object)
+Out[16]: True
+
+# 变量 是对象
+In [17]: issubclass(a.__class__, object)
+Out[17]: True
+
+# 函数 是对象
+In [18]: issubclass(foo.__class__, object)
+Out[18]: True
+</code></pre>
+<p>所以函数也可以作为参数传递给其它函数，也可以被当做返回值返回</p>
+<pre><code class="language-python">def add(x, y):
+	return x + y
+
+def apply(func):
+	return func
+
+&gt;&gt; a = apply(add)
+&gt;&gt; type(a)
+&lt;type 'function'&gt;
+
+&gt;&gt; a(1, 2)
+&gt;&gt; 3
+</code></pre>
+<h3 id="闭包的使用">闭包的使用</h3>
+<p>先来看一个示例：假设有个名为 avg 的函数，它的作用是计算不断增加的系列值的均值；<br>
+它是这么使用的：</p>
+<pre><code class="language-python">&gt;&gt;&gt; avg(10)
+10
+&gt;&gt;&gt; avg(11)
+10.5
+&gt;&gt;&gt; avg(12)
+11
+</code></pre>
+<p>那么我们考虑下，avg 从何而来，它又在哪里保存历史值呢，这个用闭包如何实现呢？<br>
+下边的代码是闭包的实现：</p>
+<pre><code class="language-python">def make_averager():
+    series = []
+
+    def averager(new_value):
+        series.append(new_value)
+        total = sum(series)
+        return total/len(series)
+
+    return averager
+</code></pre>
+<p>调用  <code>make_averager</code> 时，返回一个 averager 函数对象。每次调用 averager 时，它都会把参数添加到系列值中，然后计算当前平均值。</p>
+<pre><code class="language-python">avg = make_averager()
+
+&gt;&gt;&gt; avg(10)
+10
+&gt;&gt;&gt; avg(11)
+10.5
+&gt;&gt;&gt; avg(12)
+11
+</code></pre>
+<blockquote>
+<p><code>series</code> 是<code>make_averager</code> 函数的局部变量，因为那个函数的定义体中初始化了<code>series: series=[]</code>。但在<code>averager</code> 函数中，<code>series</code> 是自由变量（指未在本地作用域中绑定的变量）。</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/wNM0i84JsmsgldhxUjV1TP1M43awUXzWTWU8YY7goHgKOjrZCW8l5qxeo6bYSY46" alt="变量示意图" loading="lazy"></figure>
+<blockquote>
+<p><code>averager</code> 的闭包延伸到那个函数的作用域之外，包含自由变量<code>series</code>的绑定。</p>
+</blockquote>
+<ul>
+<li>avg 就是一个闭包</li>
+<li>也可以说 make_averager 指向一个闭包</li>
+<li>或者说 make_averager 是闭包的工厂函数</li>
+</ul>
+<blockquote>
+<p>闭包可以认为是一个内层函数(averager)，由一个变量指代，而这个变量相对于外层包含它的函数而言，是本地变量<br>
+嵌套定义在非全局作用域里面的函数能够记住它在被定义的时候它所处的封闭命名空间</p>
+</blockquote>
+<blockquote>
+<p><code>闭包</code> 只是在形式和表现上像函数，但实际上不是函数。函数是一些可执行的代码，这些代码在函数被定义后就确定了，不会在执行时发生变化，所以一个函数只有一个实例。闭包在运行时可以有多个实例，不同的引用环境和相同的函数组合可以产生不同的实例。</p>
+</blockquote>
+<h2 id="装饰器">装饰器</h2>
+<h3 id="实现一个简单的装饰器">实现一个简单的装饰器</h3>
+<p>对一个已有的模块做一些“修饰工作”，所谓修饰工作就是想给现有的模块加上一些小装饰（一些小功能，这些小功能可能好多模块都会用到），但又不让这个小装饰（小功能）侵入到原有的模块中的代码里去</p>
+<pre><code class="language-python">def my_decorator(func):
+    def wrapper():
+        print &quot;Before the function runs&quot;
+        func() # 这行代码可用，是因为 wrapper 的闭包中包含自由变量 func
+        print &quot;After the function runs&quot;
+    return wrapper
+
+def my_func():
+    print &quot;I am a stand alone function&quot;
+
+
+&gt;&gt; my_func()
+
+# output
+I am a stand alone function
+
+# 然后，我们在这里装饰这个函数
+# 将函数传递给装饰器，装饰器将动态地将其包装在任何想执行的代码中，然后返回一个新的函数
+
+&gt;&gt; my_func = my_decorator(my_func)
+&gt;&gt; my_func()
+#output
+Before the function runs
+I am a stand alone function
+After the function runs
+
+# 也可以这么写
+
+@ my_decorator
+def my_func():
+    print &quot;I am a stand alone function&quot;
+
+&gt;&gt; my_func()
+#output
+Before the function runs
+I am a stand alone function
+After the function runs
+</code></pre>
+<p>装饰器是设计模式中<a href="https://zh.wikipedia.org/wiki/%E4%BF%AE%E9%A5%B0%E6%A8%A1%E5%BC%8F">装饰器模式</a>（<a href="https://en.wikipedia.org/wiki/Decorator_pattern">英文版</a>）的python实现。</p>
+<h3 id="多个装饰器">多个装饰器</h3>
+<p><strong>装饰器可以嵌套使用</strong></p>
+<pre><code class="language-python">def bread(func):
+    def wrapper():
+        print &quot;&lt;/''''''\&gt;&quot;
+        func()
+        print &quot;&lt;\______/&gt;&quot;
+    return wrapper
+
+def ingredients(func):
+    def wrapper():
+        print &quot;#tomatoes#&quot;
+        func()
+        print &quot;~salad~&quot;
+    return wrapper
+
+def sandwich(food=&quot;--ham--&quot;):
+    print food
+
+#### outputs:
+</code></pre>
+<h3 id="嵌套两个装饰器">嵌套两个装饰器</h3>
+<pre><code class="language-python">&gt;&gt; sandwich = bread(ingredients(sandwich))
+&gt;&gt; sandwich()
+
+#### outputs
+&lt;/''''''\&gt;
+ #tomatoes#
+ --ham--
+ ~salad~
+&lt;\______/&gt;
+</code></pre>
+<p>更简单的写法</p>
+<pre><code class="language-python">@bread
+@ingredients
+def sandwich(food=&quot;--ham--&quot;):
+    print food
+
+</code></pre>
+<p><strong>装饰器的顺序是很重要的</strong></p>
+<p>如果我们换下顺序就会发现，三明治变成了披萨。。</p>
+<pre><code class="language-python">@ingredients
+@bread
+def sandwich(food=&quot;--ham--&quot;):
+    print food
+
+# outputs:
+    
+ #tomatoes#
+ &lt;/' ' ' ' ' '\&gt;
+   --ham--
+ &lt;\______/&gt;
+ ~salad~
+</code></pre>
+<h3 id="decorator-的工作原理">Decorator 的工作原理</h3>
+<p>首先看一下这段代码</p>
+<pre><code class="language-python">def deco(fn):
+    print &quot;I am %s!&quot; % fn.__name__
+
+@deco
+def func():
+    pass
+
+# output
+I am func!
+
+# 没有执行func 函数 但是 deco 被执行了
+</code></pre>
+<p>在用某个@decorator来修饰某个函数func时</p>
+<pre><code class="language-python">@decorator
+def func():
+    pass
+
+</code></pre>
+<p>其解释器会解释成下面这样的语句：</p>
+<p><code>func = decorator(func)</code></p>
+<blockquote>
+<p>其实就是把一个函数当参数传到另一个函数中，然后再回调<br>
+但是值得注意的是装饰器必须返回一个函数给func</p>
+</blockquote>
+<p>回到刚才的例子</p>
+<pre><code class="language-python">
+def my_decorator(func):
+    def wrapper():
+        print &quot;Before the function runs&quot;
+        func()
+        print &quot;After the function runs&quot;
+    return wrapper
+
+def my_func():
+    print &quot;I am a stand alone function&quot;
+
+&gt;&gt; my_func = my_decorator(my_func)
+&gt;&gt; my_func()
+#output
+Before the function runs
+I am a stand alone function
+After the function runs
+
+</code></pre>
+<p>my_decorator(my_func)返回了wrapper()函数，所以，my_func其实变成了wrapper的一个变量，而后面的my_func()执行其实变成了wrapper()</p>
+<p>比如：多个decorator</p>
+<pre><code class="language-python">@decorator_one
+@decorator_two
+def func():
+    pass
+</code></pre>
+<p>相当于：</p>
+<pre><code class="language-python">func = decorator_one(decorator_two(func))
+</code></pre>
+<p>比如：带参数的decorator：</p>
+<pre><code class="language-python">@decorator(arg1, arg2)
+def func():
+    pass
+# 相当于：
+
+func = decorator(arg1,arg2)(func)
+</code></pre>
+<h3 id="带参数的装饰器">带参数的装饰器</h3>
+<p>首先看一下， 如果被装饰的方法有参数</p>
+<pre><code class="language-python">def a_decorator(method_to_decorate):
+    def wrapper(self, x):
+        x -= 3
+        print 'x is %s' % x
+        method_to_decorate(self, x)
+    return wrapper
+
+
+class A(object):
+
+    def __init__(self):
+        self.b = 42
+
+    @a_decorator
+    def number(self, x):
+        print &quot;b is %s&quot; % (self.b + x)
+
+
+a = A()
+a.number(-3)
+
+# output
+x is -6
+b is 36
+</code></pre>
+<p>通常我们都使用更加通用的装饰器，可以作用在任何函数或对象方法上，而不必关心其参数使用</p>
+<pre><code class="language-python">def a_decorator(method_to_decorate):
+    def wrapper(*args, **kwargs):
+        print '****** args ******'
+        print args
+        print kwargs
+        method_to_decorate(*args, **kwargs)
+    return wrapper
+
+@a_decorator
+def func():
+    pass
+
+func()
+#output
+****** args ******
+()
+{}
+
+@a_decorator
+def func_with_args(a, b=0):
+    pass
+    return a + b
+
+func_with_args(1, b=2)
+
+#output
+****** args ******
+(1,)
+{'b': 2}
+
+</code></pre>
+<p>上边的示例是带参数的被装饰函数</p>
+<p>现在我们看一下向装饰器本身传递参数</p>
+<h3 id="向装饰器本身传递参数">向装饰器本身传递参数</h3>
+<p><strong>装饰器必须使用函数作为参数</strong>，你不能直接传递参数给装饰器本身<br>
+如果想传递参数给装饰器，可以 <strong>声明一个用于创建装饰器的函数</strong></p>
+<pre><code class="language-python"># 我是一个创建装饰器的函数
+def decorator_maker():
+    print &quot;I make decorators!&quot;
+
+    def my_decorator(func):
+        print &quot;I am a decorator!&quot;
+
+        def wrapped():
+            print &quot;I am the wrapper around the decorated function. &quot;
+            return func()
+
+        print &quot;As the decorator, I return the wrapped function.&quot;
+        return wrapped
+
+    print &quot;As a decorator maker, I return a decorator&quot;
+    return my_decorator
+
+# decorator_maker()返回的是一个装饰器
+new_deco = decorator_maker()
+
+#outputs
+I make decorators!
+As a decorator maker, I return a decorator
+
+# 使用装饰器
+def decorated_function():
+    print &quot;I am the decorated function&quot;
+
+decorated_function = new_deco(decorated_function)   
+decorated_function()
+
+# outputs
+I make decorators!
+As a decorator maker, I return a decorator
+I am a decorator!
+As the decorator, I return the wrapped function.
+I am the wrapper around the decorated function.
+I am the decorated  function
+
+</code></pre>
+<p><strong>使用@修饰</strong></p>
+<pre><code class="language-python">decorated_function = new_deco(decorated_function)
+
+# 等价于下面的方法
+
+@new_deco
+def func():
+    print &quot;I am the decorated function&quot;
+
+
+@decorator_maker()
+def func():
+    print &quot;I am the decorated function&quot;
+
+</code></pre>
+<blockquote>
+<p>my_decorator（装饰器函数）是decorator_maker（装饰器生成函数）的内部函数<br>
+所以可以使用把参数加在decorator_maker（装饰器生成函数）的方法像装饰器传递参数</p>
+</blockquote>
+<pre><code class="language-python"># 我是一个创建带参数装饰器的函数
+def decorator_maker_with_arguments(darg1, darg2):
+    print &quot;I make decorators! And I accept arguments:&quot;, darg1, darg2
+
+    def my_decorator(func):
+        print &quot;I am a decorator! Somehow you passed me arguments:&quot;, darg1, darg2
+
+        def wrapped(farg1, farg2):
+            print &quot;I am the wrapper around the decorated function.&quot;
+            print &quot;I can access all the variables&quot;, darg1, darg2, farg1, farg2
+            return func(farg1, farg2)
+
+        print &quot;As the decorator, I return the wrapped function.&quot;
+        return wrapped
+
+    print &quot;As a decorator maker, I return a decorator&quot;
+    return my_decorator
+
+@decorator_maker_with_arguments(&quot;deco_arg1&quot;, &quot;deco_arg2&quot;)
+def decorated_function_with_arguments(function_arg1, function_arg2):
+    print (&quot;I am the decorated function and only knows about my arguments: {0}&quot;
+           &quot; {1}&quot;.format(function_arg1, function_arg2))
+
+
+decorated_function_with_arguments('farg1', 'farg2')
+
+# outputs
+
+I make decorators! And I accept arguments: deco_arg1 deco_arg2
+As a decorator maker, I return a decorator
+I am a decorator! Somehow you passed me arguments: deco_arg1 deco_arg2
+As the decorator, I return the wrapped function.
+I am the wrapper around the decorated function.
+I can access all the variables deco_arg1 deco_arg2 farg1 farg2
+I am the decorated function and only knows about my arguments: farg1 farg2    
+
+</code></pre>
+<p>这里装饰器生成函数内部传递参数是闭包的特性</p>
+<h3 id="使用装饰器需要注意">使用装饰器需要注意</h3>
+<ul>
+<li>装饰器是Python2.4的新特性</li>
+<li>装饰器会降低代码的性能</li>
+<li>装饰器仅在Python代码导入时被调用一次,之后你不能动态地改变参数.当你使用&quot;import x&quot;,函数已经被装饰</li>
+</ul>
+<h4 id="使用-functoolswraps">使用 <code>functools.wraps</code></h4>
+<p>最后Python2.5解决了最后一个问题，它提供<code>functools</code>模块，包含<code>functools.wraps</code>，这个函数会将被装饰函数的名称、模块、文档字符串拷贝给封装函数</p>
+<pre><code class="language-python">def foo():
+    print &quot;foo&quot;
+
+print foo.__name__
+#outputs: foo
+
+# 但当你使用装饰器
+def bar(func):
+    def wrapper():
+        print &quot;bar&quot;
+        return func()
+    return wrapper
+
+@bar
+def foo():
+    print &quot;foo&quot;
+
+print foo.__name__
+#outputs: wrapper
+
+</code></pre>
+<p><strong>&quot;functools&quot; 可以修正这个错误</strong></p>
+<pre><code class="language-python">
+import functools
+
+def bar(func):
+    # 我们所说的 &quot;wrapper&quot;, 封装 &quot;func&quot;
+    @functools.wraps(func)
+    def wrapper():
+        print &quot;bar&quot;
+        return func()
+    return wrapper
+
+@bar
+def foo():
+    print &quot;foo&quot;
+
+# 得到的是原始的名称, 而不是封装器的名称
+print foo.__name__
+#outputs: foo
+</code></pre>
+<h3 id="类装饰器">类装饰器</h3>
+<pre><code class="language-python">class myDecorator(object):
+
+    def __init__(self, func):
+        print &quot;inside myDecorator.__init__()&quot;
+        self.func = func
+
+    def __call__(self):
+        self.func()
+        print &quot;inside myDecorator.__call__()&quot;
+
+@myDecorator
+def aFunction():
+    print &quot;inside aFunction()&quot;
+
+print &quot;Finished decorating aFunction()&quot;
+
+aFunction()
+
+# output：
+# inside myDecorator.__init__()
+# Finished decorating aFunction()
+# inside aFunction()
+# inside myDecorator.__call__()
+</code></pre>
+<p>我们可以看到这个类中有两个成员：</p>
+<ol>
+<li>一个是__init__()，这个方法是在我们给某个函数decorator时被调用，所以，需要有一个func的参数，也就是被decorator的函数。</li>
+<li>一个是__call__()，这个方法是在我们调用被decorator函数时被调用的</li>
+</ol>
+<p><strong>如果decorator有参数的话，<strong>init</strong>() 就不能传入func了，而fn是在__call__的时候传入</strong></p>
+<pre><code class="language-python">class myDecorator(object):
+
+    def __init__(self, arg1, arg2):
+        self.arg1 = arg2
+
+    def __call__(self, func):
+        def wrapped(*args, **kwargs):
+            return self.func(*args, **kwargs)
+        return wrapped
+</code></pre>
+<h2 id="装饰器示例">装饰器示例</h2>
+<p>Python 内置了三个用于装饰方法的函数：property、classmethod和 staticmethod。<br>
+另一个常见的装饰器是 functools.wraps，它的作用是协助构建行为良好的装饰器。</p>
+<h4 id="functoolslru_cache">functools.lru_cache</h4>
+<p><code>functools.lru_cache</code> 实现了内存缓存功能，它可以把耗时长的函数结果保存起来，避免传入相同参数时重复计算。</p>
+<p>我们自己的实现代码如下：</p>
+<pre><code class="language-python">
+from functools import wraps
+def memo(fn):
+    cache = {}
+    miss = object()
+
+    @wraps(fn)
+    def wrapper(*args):
+        result = cache.get(args, miss)
+        if result is miss:
+            result = fn(*args)
+            print &quot;{0} has been used: {1}x&quot;.format(fn.__name__, wrapper.count)
+            cache[args] = result
+        return result
+
+    return wrapper
+
+@memo
+def fib(n):
+    if n &lt; 2:
+        return n
+    return fib(n - 1) + fib(n - 2)
+</code></pre>
+<h4 id="统计函数执行次数的装饰器">统计函数执行次数的装饰器</h4>
+<pre><code class="language-python">def counter(func):
+    &quot;&quot;&quot;
+    记录并打印一个函数的执行次数
+    &quot;&quot;&quot;
+    def wrapper(*args, **kwargs):
+        wrapper.count = wrapper.count + 1
+        res = func(*args, **kwargs)
+        print &quot;{0} has been used: {1}x&quot;.format(func.__name__, wrapper.count)
+        return res
+    wrapper.count = 0
+    return wrapper
+</code></pre>
+<ul>
+<li>装饰器做缓存</li>
+</ul>
+<h4 id="带有过期时间的内存缓存">带有过期时间的内存缓存</h4>
+<pre><code class="language-python">def cache_for(duration):
+    def deco(func):
+        @wraps(func)
+        def fn(*args, **kwargs):
+            key = pickle.dumps((args, kwargs))
+            value, expire = func.func_dict.get(key, (None, None))
+            now = int(time.time())
+            if value is not None and expire &gt; now:
+                return value
+            value = func(*args, **kwargs)
+            func.func_dict[key] = (value, int(time.time()) + duration)
+            return value
+        return fn
+    return deco
+</code></pre>
+<h4 id="统计代码运行时间">统计代码运行时间</h4>
+<pre><code class="language-python">def timeit(fn):
+
+    @wraps(fn)
+    def real_fn(*args, **kwargs):
+        if config.common['ENVIRON'] == 'PRODUCTION':
+            return fn(*args, **kwargs)
+
+        _start = time.time()
+        #app.logger.debug('Start timeit for %s' % fn.__name__)
+        result = fn(*args, **kwargs)
+        _end = time.time()
+        _last = _end - _start
+        app.logger.debug('End timeit for %s in %s seconds.' %
+                         (fn.__name__, _last))
+        return result
+
+    return real_fn
+</code></pre>
+<h3 id="参考链接">参考链接</h3>
+<ol>
+<li><a href="http://stackoverflow.com/questions/739654/how-can-i-make-a-chain-of-function-decorators-in-python/1594484#1594484">How can I make a chain of function decorators in Python?</a></li>
+<li><a href="http://www.wklken.me/posts/2013/07/19/python-translate-decorator.html#_1">理解PYTHON中的装饰器</a></li>
+<li><a href="http://coolshell.cn/articles/11265.html">Python修饰器的函数式编程</a></li>
+<li><a href="http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/">Understanding Python Decorators in 12 Easy Steps!</a></li>
+<li><a href="https://www.python.org/dev/peps/pep-0318/">PEP 0318 -- Decorators for Functions and Methods</a></li>
+<li><a href="https://www.python.org/dev/peps/pep-3129/">PEP 3129 -- Class Decorators</a></li>
+<li><a href="http://stackoverflow.com/questions/3394835/args-and-kwargs">*args and **kwargs? [duplicate]</a></li>
+<li><a href="http://stackoverflow.com/questions/1281184/why-cant-i-set-a-global-variable-in-python">why-cant-i-set-a-global-variable-in-python</a></li>
+<li><a href="https://github.com/mitsuhiko/flask/blob/master/flask/app.py#L1040">【flask route】</a></li>
+<li><a href="https://wiki.python.org/moin/PythonDecoratorLibrary">PythonDecoratorLibrary</a></li>
+<li><a href="https://wiki.python.org/moin/PythonDecoratorProposals">关于Python Decroator的各种提案</a></li>
+</ol>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E8%A3%85%E9%A5%B0%E5%99%A8%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86">装饰器基础知识</a>
+<ul>
+<li><a href="#%E8%A3%85%E9%A5%B0%E5%99%A8%E4%BD%95%E6%97%B6%E6%89%A7%E8%A1%8C">装饰器何时执行</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%98%E9%87%8F%E4%BD%9C%E7%94%A8%E5%9F%9F">变量作用域</a></li>
+<li><a href="#%E9%97%AD%E5%8C%85">闭包</a>
+<ul>
+<li><a href="#%E5%87%BD%E6%95%B0%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%8F%82%E6%95%B0">函数的两种参数</a></li>
+<li><a href="#python-%E4%B8%AD%E4%B8%80%E5%88%87%E9%83%BD%E6%98%AF%E5%AF%B9%E8%B1%A1">python 中一切都是对象</a></li>
+<li><a href="#%E9%97%AD%E5%8C%85%E7%9A%84%E4%BD%BF%E7%94%A8">闭包的使用</a></li>
+</ul>
+</li>
+<li><a href="#%E8%A3%85%E9%A5%B0%E5%99%A8">装饰器</a>
+<ul>
+<li><a href="#%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E8%A3%85%E9%A5%B0%E5%99%A8">实现一个简单的装饰器</a></li>
+<li><a href="#%E5%A4%9A%E4%B8%AA%E8%A3%85%E9%A5%B0%E5%99%A8">多个装饰器</a></li>
+<li><a href="#%E5%B5%8C%E5%A5%97%E4%B8%A4%E4%B8%AA%E8%A3%85%E9%A5%B0%E5%99%A8">嵌套两个装饰器</a></li>
+<li><a href="#decorator-%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86">Decorator 的工作原理</a></li>
+<li><a href="#%E5%B8%A6%E5%8F%82%E6%95%B0%E7%9A%84%E8%A3%85%E9%A5%B0%E5%99%A8">带参数的装饰器</a></li>
+<li><a href="#%E5%90%91%E8%A3%85%E9%A5%B0%E5%99%A8%E6%9C%AC%E8%BA%AB%E4%BC%A0%E9%80%92%E5%8F%82%E6%95%B0">向装饰器本身传递参数</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E8%A3%85%E9%A5%B0%E5%99%A8%E9%9C%80%E8%A6%81%E6%B3%A8%E6%84%8F">使用装饰器需要注意</a>
+<ul>
+<li><a href="#%E4%BD%BF%E7%94%A8-functoolswraps">使用 <code>functools.wraps</code></a></li>
+</ul>
+</li>
+<li><a href="#%E7%B1%BB%E8%A3%85%E9%A5%B0%E5%99%A8">类装饰器</a></li>
+</ul>
+</li>
+<li><a href="#%E8%A3%85%E9%A5%B0%E5%99%A8%E7%A4%BA%E4%BE%8B">装饰器示例</a><br>
+*
+<ul>
+<li><a href="#functoolslru_cache">functools.lru_cache</a></li>
+<li><a href="#%E7%BB%9F%E8%AE%A1%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%AC%A1%E6%95%B0%E7%9A%84%E8%A3%85%E9%A5%B0%E5%99%A8">统计函数执行次数的装饰器</a></li>
+<li><a href="#%E5%B8%A6%E6%9C%89%E8%BF%87%E6%9C%9F%E6%97%B6%E9%97%B4%E7%9A%84%E5%86%85%E5%AD%98%E7%BC%93%E5%AD%98">带有过期时间的内存缓存</a></li>
+<li><a href="#%E7%BB%9F%E8%AE%A1%E4%BB%A3%E7%A0%81%E8%BF%90%E8%A1%8C%E6%97%B6%E9%97%B4">统计代码运行时间</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/css-learing-4-page-layout/">
+              <h3 class="post-title">
+                CSS入门指南-4：页面布局
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,454 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>网站微信登录－python 实现 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="网站微信登录－python 实现 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="最近我们的网站要加微信登录功能，找了python sdk 感觉都不满意，然后就参考instagram python sdk 自己造了轮子。
+轮子 github 地址  python-weixin
+根据需求选择相应的登录方式
+微信现在提供两种..." />
+    <meta name="keywords" content="python,weixin" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              网站微信登录－python 实现
+            </h2>
+            <div class="post-info">
+              <span>
+                2016-09-05
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/hHHzJqiTzdW/" class="post-tag">
+                  # weixin
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>最近我们的网站要加微信登录功能，找了python sdk 感觉都不满意，然后就参考instagram python sdk 自己造了轮子。</p>
+<p>轮子 github 地址  <a href="https://github.com/gusibi/python-weixin">python-weixin</a></p>
+<h3 id="根据需求选择相应的登录方式">根据需求选择相应的登录方式</h3>
+<p>微信现在提供两种登录接入方式</p>
+<ul>
+<li>移动应用微信登录</li>
+<li>网站应用微信登录</li>
+</ul>
+<p>HUGOMORE42</p>
+<p><em>这里我们使用的是网站应用微信登录</em></p>
+<p>按照 官方流程</p>
+<ol>
+<li>注册并通过开放平台开发者资质认证</li>
+</ol>
+<p>注册微信开放平台帐号后，在帐号中心中填写开发者资质认证申请，并等待认证通过。</p>
+<ol start="2">
+<li>创建网站应用</li>
+</ol>
+<p>通过填写网站应用名称、简介和图标，以及各平台下载地址等资料，创建网站应用</p>
+<ol start="3">
+<li>接入微信登录</li>
+</ol>
+<p>在资源中心查阅网站应用开发文档,开发接入微信登陆功能，让用户可使用微信登录你的网站应用</p>
+<p>如果已经完成上面的操作，请继续往下看</p>
+<p>微信网站应用微信登录是基于OAuth2.0协议标准构建的微信OAuth2.0授权登录系统。</p>
+<p>微信OAuth2.0授权登录目前支持authorization_code模式，适用于拥有server端的应用授权。该模式整体流程为：</p>
+<ol>
+<li>第三方发起微信授权登录请求，微信用户允许授权第三方应用后，微信会拉起应用或重定向到第三方网站，并且带上授权临时票据code参数；</li>
+<li>通过code参数加上AppID和AppSecret等，通过API换取access_token；</li>
+<li>通过access_token进行接口调用，获取用户基本数据资源或帮助用户实现基本操作。</li>
+</ol>
+<hr>
+<h4 id="获取access_token-时序图">获取access_token 时序图</h4>
+<figure data-type="image" tabindex="1"><img src="https://res.wx.qq.com/op_res/D0wkkHSbtC6VUSHX4WsjP5ssg5mdnEmXO8NGVGF34dxS9N1WCcq6wvquR4K_Hcut" alt="获取access_token 时序图" loading="lazy"></figure>
+<p>具体流程请参考官方文档，我们这里只说一下python的实现方法。官方文档地址 <a href="https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&amp;t=resource/res_list&amp;verify=1&amp;lang=zh_CN&amp;token=db685a316b7e3933cae42c5ca91d4e024125d1b8&amp;appid=wx6d8c79fb64de6c08">点这里</a></p>
+<p>参考python-instagram 我写了一个 [python-weixin] (https://github.com/gusibi/python-weixin)一个微信python SDK</p>
+<p>不过现在还只有微信接入、获取用户信息、 刷新refresh_token 等简单功能</p>
+<hr>
+<h3 id="安装">安装</h3>
+<h4 id="方法一-手动安装">方法一 手动安装</h4>
+<ol>
+<li>首先 需要把代码clone到本地</li>
+<li>python setup.py install</li>
+</ol>
+<h4 id="方法二-pip-install">方法二 pip install</h4>
+<pre><code>pip install git+https://github.com/gusibi/python-weixin.git@master
+</code></pre>
+<hr>
+<h3 id="使用方式">使用方式</h3>
+<pre><code class="language-python">
+from weixin.client import WeixinAPI
+
+APP_ID = 'your app id'
+APP_SECRET = 'your app secret'
+REDIRECT_URI = 'http://your_domain.com/redirect_uri'  # 这里一定要注意 地址一定要加上http/https
+
+scope = (&quot;snsapi_login&quot;, )
+api = WeixinAPI(appid=APP_ID,
+                app_secret=APP_SECRET,
+                redirect_uri=REDIRECT_URI)
+
+authorize_url = api.get_authorize_url(scope=scope)
+</code></pre>
+<p>现在将 authorize_url地址(如 http://yoursite.com/login/weixin)在浏览器打开， 将跳转到微信登录页面，使用手机扫码登录后将跳转到</p>
+<p>http://your_domain.com/redirect_uri?code=CODE&amp;state=STATE 页面</p>
+<p>现在我们就可以使用code 来获取登录的 access_token</p>
+<pre><code class="language-python">access_token = api.exchange_code_for_access_token(code=code)
+</code></pre>
+<p>access_token 信息为</p>
+<pre><code class="language-json">{
+&quot;access_token&quot;:&quot;ACCESS_TOKEN&quot;,
+&quot;expires_in&quot;:7200,
+&quot;refresh_token&quot;:&quot;REFRESH_TOKEN&quot;,
+&quot;openid&quot;:&quot;OPENID&quot;,
+&quot;scope&quot;:&quot;SCOPE&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>access_token</td>
+<td style="text-align:left">接口调用凭证（有效期目前为2个小时）</td>
+</tr>
+<tr>
+<td>expires_in</td>
+<td style="text-align:left">access_token接口调用凭证超时时间，单位（秒）</td>
+</tr>
+<tr>
+<td>refresh_token</td>
+<td style="text-align:left">用户刷新access_token（有效期目前为30天）</td>
+</tr>
+<tr>
+<td>openid</td>
+<td style="text-align:left">授权用户唯一标识</td>
+</tr>
+<tr>
+<td>scope</td>
+<td style="text-align:left">用户授权的作用域，使用逗号（,）分隔</td>
+</tr>
+</tbody>
+</table>
+<p>获取access_token后，就可以进行接口调用，有以下前提：</p>
+<ol>
+<li>access_token有效且未超时；</li>
+<li>微信用户已授权给第三方应用帐号相应接口作用域（scope）。</li>
+</ol>
+<p>对于接口作用域（scope），能调用的接口有以下：</p>
+<table>
+<thead>
+<tr>
+<th>授权作用域（scope）</th>
+<th style="text-align:left">接口</th>
+<th style="text-align:left">接口说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>snsapi_base</td>
+<td style="text-align:left">/sns/oauth2/access_token</td>
+<td style="text-align:left">通过code换取access_token、refresh_token和已授权scope</td>
+</tr>
+<tr>
+<td>snsapi_base</td>
+<td style="text-align:left">/sns/oauth2/refresh_token</td>
+<td style="text-align:left">刷新或续期access_token使用</td>
+</tr>
+<tr>
+<td>snsapi_base</td>
+<td style="text-align:left">/sns/auth</td>
+<td style="text-align:left">检查access_token有效性</td>
+</tr>
+<tr>
+<td>snsapi_userinfo</td>
+<td style="text-align:left">/sns/userinfo</td>
+<td style="text-align:left">获取用户个人信息</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-python">api = WeixinAPI(appid=APP_ID,
+                app_secret=APP_SECRET,
+                redirect_uri=REDIRECT_URI)
+
+# 刷新或续期access_token使用
+refresh_token = api.exchange_refresh_token_for_access_token(refresh_token=auth_info['refresh_token'])
+
+api = WeixinAPI(access_token=auth_info['access_token'])
+
+# 获取用户个人信息
+user = api.user(openid=auth_info['openid'])
+
+# 检查access_token有效性
+v = api.validate_token(openid=auth_info['openid'])
+</code></pre>
+<p>现在就微信登录就完成了</p>
+<hr>
+<p>下面是用 flask 实现的完整的例子</p>
+<pre><code class="language-python">from flask import Flask
+from flask import Markup
+from flask import redirect
+from flask import request
+from flask import jsonify
+
+from weixin.client import WeixinAPI
+from weixin.oauth2 import OAuth2AuthExchangeError
+
+app = Flask(__name__)
+
+APP_ID = 'appid'
+APP_SECRET = 'app secret'
+REDIRECT_URI = 'http://localhost.com/authorization'
+
+
+@app.route(&quot;/authorization&quot;)
+def authorization():
+    code = request.args.get('code')
+    api = WeixinAPI(appid=APP_ID,
+                    app_secret=APP_SECRET,
+                    redirect_uri=REDIRECT_URI)
+    auth_info = api.exchange_code_for_access_token(code=code)
+    api = WeixinAPI(access_token=auth_info['access_token'])
+    resp = api.user(openid=auth_info['openid'])
+    return jsonify(resp)
+
+
+@app.route(&quot;/login&quot;)
+def login():
+    api = WeixinAPI(appid=APP_ID,
+                    app_secret=APP_SECRET,
+                    redirect_uri=REDIRECT_URI)
+    redirect_uri = api.get_authorize_login_url(scope=(&quot;snsapi_login&quot;,))
+    return redirect(redirect_uri)
+
+
+@app.route(&quot;/&quot;)
+def hello():
+    return Markup('&lt;a href=&quot;%s&quot;&gt;weixin login!&lt;/a&gt;') % '/login'
+
+if __name__ == &quot;__main__&quot;:
+    app.run(debug=True)
+
+</code></pre>
+<h4 id="参考链接">参考链接：</h4>
+<ul>
+<li><a href="https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&amp;t=resource/res_list&amp;verify=1&amp;lang=zh_CN&amp;token=db685a316b7e3933cae42c5ca91d4e024125d1b8&amp;appid=wx6d8c79fb64de6c08">微信网站应用接入文档</a></li>
+<li><a href="https://open.weixin.qq.com/cgi-bin/frame?t=home/web_tmpl&amp;lang=zh_CN">网站应用创建地址</a></li>
+<li>[python-weixin]  (https://github.com/gusibi/python-weixin)</li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E6%A0%B9%E6%8D%AE%E9%9C%80%E6%B1%82%E9%80%89%E6%8B%A9%E7%9B%B8%E5%BA%94%E7%9A%84%E7%99%BB%E5%BD%95%E6%96%B9%E5%BC%8F">根据需求选择相应的登录方式</a>
+<ul>
+<li><a href="#%E8%8E%B7%E5%8F%96access_token-%E6%97%B6%E5%BA%8F%E5%9B%BE">获取access_token 时序图</a></li>
+</ul>
+</li>
+<li><a href="#%E5%AE%89%E8%A3%85">安装</a>
+<ul>
+<li><a href="#%E6%96%B9%E6%B3%95%E4%B8%80-%E6%89%8B%E5%8A%A8%E5%AE%89%E8%A3%85">方法一 手动安装</a></li>
+<li><a href="#%E6%96%B9%E6%B3%95%E4%BA%8C-pip-install">方法二 pip install</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F">使用方式</a>
+<ul>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接：</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/golang-learning-by-code-002/">
+              <h3 class="post-title">
+                跟着代码学go 002 -- 控制流
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,678 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Python gRPC 入门 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Python gRPC 入门 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+gRPC 一开始由 google 开发，是一款语言中立、平台中立、开源的远程过程调用(RPC)系统。 本文通过一个简单的 Hello World 例子来向您介绍 gRPC 。
+
+gRPC 是什么？
+gRPC 也是基于以下理念：定义一个服务..." />
+    <meta name="keywords" content="tutorial,python,grpc,小程序" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Python gRPC 入门
+            </h2>
+            <div class="post-info">
+              <span>
+                2018-06-07
+              </span>
+              <span>
+                12 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/6tFaoZtS7Un/" class="post-tag">
+                  # grpc
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/oe3pu-3GBGg/" class="post-tag">
+                  # 小程序
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>gRPC 一开始由 google 开发，是一款语言中立、平台中立、开源的远程过程调用(RPC)系统。 本文通过一个简单的 Hello World 例子来向您介绍 gRPC 。</p>
+</blockquote>
+<h3 id="grpc-是什么">gRPC 是什么？</h3>
+<p>gRPC 也是基于以下理念：定义一个<em>服务</em>，指定其能够被远程调用的方法（包含参数和返回类型）。在服务端实现这个接口，并运行一个 gRPC 服务器来处理客户端调用。在客户端拥有一个<em>存根</em>能够像服务端一样的方法。</p>
+<p>在 gRPC 里<em>客户端</em>应用可以像调用本地对象一样直接调用另一台不同的机器上<em>服务端</em>应用的方法，使得我们能够更容易地创建分布式应用和服务。</p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/t21KzebjklAAMbWL7Aos4KYZLkkbjrGwZkNLUwxrT7Igz1D5Ea2xCJ0W0EOPrgXK" alt="gPRC" loading="lazy"></figure>
+<p>gRPC 客户端和服务端可以在多种环境中运行和交互，并且可以用任何 gRPC 支持的语言来编写。</p>
+<blockquote>
+<p>gRPC 支持 C++ Java Python Go Ruby C# Node.js PHP Dart 等语言</p>
+</blockquote>
+<p>gRPC 默认使用 <em>protocol buffers</em>，这是 Google 开源的一种轻便高效的结构化数据存储格式，可以用于结构化数据串行化，或者说序列化。它很适合做数据存储或 RPC 数据交换格式。</p>
+<h3 id="安装-google-protocol-buffer">安装 Google Protocol Buffer</h3>
+<h4 id="方法一建议使用">方法一（建议使用）</h4>
+<p>参考文档：<a href="https://grpc.io/docs/quickstart/python.html">gRPC Python Quickstart</a></p>
+<h5 id="1-安装-grpc">1. 安装 gRPC</h5>
+<pre><code class="language-bash">
+python -m pip install grpcio
+# 或者
+sudo python -m pip install grpcio
+
+# 在 El Capitan OSX 系统下可能会看到以下报错
+
+$ OSError: [Errno 1] Operation not permitted: '/tmp/pip-qwTLbI-uninstall/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/six-1.4.1-py2.7.egg-info'
+
+# 可以使用以下命令
+python -m pip install grpcio --ignore-installed
+</code></pre>
+<h5 id="2-安装-grpc-tools">2. 安装 gRPC tools</h5>
+<p>Python gPRC tools 包含 protocol buffer 编译器和用于从 <code>.proto</code> 文件生成服务端和客户端代码的插件</p>
+<pre><code class="language-bash">python -m pip install grpcio-tools
+</code></pre>
+<h4 id="方法二">方法二：</h4>
+<p>在 github 页面<a href="https://github.com/google/protobuf/releases">protobuf Buffers</a>可以下载二进制源码，下载后执行以下命令安装：</p>
+<pre><code class="language-bash">tar -zxvf protobuf-all-3.5.1.tar
+cd protobuf-all-3.5.1
+./configure
+make
+make install
+
+&gt;&gt; protoc --version
+libprotoc 3.5.1  # 安装成功
+</code></pre>
+<p>因为是要使用 Protobuf + Python 测试，所以还要安装 python运行环境。<a href="https://github.com/google/protobuf/tree/master/python">protobuf Buffers python 文档</a></p>
+<pre><code class="language-bash"># 打开 python 目录
+cd python
+python setup.py install  # 安装 python 运行环境
+</code></pre>
+<h3 id="protobuf-基本使用">Protobuf 基本使用</h3>
+<h4 id="定义一个消息类型">定义一个消息类型</h4>
+<p>先来看一个非常简单的例子。假设你想定义一个“搜索请求”的消息格式，每一个请求含有一个查询字符串、你感兴趣的查询结果所在的页数，以及每一页多少条查询结果。可以采用如下的方式来定义消息类型的.proto文件了：</p>
+<pre><code class="language-protobuf">syntax = &quot;proto3&quot;;  // 声明使用 proto3 语法
+
+message SearchRequest {
+  string query = 1;  // 每个字段都要指定数据类型
+  int32 page_number = 2; // 这里的数字2 是标识符，最小的标识号可以从1开始，最大到2^29 - 1, or 536,870,911。不可以使用其中的[19000－19999]
+  int32 result_per_page = 3; // 这里是注释，使用 //
+}
+</code></pre>
+<ul>
+<li>文章的第一行指定了你正在使用 proto3 语法：如果不指定，编译器会使用 proto2。<code>这个指定语法必须是文件的非空非注释的第一行</code>。</li>
+<li><code>SearchRequest</code>消息格式有三个字段，在消息中承载的数据分别对应于每一个字段。其中每个字段都有一个名字和一种类型。</li>
+<li>向.proto文件添加注释，可以使用C/C++/java风格的<code>双斜杠(//)</code> 语法格式。</li>
+<li>在消息体中，每个字段都有唯一的一个数字标识符。这些标识符用来在消息的二进制格式中识别各个字段，一旦开始使用就不能再改变。</li>
+</ul>
+<blockquote>
+<p>[1,15]之内的标识号在编码的时候会占用一个字节。[16,2047]之内的标识号则占用2个字节。所以应该为那些频繁出现的消息元素保留 [1,15]之内的标识号。切记：要为将来有可能添加的、频繁出现的标识号预留一些标识号。</p>
+</blockquote>
+<h4 id="指定字段规则">指定字段规则</h4>
+<p>所指定的消息字段修饰符必须是如下之一：</p>
+<ul>
+<li>
+<p>singular：一个格式良好的消息应该有0个或者1个这种字段（但是不能超过1个）。</p>
+</li>
+<li>
+<p>repeated：在一个格式良好的消息中，这种字段可以重复任意多次（包括0次）。重复的值的顺序会被保留。</p>
+<p>在proto3中，repeated的标量域默认情况虾使用packed。</p>
+<pre><code class="language-protobuf">message Test4 {
+  repeated int32 d = 4 [packed=true];
+}
+</code></pre>
+</li>
+</ul>
+<h4 id="数值类型">数值类型</h4>
+<p>一个标量消息字段可以含有一个如下的类型——该表格展示了定义于.proto文件中的类型，以及与之对应的、在自动生成的访问类中定义的类型：</p>
+<table>
+<thead>
+<tr>
+<th>.proto Type</th>
+<th>Notes</th>
+<th>C++ Type</th>
+<th>Java Type</th>
+<th>Python Type[2]</th>
+<th>Go Type</th>
+<th>Ruby Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>double</td>
+<td></td>
+<td>double</td>
+<td>double</td>
+<td>float</td>
+<td>float64</td>
+<td>Float</td>
+</tr>
+<tr>
+<td>float</td>
+<td></td>
+<td>float</td>
+<td>float</td>
+<td>float</td>
+<td>float32</td>
+<td>Float</td>
+</tr>
+<tr>
+<td>int32</td>
+<td>使用变长编码，对于负值的效率很低，如果你的域有可能有负值，请使用sint64替代</td>
+<td>int32</td>
+<td>int</td>
+<td>int</td>
+<td>int32</td>
+<td>Fixnum 或者 Bignum（根据需要）</td>
+</tr>
+<tr>
+<td>uint32</td>
+<td>使用变长编码</td>
+<td>uint32</td>
+<td>int</td>
+<td>int/long</td>
+<td>uint32</td>
+<td>Fixnum 或者 Bignum（根据需要）</td>
+</tr>
+<tr>
+<td>uint64</td>
+<td>使用变长编码</td>
+<td>uint64</td>
+<td>long</td>
+<td>int/long</td>
+<td>uint64</td>
+<td>Bignum</td>
+</tr>
+<tr>
+<td>sint32</td>
+<td>使用变长编码，这些编码在负值时比int32高效的多</td>
+<td>int32</td>
+<td>int</td>
+<td>int</td>
+<td>int32</td>
+<td>Fixnum 或者 Bignum（根据需要）</td>
+</tr>
+<tr>
+<td>sint64</td>
+<td>使用变长编码，有符号的整型值。编码时比通常的int64高效。</td>
+<td>int64</td>
+<td>long</td>
+<td>int/long</td>
+<td>int64</td>
+<td>Bignum</td>
+</tr>
+<tr>
+<td>fixed32</td>
+<td>总是4个字节，如果数值总是比总是比228大的话，这个类型会比uint32高效。</td>
+<td>uint32</td>
+<td>int</td>
+<td>int</td>
+<td>uint32</td>
+<td>Fixnum 或者 Bignum（根据需要）</td>
+</tr>
+<tr>
+<td>fixed64</td>
+<td>总是8个字节，如果数值总是比总是比256大的话，这个类型会比uint64高效。</td>
+<td>uint64</td>
+<td>long</td>
+<td>int/long</td>
+<td>uint64</td>
+<td>Bignum</td>
+</tr>
+<tr>
+<td>sfixed32</td>
+<td>总是4个字节</td>
+<td>int32</td>
+<td>int</td>
+<td>int</td>
+<td>int32</td>
+<td>Fixnum 或者 Bignum（根据需要）</td>
+</tr>
+<tr>
+<td>sfixed64</td>
+<td>总是8个字节</td>
+<td>int64</td>
+<td>long</td>
+<td>int/long</td>
+<td>int64</td>
+<td>Bignum</td>
+</tr>
+<tr>
+<td>bool</td>
+<td></td>
+<td>bool</td>
+<td>boolean</td>
+<td>bool</td>
+<td>bool</td>
+<td>TrueClass/FalseClass</td>
+</tr>
+<tr>
+<td>string</td>
+<td>一个字符串必须是UTF-8编码或者7-bit ASCII编码的文本。</td>
+<td>string</td>
+<td>String</td>
+<td>str/unicode</td>
+<td>string</td>
+<td>String (UTF-8)</td>
+</tr>
+<tr>
+<td>bytes</td>
+<td>可能包含任意顺序的字节数据。</td>
+<td>string</td>
+<td>ByteString</td>
+<td>str</td>
+<td>[]byte</td>
+<td>String (ASCII-8BIT)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="默认值">默认值</h4>
+<p>当一个消息被解析的时候，如果被编码的信息不包含一个特定的singular元素，被解析的对象锁对应的域被设置位一个默认值，对于不同类型指定如下：</p>
+<ul>
+<li>
+<p>对于strings，默认是一个空string</p>
+</li>
+<li>
+<p>对于bytes，默认是一个空的bytes</p>
+</li>
+<li>
+<p>对于bools，默认是false</p>
+</li>
+<li>
+<p>对于数值类型，默认是0</p>
+</li>
+<li>
+<p>对于枚举，默认是第一个定义的枚举值，必须为0;</p>
+</li>
+<li>
+<p>对于消息类型（message），域没有被设置，确切的消息是根据语言确定的，详见<a href="https://developers.google.com/protocol-buffers/docs/reference/overview?hl=zh-cn">generated code guide</a></p>
+<p>对于可重复域的默认值是空（通常情况下是对应语言中空列表）。</p>
+</li>
+</ul>
+<h4 id="嵌套类型">嵌套类型</h4>
+<p>你可以在其他消息类型中定义、使用消息类型，在下面的例子中，Result消息就定义在SearchResponse消息内，如：</p>
+<pre><code class="language-protobuf">message SearchResponse {
+  message Result {
+    string url = 1;
+    string title = 2;
+    repeated string snippets = 3;
+  }
+  repeated Result results = 1;
+}
+</code></pre>
+<p>在 message SearchResponse 中，定义了嵌套消息 <code>Result</code>，并用来定义<code>SearchResponse</code>消息中的<code>results</code>域。</p>
+<h3 id="protobuf-文件编译">Protobuf 文件编译</h3>
+<h4 id="从proto文件生成了什么">从.proto文件生成了什么？</h4>
+<p>当用protocol buffer编译器来运行.proto文件时，编译器将生成所选择语言的代码，这些代码可以操作在.proto文件中定义的消息类型，包括获取、设置字段值，将消息序列化到一个输出流中，以及从一个输入流中解析消息。</p>
+<ul>
+<li>对C++来说，编译器会为每个.proto文件生成一个.h文件和一个.cc文件，.proto文件中的每一个消息有一个对应的类。</li>
+<li>对Java来说，编译器为每一个消息类型生成了一个.java文件，以及一个特殊的Builder类（该类是用来创建消息类接口的）。</li>
+<li>对Python来说，有点不太一样——Python编译器为.proto文件中的每个消息类型生成一个含有静态描述符的模块，，该模块与一个元类（metaclass）在运行时（runtime）被用来创建所需的Python数据访问类。</li>
+<li>对go来说，编译器会位每个消息类型生成了一个.pd.go文件。</li>
+<li>对于Ruby来说，编译器会为每个消息类型生成了一个.rb文件。</li>
+<li>javaNano来说，编译器输出类似域java但是没有Builder类</li>
+<li>对于Objective-C来说，编译器会为每个消息类型生成了一个pbobjc.h文件和pbobjcm文件，.proto文件中的每一个消息有一个对应的类。</li>
+<li>对于C#来说，编译器会为每个消息类型生成了一个.cs文件，.proto文件中的每一个消息有一个对应的类。</li>
+</ul>
+<h3 id="python-grpc-示例">Python gRPC 示例</h3>
+<h4 id="编译">编译</h4>
+<p>这里我们用Python 编译一下，看得到什么：</p>
+<pre><code class="language-protobuf">// 文件名 hello.proto
+syntax = &quot;proto3&quot;;
+
+package hello;
+
+// The greeting service definition.
+service Greeter {
+  // Sends a greeting
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+// The request message containing the user's name.
+message HelloRequest {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message HelloReply {
+  string message = 1;
+}
+</code></pre>
+<p>使用以下命令编译:</p>
+<pre><code class="language-bash">python -m grpc_tools.protoc -I./ --python_out=. --grpc_python_out=. ./hello.proto
+</code></pre>
+<p>生成了两个文件：</p>
+<ul>
+<li><code>hello_pb2.py</code> 此文件包含生成的 request(<code>HelloRequest</code>) 和 response(<code>HelloReply</code>) 类。</li>
+<li><code>hello_pb2_grpc.py</code> 此文件包含生成的 客户端(<code>GreeterStub</code>)和服务端(<code>GreeterServicer</code>)的类。</li>
+</ul>
+<p>源码地址为<a href="https://github.com/grpc/grpc/blob/master/examples/protos/helloworld.proto">https://github.com/grpc/grpc/blob/master/examples/protos/helloworld.proto</a></p>
+<p>虽然现在已经生成了服务端和客户端代码，但是我们还需要手动实现以及调用的方法。</p>
+<h4 id="创建服务端代码">创建服务端代码</h4>
+<p>创建和运行 <code>Greeter</code> 服务可以分为两个部分：</p>
+<ul>
+<li>
+<p>实现我们服务定义的生成的服务接口：做我们的服务的实际的“工作”的函数。</p>
+</li>
+<li>
+<p>运行一个 gRPC 服务器，监听来自客户端的请求并传输服务的响应。</p>
+</li>
+</ul>
+<p>在当前目录，打开文件 greeter_server.py，实现一个新的函数：</p>
+<pre><code class="language-python">from concurrent import futures
+import time
+
+import grpc
+
+import hello_pb2
+import hello_pb2_grpc
+
+_ONE_DAY_IN_SECONDS = 60 * 60 * 24
+
+
+class Greeter(hello_pb2_grpc.GreeterServicer):
+	# 工作函数
+    def SayHello(self, request, context):
+        return hello_pb2.HelloReply(message='Hello, %s!' % request.name)
+
+
+def serve():
+    # gRPC 服务器
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    hello_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
+    server.add_insecure_port('[::]:50051')
+    server.start()  # start() 不会阻塞，如果运行时你的代码没有其它的事情可做，你可能需要循环等待。
+    try:
+        while True:
+            time.sleep(_ONE_DAY_IN_SECONDS)
+    except KeyboardInterrupt:
+        server.stop(0)
+
+if __name__ == '__main__':
+    serve()
+</code></pre>
+<h4 id="更新客户端代码">更新客户端代码</h4>
+<p>在当前目录，打开文件 greeter_client.py，实现一个新的函数：</p>
+<pre><code class="language-python">from __future__ import print_function
+
+import grpc
+
+import hello_pb2
+import hello_pb2_grpc
+
+
+def run():
+    channel = grpc.insecure_channel('localhost:50051')
+    stub = hello_pb2_grpc.GreeterStub(channel)
+    response = stub.SayHello(hello_pb2.HelloRequest(name='goodspeed'))
+    print(&quot;Greeter client received: &quot; + response.message)
+
+
+if __name__ == '__main__':
+    run()
+</code></pre>
+<blockquote>
+<p>对于返回单个应答的 RPC 方法（&quot;response-unary&quot; 方法），gRPC Python 同时支持同步（阻塞）和异步（非阻塞）的控制流语义。对于应答流式 RPC 方法，调用会立即返回一个应答值的迭代器。调用迭代器的 <code>next()</code> 方法会阻塞，直到从迭代器产生的应答变得可用。</p>
+</blockquote>
+<h4 id="运行代码">运行代码</h4>
+<ol>
+<li>首先运行服务端代码</li>
+</ol>
+<pre><code class="language-bash">python greeter_server.py
+</code></pre>
+<ol start="2">
+<li>然后运行客户端代码</li>
+</ol>
+<pre><code class="language-bash">python greeter_client.py
+# output
+
+Greeter client received: Hello, goodspeed!
+</code></pre>
+<blockquote>
+<p><a href="https://github.com/grpc/grpc/tree/master/examples/python">源码地址: https://github.com/grpc/grpc/tree/master/examples/python</a></p>
+</blockquote>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://doc.oschina.net/grpc?t=56831">gRPC 官方文档中文版</a></li>
+<li><a href="https://blog.csdn.net/u011518120/article/details/54604615">Protobuf3语言指南</a></li>
+<li><a href="https://www.ibm.com/developerworks/cn/linux/l-cn-gpb/index.html">Google Protocol Buffer 的使用和原理</a></li>
+<li><a href="https://grpc.io/docs/quickstart/python.html">gRPC Python Quickstart</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#grpc-%E6%98%AF%E4%BB%80%E4%B9%88">gRPC 是什么？</a></li>
+<li><a href="#%E5%AE%89%E8%A3%85-google-protocol-buffer">安装 Google Protocol Buffer</a>
+<ul>
+<li><a href="#%E6%96%B9%E6%B3%95%E4%B8%80%E5%BB%BA%E8%AE%AE%E4%BD%BF%E7%94%A8">方法一（建议使用）</a>
+<ul>
+<li><a href="#1-%E5%AE%89%E8%A3%85-grpc">1. 安装 gRPC</a></li>
+<li><a href="#2-%E5%AE%89%E8%A3%85-grpc-tools">2. 安装 gRPC tools</a></li>
+</ul>
+</li>
+<li><a href="#%E6%96%B9%E6%B3%95%E4%BA%8C">方法二：</a></li>
+</ul>
+</li>
+<li><a href="#protobuf-%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8">Protobuf 基本使用</a>
+<ul>
+<li><a href="#%E5%AE%9A%E4%B9%89%E4%B8%80%E4%B8%AA%E6%B6%88%E6%81%AF%E7%B1%BB%E5%9E%8B">定义一个消息类型</a></li>
+<li><a href="#%E6%8C%87%E5%AE%9A%E5%AD%97%E6%AE%B5%E8%A7%84%E5%88%99">指定字段规则</a></li>
+<li><a href="#%E6%95%B0%E5%80%BC%E7%B1%BB%E5%9E%8B">数值类型</a></li>
+<li><a href="#%E9%BB%98%E8%AE%A4%E5%80%BC">默认值</a></li>
+<li><a href="#%E5%B5%8C%E5%A5%97%E7%B1%BB%E5%9E%8B">嵌套类型</a></li>
+</ul>
+</li>
+<li><a href="#protobuf-%E6%96%87%E4%BB%B6%E7%BC%96%E8%AF%91">Protobuf 文件编译</a>
+<ul>
+<li><a href="#%E4%BB%8Eproto%E6%96%87%E4%BB%B6%E7%94%9F%E6%88%90%E4%BA%86%E4%BB%80%E4%B9%88">从.proto文件生成了什么？</a></li>
+</ul>
+</li>
+<li><a href="#python-grpc-%E7%A4%BA%E4%BE%8B">Python gRPC 示例</a>
+<ul>
+<li><a href="#%E7%BC%96%E8%AF%91">编译</a></li>
+<li><a href="#%E5%88%9B%E5%BB%BA%E6%9C%8D%E5%8A%A1%E7%AB%AF%E4%BB%A3%E7%A0%81">创建服务端代码</a></li>
+<li><a href="#%E6%9B%B4%E6%96%B0%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%BB%A3%E7%A0%81">更新客户端代码</a></li>
+<li><a href="#%E8%BF%90%E8%A1%8C%E4%BB%A3%E7%A0%81">运行代码</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/newrelic_source_code_1/">
+              <h3 class="post-title">
+                newrelic python agent 源码分析-1
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

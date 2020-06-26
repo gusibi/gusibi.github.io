@@ -1,0 +1,299 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>为什么json 不能使用 int64类型 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="为什么json 不能使用 int64类型 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="json 简介
+JSON(JavaScript Object Notation) 是一种轻量级的数据交换格式。 易于人阅读和编写。同时也易于机器解析和生成。 它基于JavaScript Programming Language, Stand..." />
+    <meta name="keywords" content="前端,development,JavaScript" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              为什么json 不能使用 int64类型
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-06-03
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/QFxrVQKr-F/" class="post-tag">
+                  # 前端
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/7_5AGYXh_qT/" class="post-tag">
+                  # development
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/I_Xxh9tQlGZ/" class="post-tag">
+                  # JavaScript
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h3 id="json-简介">json 简介</h3>
+<p>JSON(JavaScript Object Notation) 是一种轻量级的数据交换格式。 易于人阅读和编写。同时也易于机器解析和生成。 <strong>它基于JavaScript Programming Language, Standard ECMA-262 3rd Edition - December 1999的一个子集</strong>。 JSON采用完全独立于语言的文本格式，但是也使用了类似于C语言家族的习惯（包括C, C++, C#, Java, JavaScript, Perl, Python等）。 这些特性使JSON成为理想的数据交换语言。</p>
+<p>JSON支持两种数据结构存在：</p>
+<ul>
+<li>对象（object）：一个对象包含一系列非排序的名称／值对(pair)，一个对象以{开始，并以}结束。每个名称／值对之间使用 <strong>:</strong> 分割。</li>
+<li>数组 (array)：一个数组是一个值(value)的集合，一个数组以 <strong>[</strong> 开始，并以]结束。数组成员之间使用 <strong>,</strong> 分割。<br>
+具体的格式如下：</li>
+</ul>
+<pre><code class="language-json">[value1, value2, value3]
+</code></pre>
+<ul>
+<li>名称／值（pair）：名称和值之间使用 <strong>:</strong> 隔开，格式如下：</li>
+</ul>
+<pre><code class="language-json">{name:value}
+</code></pre>
+<blockquote>
+<p>名称必须是字符串类型；<br>
+值(value)必须是可以是字符串(string)，数值(number)，对象(object)，有序列表(array)，或者 false， null， true 的其中一种。</p>
+</blockquote>
+<p>JSON的格式描述可以参考RFC 4627。</p>
+<h3 id="为什么json不支持-int64-类型">为什么JSON不支持 int64 类型？</h3>
+<p>通过上面的介绍有两个关键点：</p>
+<ol>
+<li>JSON 是基于 JavaScript Programming Language, Standard ECMA-262 3rd Edition - December 1999的一个子集</li>
+<li>JSON 支持number 类型</li>
+</ol>
+<p>Javascript的数字存储使用了IEEE 754中规定的双精度浮点数数据类型，而这一数据类型能够安全存储 -(2^53-1) 到 2^53-1 之间的数值（包含边界值）。JSON 是Javascript 的一个子集，所以它也遵守这个规则。</p>
+<p>以下是rfc7159的说明：</p>
+<blockquote>
+<p>Note that when such software is used, numbers that are integers and<br>
+are in the range [-(2^53)+1, (2^53)-1] are interoperable in the<br>
+sense that implementations will agree exactly on their numeric<br>
+values.</p>
+</blockquote>
+<blockquote>
+<p>这两个边界值可以通过 JavaScript 的 Number.MAX_SAFE_INTEGER 和 Number.MIN_SAFE_INTEGER 获取。</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/json1.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>安全存储的意思是指能够准确区分两个不相同的值，比如，253 - 1 是一个安全整数，它能被精确表示，在任何 IEEE-754 舍入模式（rounding mode）下，没有其他整数舍入结果为该整数。作为对比，253 就不是一个安全整数，它能够使用 IEEE-754 表示，但是 253 + 1 不能使用 IEEE-754 直接表示，在就近舍入（round-to-nearest）和向零舍入中，会被舍入为 253。<br>
+Number.MAX_SAFE_INTEGER + 1 === Number.MAX_SAFE_INTEGER + 2 将得到 true的结果，而这在数学上是错误的。<br>
+同样 105308320612483198 === 105308320612483200 结果也是true</p>
+</blockquote>
+<p>int64 类型的数值范围是 -(2^63-1) 到 2^63-1。使用int64 类型json 对于超出范围的数字，会出现解析错误的情况。</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/json2.png" alt="" loading="lazy"></figure>
+<p>一个建议：对于大数字来说，使用str 是一个好的选择。或者用类似这样的结构：</p>
+<pre><code class="language-json">{&quot;int&quot;: 105308320612483198, &quot;int_str&quot;: &quot;105308320612483198&quot;}
+</code></pre>
+<p>在json 中使用的时候 使用 int_str 属性。</p>
+<h3 id="python-对json-的处理">python 对json 的处理</h3>
+<p>python 中 int 类型值远远超过IEEE 754 中定义的双精度值的范围，所以对于在python中使用的json数据，可以使用放心使用 int64 类型（python中的long ）。但是如果序列化后的数据要被其它语言的解析器（比如：JavaScript的解析器）解析的时候，就要当心数值是不是超出了安全数的范围。如果超出，这里推荐使用字符串类型来代替数值类型。</p>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://tools.ietf.org/html/rfc7159.html">RFC7159</a></li>
+<li><a href="http://www.json.org/json-zh.html">介绍JSON</a></li>
+<li><a href="https://zh.wikipedia.org/zh-hans/IEEE_754">IEEE 754</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#json-%E7%AE%80%E4%BB%8B">json 简介</a></li>
+<li><a href="#%E4%B8%BA%E4%BB%80%E4%B9%88json%E4%B8%8D%E6%94%AF%E6%8C%81-int64-%E7%B1%BB%E5%9E%8B">为什么JSON不支持 int64 类型？</a></li>
+<li><a href="#python-%E5%AF%B9json-%E7%9A%84%E5%A4%84%E7%90%86">python 对json 的处理</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/postgresql-json/">
+              <h3 class="post-title">
+                PostgreSQL jsonb 使用入门
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

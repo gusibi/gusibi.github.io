@@ -1,0 +1,480 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Python 列表推导及优先级队列的实现 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Python 列表推导及优先级队列的实现 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+这一篇是《流畅的 python》读书笔记。主要介绍列表、列表推导有关的话题，最后演示如何用列表实现一个优先级队列。
+
+Python 内置序列类型
+Python 标准库用 C 实现了丰富的序列类型：
+容器序列：
+list、tuple 和 c..." />
+    <meta name="keywords" content="读书笔记,tutorial,python" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Python 列表推导及优先级队列的实现
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-09-03
+              </span>
+              <span>
+                10 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>这一篇是<code>《流畅的 python》</code>读书笔记。主要介绍列表、列表推导有关的话题，最后演示如何用列表实现一个优先级队列。</p>
+</blockquote>
+<h2 id="python-内置序列类型">Python 内置序列类型</h2>
+<p>Python 标准库用 C 实现了丰富的序列类型：</p>
+<h4 id="容器序列">容器序列：</h4>
+<p>list、tuple 和 collections.deque 这些序列能存放不同类型的数据。</p>
+<h4 id="扁平序列">扁平序列：</h4>
+<p>str、bytes、bytearray、memoryview 和 array.array，这类序列只能容纳一种类型。</p>
+<blockquote>
+<p>容器序列存放的是它们所包含的任意类型的对象的引用，而扁平序列里存放的是值而不是引用（也可以说扁平序列其实存放的是一段连续的内存空间）。</p>
+</blockquote>
+<p>如果按序列是否可被修改来分类，序列分为<code>可变序列</code> 和 <code>不可变序列</code>:</p>
+<h4 id="可变序列">可变序列</h4>
+<p>list、bytearray、array.array、collections.deque 和 memoryview。</p>
+<h4 id="不可变序列">不可变序列</h4>
+<p>tuple、str和 bytes。</p>
+<p>下图显示了可变序列（MutableSequence）和不可变序列（sequence）的差异：</p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/Wlrr9jXCMsTupf03pVmVSkCb4ObKTI8g7QWycfjJS80UJ7tHptjZsHLLCz3evCZM" alt="可变序列(MutableSequence)和不可变序列（sequence）的差异" loading="lazy"></figure>
+<p>从这个图可以看出，可变序列从不可变序列那里继承了一些方法。</p>
+<h2 id="列表推导和生成器表达式">列表推导和生成器表达式</h2>
+<p>列表（list）是 Python 中最基础的序列类型。list 是一个可变序列，并且能同时存放不同类型的元素。<br>
+列表的基础用法这里就不再介绍了，这里主要介绍一下列表推导。</p>
+<h3 id="列表推导和可读性">列表推导和可读性</h3>
+<p>列表推导是构建列表的快捷方式，并且有更好的可读性。<br>
+先看下面两段代码：</p>
+<p><code>#1. 把一个字符串变成 unicode 码位的列表</code></p>
+<pre><code class="language-python">&gt;&gt;&gt; symbols = '$&amp;@#%^&amp;*'
+&gt;&gt;&gt; codes = []
+&gt;&gt;&gt; for symbol in symbols:
+        codes.append(ord(symbol))
+
+&gt;&gt;&gt; codes
+[36, 38, 64, 35, 37, 94, 38, 42]
+</code></pre>
+<p><code>#2. 把一个字符串变成 unicode 码位的列表 使用列表推导</code></p>
+<pre><code class="language-python">&gt;&gt;&gt; symbols = '$&amp;@#%^&amp;*'
+&gt;&gt;&gt; codes = [ord(s) for s in symbols]
+&gt;&gt;&gt; codes
+[36, 38, 64, 35, 37, 94, 38, 42]
+</code></pre>
+<p>对比发现，如果理解列表推导的话，第二段代码比第一段更简洁可读性也更好。<br>
+当然，列表推导也不应该被滥用，通常的原则是<code>只用列表推导来创建新的列表，并且尽量保持简短。</code><br>
+如果列表推导超过两行，就应该考虑要不要使用 <code>for</code> 循环重写了。</p>
+<h4 id="note">NOTE</h4>
+<blockquote>
+<p>在 Python2 中列表推导有变量泄露的问题</p>
+</blockquote>
+<p><code>#Python2 的例子</code></p>
+<pre><code class="language-python">&gt;&gt;&gt; x = 'my precious'
+&gt;&gt;&gt; dummy = [x for x in 'ABC']
+&gt;&gt;&gt; x
+'C'
+</code></pre>
+<p>这里 x 原来的值被取代了，变成了列表推导中的最后一个值，需要避免这个问题。好消息是 Python3解决了这个问题。</p>
+<p><code>#Python3 的例子</code></p>
+<pre><code class="language-python">&gt;&gt;&gt; x = 'ABC'
+&gt;&gt;&gt; dummy = [ord(x) for x in x]
+&gt;&gt;&gt; x 
+'ABC'
+&gt;&gt;&gt; dummy
+[65, 66, 67]
+</code></pre>
+<p>可以看到，这里 x 原有的值被保留了，列表推导也创建了正确的列表。</p>
+<h3 id="笛卡尔积">笛卡尔积</h3>
+<p>列表推导还可以生成两个或以上的可迭代类型的笛卡尔积。</p>
+<blockquote>
+<p>笛卡尔积是一个列表，列表里的元素是由输入的可迭代类型的元素对构成的元组，因此笛卡尔积列表的长度等于输入变量的长度的成绩，如图所示：</p>
+</blockquote>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/Ug5fo3x6f2sM4pGOavCxHcmMpLbEnw6sCyZ6_9HMMHSbbrKQXahYQDsZC1bhxpp2" alt="笛卡尔积" loading="lazy"></figure>
+<p><code># 使用列表推导计算笛卡尔积代码如下</code></p>
+<pre><code class="language-python">&gt;&gt;&gt; suits = ['spades', 'diamonds', 'clubs', 'hearts']
+&gt;&gt;&gt; nums = ['A', 'K', 'Q']
+&gt;&gt;&gt; cards = [(num, suit) for num in nums for suit in suits]
+&gt;&gt;&gt; cards
+[('A', 'spades'),
+ ('A', 'diamonds'),
+ ('A', 'clubs'),
+ ('A', 'hearts'),
+ ('K', 'spades'),
+ ('K', 'diamonds'),
+ ('K', 'clubs'),
+ ('K', 'hearts'),
+ ('Q', 'spades'),
+ ('Q', 'diamonds'),
+ ('Q', 'clubs'),
+ ('Q', 'hearts')]
+</code></pre>
+<p>这里得到的结果是先按数字排列，再按图案排列。如果想先按图案排列再按数字排列，只需要调整 for 从句的先后顺序。</p>
+<h3 id="过滤序列元素">过滤序列元素</h3>
+<blockquote>
+<p><code>问题</code>：你有一个数据序列，想利用一些规则从中提取出需要的值或者是缩短序列</p>
+</blockquote>
+<p>最简单的过滤序列元素的方法是使用列表推导。比如：</p>
+<pre><code class="language-python">&gt;&gt;&gt; mylist = [1, 4, -5, 10, -7, 2, 3, -1]
+&gt;&gt;&gt; [n for n in mylist if n &gt;0]
+[1, 4, 10, 2, 3]
+</code></pre>
+<p>使用列表推导的一个潜在缺陷就是若干输入非常大的时候会产生一个非常大的结果集，占用大量内存。这个时候，使用生成器表达式迭代产生过滤元素是一个好的选择。</p>
+<h3 id="生成器表达式">生成器表达式</h3>
+<p>生成器表达式遵守了迭代器协议，可以逐个产出元素，而不是先建立一个完整的列表，然后再把这个列表传递到某个构造函数里。</p>
+<blockquote>
+<p>生成器表达式的语法跟列表推导差不多，只需要把方括号换成圆括号。</p>
+</blockquote>
+<p><code># 使用生成器表达式创建列表</code></p>
+<pre><code class="language-python">&gt;&gt;&gt; pos = (n for n in mylist if n &gt; 0)
+&gt;&gt;&gt; pos
+&lt;generator object &lt;genexpr&gt; at 0x1006a0eb0&gt;
+&gt;&gt;&gt; for x in pos:
+... print(x) 
+...
+1
+4
+10 
+2 
+3
+</code></pre>
+<p><em>如果生成器表达式是一个函数调用过程中唯一的参数，那么不需要额外再用括号把它围起来。例如：</em></p>
+<pre><code class="language-python">tuple(n for n in mylist)
+</code></pre>
+<p><em>如果生成器表达式是一个函数调用过程中其中一个参数，此时括号是必须的。比如：</em></p>
+<pre><code class="language-python">&gt;&gt;&gt; import array
+&gt;&gt;&gt; array.array('list', (n for n in mylist))
+array('list', [1, 4, 10, 2, 3])
+</code></pre>
+<h2 id="实现一个优先级队列">实现一个优先级队列</h2>
+<h3 id="问题">问题</h3>
+<p>怎么实现一个按优先级排序的队列？并在这个队列上每次 pop 操作总是返回优先级最高的那个元素</p>
+<h3 id="解决方法">解决方法</h3>
+<blockquote>
+<p>利用 <code>heapq</code> 模块</p>
+</blockquote>
+<p><code>heapq</code> 是 python 的内置模块，源码位于 Lib/heapq.py ，该模块提供了基于堆的优先排序算法。</p>
+<blockquote>
+<p>堆的逻辑结构就是完全二叉树，并且二叉树中父节点的值小于等于该节点的所有子节点的值。这种实现可以使用 heap[k] &lt;= heap[2k+1] 并且 heap[k] &lt;= heap[2k+2] （其中 k 为索引，从 0 开始计数）的形式体现，对于堆来说，最小元素即为根元素 heap[0]。</p>
+</blockquote>
+<p>可以通过 list 对 heap 进行初始化，或者通过 api 中的 heapify 将已知的 list 转化为 heap 对象。</p>
+<p>heapq 提供的一些方法如下：</p>
+<ul>
+<li>heap = [] #创建了一个空堆</li>
+<li>heapq.heappush(heap, item)：向 heap 中插入一个元素</li>
+<li>heapq.heappop(heap)：返回 root 节点，即 heap 中最小的元素</li>
+<li>heapq.heappushpop(heap, item)：向 heap 中加入 item 元素，并返回 heap 中最小元素</li>
+<li>heapq.heapify(x)</li>
+<li>heapq.nlargest(n, iterable, key=None)：返回可枚举对象中的 n 个最大值，并返回一个结果集 list，key 为对该结果集的操作</li>
+<li>heapq.nsmallest(n, iterable, key=None)：同上相反</li>
+</ul>
+<p>实现如下：</p>
+<pre><code class="language-python">import heapq
+class PriorityQueue: 
+    def __init__(self):
+        self._queue = []
+        self._index = 0
+        
+    def push(self, item, priority):
+        heapq.heappush(self._queue, (-priority, self._index, item)) 
+        self._index += 1
+        
+    def pop(self):
+        return heapq.heappop(self._queue)[-1]
+</code></pre>
+<p>下面是它的使用方法：</p>
+<pre><code class="language-python">&gt;&gt;&gt; class Item:
+        def __init__(self, name):
+            self.name = name
+        def __repr__(self):
+            return 'Item({!r})'.format(self.name)
+            
+&gt;&gt;&gt; q = PriorityQueue()
+&gt;&gt;&gt; q.push(Item('foo'), 1)
+&gt;&gt;&gt; q.push(Item('bar'), 5)
+&gt;&gt;&gt; q.push(Item('spam'), 4)
+&gt;&gt;&gt; q.push(Item('grok'), 1)
+&gt;&gt;&gt; q.pop()
+Item('bar') 
+&gt;&gt;&gt; q.pop() 
+Item('spam') 
+&gt;&gt;&gt; q.pop() 
+Item('foo') 
+&gt;&gt;&gt; q.pop() 
+Item('grok')
+</code></pre>
+<p>通过执行结果我们可以发现，第一个 pop() 操作返回优先级最高的元素。两个优先级相同的元素（foo 和 grok），pop 操作按照它们被插入到队列的顺序返回。</p>
+<p>函数 heapq.heappush() 和 heapq.heappop() 分别在队列 queue 上插入和删除第一个元素，并且队列 queue 保证 第一个元素拥有最小优先级。 heappop() 函数总是返回 <em><code>最小的</code></em> 的元素，这就是保证队列 pop 操作返回正确元素的关键。另外，由于 push 和 pop 操作<code>时间复杂度为 O(log N)，其中 N 是堆的大小</code>，因此就算是 N 很大的时候它们 运行速度也依旧很快。<br>
+<em><code>在上面代码中，队列包含了一个 (-priority, index, item) 的元组。优先级为负 数的目的是使得元素按照优先级从高到低排序。这个跟普通的按优先级从低到高排序的堆排序恰巧相反。</code></em><br>
+index 变量的作用是保证同等优先级元素的正确排序。通过保存一个不断增加的 index 下标变量，可以确保元素按照它们插入的顺序排序。而且， index 变量也在相 同优先级元素比较的时候起到重要作用。</p>
+<p>实现上边排序的关键是 元组是支持比较的：</p>
+<pre><code class="language-python">&gt;&gt;&gt; a = (1, Item('foo')) 
+&gt;&gt;&gt; b = (5, Item('bar')) 
+&gt;&gt;&gt; a &lt; b
+True
+&gt;&gt;&gt; c = (1, Item('grok'))
+&gt;&gt;&gt; a &lt; c
+Traceback (most recent call last):
+File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt; 
+TypeError: unorderable types: Item() &lt; Item()
+</code></pre>
+<p>当第一个值大小相等时，由于<code>Item</code> 并不支持比较会抛出 <code>TypeError</code>。为了避免上述错误，我们引入了<code>index</code>（不可能用两个元素有相同的 index 值）， 变量组成了(priority, index, item) 三元组。现在再比较就不会出现上述问题了：</p>
+<pre><code class="language-python">&gt;&gt;&gt; a = (1, 0, Item('foo')) 
+&gt;&gt;&gt; b = (5, 1, Item('bar')) 
+&gt;&gt;&gt; c = (1, 2, Item('grok')) 
+&gt;&gt;&gt; a &lt; b
+True
+&gt;&gt;&gt; a &lt; c 
+True
+</code></pre>
+<blockquote>
+<p>主要介绍列表、列表推导有关的话题，最后演示如何用<code>heapq</code>和<code>列表</code>实现一个优先级队列。下一篇介绍<code>元组</code></p>
+</blockquote>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://docs.python.org/2/library/heapq.html">Heap queue algorithm</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#python-%E5%86%85%E7%BD%AE%E5%BA%8F%E5%88%97%E7%B1%BB%E5%9E%8B">Python 内置序列类型</a><br>
+*
+<ul>
+<li><a href="#%E5%AE%B9%E5%99%A8%E5%BA%8F%E5%88%97">容器序列：</a></li>
+<li><a href="#%E6%89%81%E5%B9%B3%E5%BA%8F%E5%88%97">扁平序列：</a></li>
+<li><a href="#%E5%8F%AF%E5%8F%98%E5%BA%8F%E5%88%97">可变序列</a></li>
+<li><a href="#%E4%B8%8D%E5%8F%AF%E5%8F%98%E5%BA%8F%E5%88%97">不可变序列</a></li>
+</ul>
+</li>
+<li><a href="#%E5%88%97%E8%A1%A8%E6%8E%A8%E5%AF%BC%E5%92%8C%E7%94%9F%E6%88%90%E5%99%A8%E8%A1%A8%E8%BE%BE%E5%BC%8F">列表推导和生成器表达式</a>
+<ul>
+<li><a href="#%E5%88%97%E8%A1%A8%E6%8E%A8%E5%AF%BC%E5%92%8C%E5%8F%AF%E8%AF%BB%E6%80%A7">列表推导和可读性</a>
+<ul>
+<li><a href="#note">NOTE</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%9B%E5%8D%A1%E5%B0%94%E7%A7%AF">笛卡尔积</a></li>
+<li><a href="#%E8%BF%87%E6%BB%A4%E5%BA%8F%E5%88%97%E5%85%83%E7%B4%A0">过滤序列元素</a></li>
+<li><a href="#%E7%94%9F%E6%88%90%E5%99%A8%E8%A1%A8%E8%BE%BE%E5%BC%8F">生成器表达式</a></li>
+</ul>
+</li>
+<li><a href="#%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97">实现一个优先级队列</a>
+<ul>
+<li><a href="#%E9%97%AE%E9%A2%98">问题</a></li>
+<li><a href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95">解决方法</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/metis-2-weapp-upload-file-to-cos/">
+              <h3 class="post-title">
+                小程序开发：上传图片到腾讯云
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

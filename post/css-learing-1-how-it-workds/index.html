@@ -1,0 +1,670 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CSS入门指南-1：工作原理 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="CSS入门指南-1：工作原理 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+这是CSS设计指南的读书笔记，用于加深学习效果。
+
+最近想做一个小程序，前端是必修课，那就从css开始吧。
+css 工作原理
+每个html元素都有一组样式属性，可以通过css来设定。当html元素的同一个样式属性有多种样式值的时候，css..." />
+    <meta name="keywords" content="读书笔记,前端,tutorial,css,html" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              CSS入门指南-1：工作原理
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-05-27
+              </span>
+              <span>
+                13 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/QFxrVQKr-F/" class="post-tag">
+                  # 前端
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/GIyDdkICePO/" class="post-tag">
+                  # css
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/SFv860kTvVz/" class="post-tag">
+                  # html
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p>这是CSS设计指南的读书笔记，用于加深学习效果。</p>
+</blockquote>
+<p>最近想做一个小程序，前端是必修课，那就从css开始吧。</p>
+<h2 id="css-工作原理">css 工作原理</h2>
+<p>每个html元素都有一组样式属性，可以通过css来设定。当html元素的同一个样式属性有多种样式值的时候，css就要靠层叠机智来决定最终应用哪种样式。</p>
+<p>HUGOMORE42</p>
+<h3 id="css规则">css规则</h3>
+<p>规则实际上是一条完整的css指令，规则声明了要修改的元素和要应用给改元素的样式。</p>
+<h4 id="为文档添加样式的三种方法">为文档添加样式的三种方法：</h4>
+<ol>
+<li>写在元素标签里（也叫行内样式，只能影响它所在的标签，会覆盖嵌入样式和链接样式）</li>
+<li>写在&lt;style&gt; 标签里（也就嵌入样式，应用范围仅限于当前页面，页面样式会覆盖外部样式表中的样式，但会被行内样式覆盖）</li>
+<li>写在单独css样式表中（也叫链接样式，样式表是一个扩展名为.css 的文件，可以在任意多个HTML页面链接同一个样式表文件。链接样式的作用范围是整个网站）</li>
+</ol>
+<p>除了这三种为页面添加样式的方法，还有一种在样式表中链接其他样式表的方法，使用@import 指令：例如</p>
+<pre><code>@import url(css/styles.css)
+</code></pre>
+<p>@import 指令必须出现在样式表中其他样式之前，否则@吹灭；@import引用的样式表不会被加载。<br>
+<img src="http://omuo4kh1k.bkt.clouddn.com/cpByY2yOl7gHv6vEFDL2CyMt8YJQ-0t0MRxo6itjABg0PeYrrqz6wrIV6q5kKsm8" alt="css 规则命名惯例" loading="lazy"></p>
+<p>对这个基本的结构有三种方法可以进行扩展</p>
+<p>**第一种方法：**多个声明包含在一条规则里。</p>
+<pre><code class="language-css">p {color: red; font-size: 12px; font-weight: bold;}
+</code></pre>
+<p>**第二种方法：**多个选择器组合在一起。例如：如果想让&lt;h1&gt;、&lt;h2&gt;和&lt;h3&gt;的文本都变成蓝色粗体可以这么写：</p>
+<pre><code class="language-css">h1 {color: blue; font-weight: bold;}
+h2 {color: blue; font-weight: bold;}
+h3 {color: blue; font-weight: bold;}
+</code></pre>
+<p>也可以这么写：</p>
+<pre><code class="language-css">h1, h2, h3 {color: blue; font-weight: bold;}
+</code></pre>
+<p><strong>分组选择符以逗号作为分隔符</strong></p>
+<p><strong>第三种方法：</strong> 多条规则应用给一个选择符。<br>
+例如，写完上边的规则，还想把h3变成斜体，那么可以再为h3单独写一条规则：</p>
+<pre><code class="language-css">h1, h2, h3 {color: blue; font-weight: bold;}
+h3 {font-style: italic;}
+</code></pre>
+<h3 id="选择特定元素的选择符">选择特定元素的选择符</h3>
+<p>用于选择特定元素的操作符有三种</p>
+<ol>
+<li><strong>上下文选择符</strong>。基于祖先或者同胞元素选择一个元素。</li>
+<li><strong>ID和类选择符</strong>。基于id和class属性的值选择元素。</li>
+<li><strong>属性选择符</strong>。基于属性的有无和特征选择元素。</li>
+</ol>
+<h4 id="上下文选择符">上下文选择符</h4>
+<p>比如我们想给article中的段落设置不同的字号，可以使用上下文选择符来解决。</p>
+<p>上下文选择符的格式如下：</p>
+<blockquote>
+<p>标签1 标签2 {声明}</p>
+</blockquote>
+<p>其中<strong>标签2</strong> 是我们要选择的目标，而且只有在 <strong>标签1</strong>是其祖先元素的情况下才会被选中。</p>
+<p>上下文选择符，叫后代组合式选择符，就是一组以空格分隔的标签名。用于选择作为特定祖先元素后代的标签。</p>
+<pre><code class="language-css">article p {font-weight: bold;}
+</code></pre>
+<p>上边例子中，只有article后代的p元素才会应用后边的样式。</p>
+<p><strong>上下文选择符以空格作为分隔符</strong></p>
+<h5 id="特殊的上下文选择符">特殊的上下文选择符</h5>
+<ul>
+<li>子选择符 &gt;</li>
+</ul>
+<p>格式如下：</p>
+<blockquote>
+<p>标签1 &gt; 标签2</p>
+</blockquote>
+<p><strong>标签1</strong> 必须是 <strong>标签2</strong> 的<strong>父元素</strong>，不能是其它的祖先元素。</p>
+<pre><code class="language-css">section &gt; h2 {font-style: italic;}
+</code></pre>
+<ul>
+<li>紧邻同胞选择符+</li>
+</ul>
+<p>格式如下：</p>
+<blockquote>
+<p>标签1 + 标签2</p>
+</blockquote>
+<p>标签2 必须紧跟在期同胞标签1后面。</p>
+<pre><code class="language-css">h2 + p {font-variant: small-caps;}
+</code></pre>
+<p>标签 h2 和 p 为同一级标签，且标签p和 h2 相邻。(只应用到p标签）</p>
+<ul>
+<li>一般同胞选择符 ~</li>
+</ul>
+<p>格式如下：</p>
+<blockquote>
+<p>标签1 ~ 标签2</p>
+</blockquote>
+<p><strong>标签2</strong> 必须跟在其 <strong>同胞标签1</strong> 后面（可以不相邻）。</p>
+<pre><code class="language-css">h2 ~ a {color: red;}
+</code></pre>
+<p>标签a 和 标签h2 同一级，且a标签在h2 标签之后。（只应用与a标签）</p>
+<ul>
+<li>通用选择符 *</li>
+</ul>
+<p>通用选择符 * 是一个通配符，它匹配任何元素。</p>
+<pre><code class="language-css">* {color: green;}
+</code></pre>
+<p>这条规则会将所有元素（文本和边框）都变成绿色。</p>
+<pre><code class="language-css">p * {color: red;}
+</code></pre>
+<p>这条规则会把p包含的所有元素的文本都变成红色。</p>
+<pre><code class="language-css">section * a {font-size: 1.3em;}
+</code></pre>
+<p>所有section标签的 非子标签（*是所有的子标签）的a标签字体设置为 1.3 em;</p>
+<h4 id="id和类选择符">ID和类选择符</h4>
+<p>使用ID和类选择符，首先要在HTML标记中为元素添加id和class属性。</p>
+<blockquote>
+<p>可以给id和class属性设定任意值，但不能以数字或特殊符号开头</p>
+</blockquote>
+<h5 id="类属性">类属性</h5>
+<p>给标签h1添加 specialtext 类。</p>
+<pre><code class="language-css">&lt;h1 class=&quot;specialtext&quot;&gt;This is text&lt;/h1&gt;
+</code></pre>
+<ul>
+<li>类选择符</li>
+</ul>
+<p>格式为：</p>
+<blockquote>
+<p>.类名</p>
+</blockquote>
+<p>类选择符使用点(.)，紧跟类名。</p>
+<ul>
+<li>标签带类选择符</li>
+</ul>
+<p>格式为：</p>
+<blockquote>
+<p>标签1.类名</p>
+</blockquote>
+<p>比如：</p>
+<pre><code class="language-css">p.specialtext {color: red;}
+</code></pre>
+<p>只对有 specialtext 类的p标签有效。</p>
+<ul>
+<li>多类选择符</li>
+</ul>
+<p>可以给元素添加多个类：</p>
+<pre><code class="language-html">&lt;p class=&quot;specialtext featured&quot;&gt;Here the span tag &lt;span&gt; may or may not&lt;/span&gt; be styled.&lt;/p&gt;
+</code></pre>
+<p>多个类名放在同一对引号吃，用空格分隔。</p>
+<p>要选择同时存在这两个类名的元素可以这样写：</p>
+<pre><code class="language-css">.specialtext.featured {font-size: 120%;}
+</code></pre>
+<p>CSS 选择符的两个类名直接没有空格。如果加了，就变成祖先/后代关系的上下文选择符了。</p>
+<h5 id="id属性">ID属性</h5>
+<p>ID属性与类写法类似，用#表示。</p>
+<pre><code class="language-html">&lt;p id=&quot;specialtext&quot;&gt;This is text&lt;/p&gt;
+</code></pre>
+<p>上边p标签就设置了ID属性specialtext。</p>
+<p>相应的ID选择符就这样写：</p>
+<pre><code class="language-css">#specialtext {css样式}
+</code></pre>
+<p>选择元素方式其余和class 一致。</p>
+<h4 id="id属性和类属性的区别">ID属性和类属性的区别</h4>
+<ul>
+<li>ID可以用于页面导航链接中。<br>
+例如：</li>
+</ul>
+<pre><code class="language-html">&lt;a href=&quot;#bio&quot;&gt;Biggraphy&lt;/a&gt;
+</code></pre>
+<p>用户点击这个链接会滚到ID值为bio的位置。如果href属性里只有一个#，那么点击链接会跳到顶部。</p>
+<ul>
+<li>ID值需要时独一无二的。</li>
+<li>类的目的是为了标识一组具有相同特征的元素，以便我们为这些元素应用相同的css样式。</li>
+</ul>
+<h4 id="属性选择符">属性选择符</h4>
+<h5 id="属性名选择符">属性名选择符</h5>
+<p>格式如下：</p>
+<blockquote>
+<p>标签名[属性名]</p>
+</blockquote>
+<p>选择任何带有属性名的标签名。</p>
+<p>比如：</p>
+<pre><code class="language-css">img[title] {border: 2px solid blue;}
+</code></pre>
+<p>这个规则会选择带有title属性的HTML img元素，title是什么值都可以。</p>
+<h5 id="属性值选择符">属性值选择符</h5>
+<p>格式如下：</p>
+<blockquote>
+<p>标签名[属性名=&quot;属性值&quot;]（在html5中，属性值得引号可不加)</p>
+</blockquote>
+<p>例如：</p>
+<pre><code class="language-css">img[title=&quot;red flower&quot;] {border: 2px solid blue;}
+</code></pre>
+<p>这个规则会选择带有title属性的HTML img元素，且title值为&quot;red flower&quot;。</p>
+<h4 id="伪类">伪类</h4>
+<p>伪类分两种：</p>
+<ol>
+<li>UI伪类会在HTML元素处于某个状态时，为该元素应用CSS样式。</li>
+<li>结构化伪类会在标记中存在某种结构上的关系时，为相应元素应用CSS样式。</li>
+</ol>
+<p>伪类使用:(冒号)作为选择符。<br>
+两个冒号(::)表示新增的伪元素。</p>
+<h4 id="ui伪类">UI伪类</h4>
+<p>UI伪类会基于特定的HTML元素的状态应用样式。</p>
+<h5 id="链接伪类">链接伪类</h5>
+<p>针对链接的伪类有4个：</p>
+<ul>
+<li>Link。 此时，链接为被点击</li>
+<li>Visited。用户点击过链接之后</li>
+<li>Hover。鼠标悬停在链接上</li>
+<li>Active。链接正在被点击</li>
+</ul>
+<p>使用方式举例：</p>
+<pre><code class="language-css">a:link {color: black;}
+a:visited {color: blue;}
+a:hover {text-decoration: none;}
+a:active {color: red;}
+</code></pre>
+<p>hover伪类可以应用在任何元素。</p>
+<pre><code class="language-css">p:hover {background-color: gray;}
+</code></pre>
+<h5 id="focus-伪类">:focus 伪类</h5>
+<p>可以应用于任何元素。</p>
+<p>点击时会或得焦点。</p>
+<h5 id="target-伪类">:target 伪类</h5>
+<p>可以应用于任何元素。<br>
+如果用户点击一个指向页面中其他元素的链接，则那个元素就是目标，可以用:target 选中。</p>
+<p>比如：</p>
+<pre><code class="language-html">&lt;a href=&quot;#more_info&quot;&gt;More Infomation&lt;/a&gt;
+</code></pre>
+<p>应用上伪类后，ID为more_info的元素就是目标。点击a标签时，会应用css样式。</p>
+<p>css规则如下：</p>
+<pre><code class="language-css">#more_info:target {background: #eee;}
+</code></pre>
+<h4 id="结构化伪类">结构化伪类</h4>
+<h5 id="first-child和last-child">:first-child和:last-child</h5>
+<ul>
+<li>:first-child 代表一组同胞元素的第一个元素</li>
+<li>:last-child 代表一组同胞元素的最后一个元素</li>
+</ul>
+<h5 id="nth-child">:nth-child</h5>
+<p>规则如下：</p>
+<pre><code class="language-css">e:nth-child(n)
+</code></pre>
+<p>e表示元素名，n表示一个数值。</p>
+<p>比如：</p>
+<pre><code class="language-css">li:nth-child(3)
+</code></pre>
+<p>会选中一组列表的每个第三项。</p>
+<h4 id="伪元素">伪元素</h4>
+<p>伪元素是文档中若有实无的元素。<br>
+常用的伪类如下：</p>
+<h5 id="first-letter">::first-letter</h5>
+<p>选择首字母，使用规则：</p>
+<pre><code class="language-css">e::first-letter
+</code></pre>
+<p>比如</p>
+<pre><code class="language-css">p::first-letter {font-size:300%;}
+</code></pre>
+<p>会让首字母变大。</p>
+<h5 id="first-line">::first-line</h5>
+<p>选择段落的第一行。</p>
+<pre><code class="language-css">e::first-line
+</code></pre>
+<h5 id="before和after">::before和::after</h5>
+<p>使用规则如下：</p>
+<pre><code class="language-css">e::before
+e::after
+</code></pre>
+<p>可用于在特定的元素前面或者后面添加特殊内容。</p>
+<p>以上CSS选择符已经介绍完了，接下来讨论在一个大的样式表中，规则选择的问题。</p>
+<p>CSS提供了三种机制来决定那条规则会胜出：</p>
+<ul>
+<li>继承</li>
+<li>层叠</li>
+<li>特指</li>
+</ul>
+<h3 id="继承">继承</h3>
+<p>CSS属性的值会向下传递。<br>
+比如我们添加一条这样的规则：</p>
+<pre><code class="language-css">body: {font-family: arial;}
+</code></pre>
+<p>那么文档的所有元素都将继承这个样式。</p>
+<h3 id="层叠">层叠</h3>
+<p>层叠，是样式在文档层次中逐层叠加的过程，目的是让浏览器面对某个标签特定属性值得多个来源，确定最终使用哪个值。</p>
+<h4 id="样式来源">样式来源</h4>
+<p>以下是浏览器层叠各个来源样式的顺序：</p>
+<ol>
+<li>浏览器默认的样式表</li>
+<li>用户的样式表</li>
+<li>作者链接样式表（按照它们链接到页面的先后顺序）</li>
+<li>作者嵌入样式</li>
+<li>作者行内样式</li>
+</ol>
+<p>浏览器会按上述顺序依次检查每个来源的样式，并在有定义的情况下，更新对每个标签属性值得设定。整个检查更新过程结束后，再将每个标签已最终设定的样式显示出来。</p>
+<p>比如，如果作者链接样式表将p的字体设定为Helvetica，而页面中有一条嵌入规则以相同的选择符吧字体设定为Verdana，那么段落文本最终会以Verdana字体显示。<strong>因为浏览器是在读取链接样式表之后读取嵌入样式。</strong></p>
+<h4 id="层叠规则">层叠规则</h4>
+<p>**层叠规则一：**找到应用给每个元素和属性的所有声明。</p>
+<p>**层叠规则二：**按照顺序和权重排序。浏览器一次检查5个来源，并设定匹配的属性，如果匹配的属性在下一个来源有定义，则更新改属性值。</p>
+<p>声明也可以加权重。比如：</p>
+<pre><code class="language-css">p {color: green !important; font-size: 12pt;}
+</code></pre>
+<p>空格!important分号(😉 用于加重声明的权重。</p>
+<p>这条规则加重了将文本设置为绿色的权重。所以就算层叠的下一来源给段落设定了其他颜色，最终的颜色仍然还是绿色。</p>
+<p>**层叠规则三：**按特指度排序。特指度是表示一条规则有多明确。</p>
+<p>比如某个样式表中包含如下规则：</p>
+<pre><code class="language-css">p {font-size: 12px;}
+p.largetext {font-size: 16px;}
+
+&lt;p class=&quot;largetext&quot;&gt;A bit of text&lt;/p&gt;
+</code></pre>
+<p>那么上边的p标签将显示16px 文本，因为第二条规则的选择符既包含标签名，又包含类名（特指度高）。</p>
+<p>如果是下边的样式：</p>
+<pre><code class="language-css">p {font-size: 12px;}
+.largetext {font-size: 16px;}
+
+&lt;p class=&quot;largetext&quot;&gt;A bit of text&lt;/p&gt;
+</code></pre>
+<p>还是会显示16px像素，因为类的特指度高。</p>
+<p><strong>层叠规则四</strong> 顺序决定权重。如果两条规则都影响某一元素的属性，特指度也相同，后出现的胜出。</p>
+<h5 id="计算特指度">计算特指度</h5>
+<p>计算特指度有一个记分规则，被称为“ICE”公式：</p>
+<p><strong>I-C-E</strong></p>
+<p>I(ID)C(Class)E(Element)并非真正的三个数，但是 0-1-12比0-2-0 小。</p>
+<p>ICE记分规则如下：</p>
+<ol>
+<li>选择符中有一个ID，在I的位置上加1；</li>
+<li>选择符中有一个类，在C的位置上加1；</li>
+<li>选择符中有一个元素，在E的位置上加1；</li>
+<li>得到一个三位数。</li>
+</ol>
+<p>好了，我们来看一个例子：</p>
+<table>
+<thead>
+<tr>
+<th>选择符</th>
+<th>特指度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>p</td>
+<td>0-0-1</td>
+</tr>
+<tr>
+<td>p.largetext</td>
+<td>0-1-1</td>
+</tr>
+<tr>
+<td>p#largetext</td>
+<td>1-0-1</td>
+</tr>
+<tr>
+<td>body p#largetext</td>
+<td>1-0-2</td>
+</tr>
+<tr>
+<td>body p#largetext ul.mylist</td>
+<td>1-1-3</td>
+</tr>
+<tr>
+<td>body p#largetext ul.mylist li</td>
+<td>1-1-4</td>
+</tr>
+</tbody>
+</table>
+<h5 id="简化版层叠规则">简化版层叠规则</h5>
+<ol>
+<li>包含ID的选择符胜过包含类的选择符，包含类的胜过包含标签的选择符。</li>
+<li>如果几个不同来源都为同一个标签的同一个属性定义了样式，行内样式胜过嵌入样式，嵌入样式胜过链接样式。在链接样式表中，具有相同特指度的样式，后声明的优先。</li>
+<li>规则一胜过规则二。</li>
+<li>设定的样式胜过继承的样式。</li>
+</ol>
+<p>这一篇我们主要介绍了CSS规则，以及如何用它来为HTML应用样式。</p>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#css-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86">css 工作原理</a>
+<ul>
+<li><a href="#css%E8%A7%84%E5%88%99">css规则</a>
+<ul>
+<li><a href="#%E4%B8%BA%E6%96%87%E6%A1%A3%E6%B7%BB%E5%8A%A0%E6%A0%B7%E5%BC%8F%E7%9A%84%E4%B8%89%E7%A7%8D%E6%96%B9%E6%B3%95">为文档添加样式的三种方法：</a></li>
+</ul>
+</li>
+<li><a href="#%E9%80%89%E6%8B%A9%E7%89%B9%E5%AE%9A%E5%85%83%E7%B4%A0%E7%9A%84%E9%80%89%E6%8B%A9%E7%AC%A6">选择特定元素的选择符</a>
+<ul>
+<li><a href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E9%80%89%E6%8B%A9%E7%AC%A6">上下文选择符</a>
+<ul>
+<li><a href="#%E7%89%B9%E6%AE%8A%E7%9A%84%E4%B8%8A%E4%B8%8B%E6%96%87%E9%80%89%E6%8B%A9%E7%AC%A6">特殊的上下文选择符</a></li>
+</ul>
+</li>
+<li><a href="#id%E5%92%8C%E7%B1%BB%E9%80%89%E6%8B%A9%E7%AC%A6">ID和类选择符</a>
+<ul>
+<li><a href="#%E7%B1%BB%E5%B1%9E%E6%80%A7">类属性</a></li>
+<li><a href="#id%E5%B1%9E%E6%80%A7">ID属性</a></li>
+</ul>
+</li>
+<li><a href="#id%E5%B1%9E%E6%80%A7%E5%92%8C%E7%B1%BB%E5%B1%9E%E6%80%A7%E7%9A%84%E5%8C%BA%E5%88%AB">ID属性和类属性的区别</a></li>
+<li><a href="#%E5%B1%9E%E6%80%A7%E9%80%89%E6%8B%A9%E7%AC%A6">属性选择符</a>
+<ul>
+<li><a href="#%E5%B1%9E%E6%80%A7%E5%90%8D%E9%80%89%E6%8B%A9%E7%AC%A6">属性名选择符</a></li>
+<li><a href="#%E5%B1%9E%E6%80%A7%E5%80%BC%E9%80%89%E6%8B%A9%E7%AC%A6">属性值选择符</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BC%AA%E7%B1%BB">伪类</a></li>
+<li><a href="#ui%E4%BC%AA%E7%B1%BB">UI伪类</a>
+<ul>
+<li><a href="#%E9%93%BE%E6%8E%A5%E4%BC%AA%E7%B1%BB">链接伪类</a></li>
+<li><a href="#focus-%E4%BC%AA%E7%B1%BB">:focus 伪类</a></li>
+<li><a href="#target-%E4%BC%AA%E7%B1%BB">:target 伪类</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BB%93%E6%9E%84%E5%8C%96%E4%BC%AA%E7%B1%BB">结构化伪类</a>
+<ul>
+<li><a href="#first-child%E5%92%8Clast-child">:first-child和:last-child</a></li>
+<li><a href="#nth-child">:nth-child</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BC%AA%E5%85%83%E7%B4%A0">伪元素</a>
+<ul>
+<li><a href="#first-letter">::first-letter</a></li>
+<li><a href="#first-line">::first-line</a></li>
+<li><a href="#before%E5%92%8Cafter">::before和::after</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E7%BB%A7%E6%89%BF">继承</a></li>
+<li><a href="#%E5%B1%82%E5%8F%A0">层叠</a>
+<ul>
+<li><a href="#%E6%A0%B7%E5%BC%8F%E6%9D%A5%E6%BA%90">样式来源</a></li>
+<li><a href="#%E5%B1%82%E5%8F%A0%E8%A7%84%E5%88%99">层叠规则</a>
+<ul>
+<li><a href="#%E8%AE%A1%E7%AE%97%E7%89%B9%E6%8C%87%E5%BA%A6">计算特指度</a></li>
+<li><a href="#%E7%AE%80%E5%8C%96%E7%89%88%E5%B1%82%E5%8F%A0%E8%A7%84%E5%88%99">简化版层叠规则</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/elasticsearch-install/">
+              <h3 class="post-title">
+                Elasticsearch 安装和使用
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

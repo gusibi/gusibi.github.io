@@ -1,0 +1,670 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DynamoDB 最佳实践 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="DynamoDB 最佳实践 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="面向DynamoDB的NoSQL设计
+关系数据库设计和NoSQL之间的差异
+
+关系型数据库可以灵活的查询数据，但是成本较高，高流量无法扩展
+
+RDBMS 设计灵活，可以随时修改
+
+
+NoSQL查询方式有限
+
+需要对架构进行专门设计，以尽可能..." />
+    <meta name="keywords" content="DynamoDB,nosql" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              DynamoDB 最佳实践
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-06-10
+              </span>
+              <span>
+                22 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/BG0jvEzhDF/" class="post-tag">
+                  # DynamoDB
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/vnysOkbn9w/" class="post-tag">
+                  # nosql
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h2 id="面向dynamodb的nosql设计">面向DynamoDB的NoSQL设计</h2>
+<h3 id="关系数据库设计和nosql之间的差异">关系数据库设计和NoSQL之间的差异</h3>
+<ul>
+<li>关系型数据库可以灵活的查询数据，但是成本较高，高流量无法扩展
+<ul>
+<li>RDBMS 设计灵活，可以随时修改</li>
+</ul>
+</li>
+<li>NoSQL查询方式有限
+<ul>
+<li>需要对架构进行专门设计，以尽可能的加快查询速度。数据结构和需求高度相关，需要特制。</li>
+</ul>
+</li>
+</ul>
+<h3 id="nosql设计的两个关键概念">NoSQL设计的两个关键概念</h3>
+<ul>
+<li>需要先了解业务问题和应用程序的使用案例，然后再开始设计</li>
+<li>应保留尽可能少的表。</li>
+</ul>
+<h3 id="了解nosql设计">了解NoSQL设计</h3>
+<ul>
+<li>
+<p>三个基本属性</p>
+<ul>
+<li>
+<p>数据大小</p>
+<p>了解一次存储和请求的数据量将有助于确定对数据进行分区的最有效方法。</p>
+</li>
+<li>
+<p>数据形状</p>
+<p>NoSQL 数据库不会在处理查询时重塑数据（如 RDBMS 系统所做的一样），而是整理数据以便数据在数据库中的形状与查询内容对应。这是加快速度并增强可扩展性的一个关键因素</p>
+</li>
+<li>
+<p>数据速度</p>
+<p>DynamoDB 通过增加可用于处理查询的物理分区的数量并通过跨这些分区有效分发数据来进行扩展。预先了解峰值查询负载可能有助于确定数据分区方式，从而最高效地使用 I/O 容量。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>性能的一般准则</p>
+<ul>
+<li>
+<p>将相关数据放在一起</p>
+<p>将相关数据集中放置到一个位置。将相关数据保留在最近位置会对成本和性能产生重大影响。<br>
+不是跨多个表分发相关数据项目，而是在 NoSQL 系统中尽可能紧密地保留相关项目。<br>
+作为一般规则，应在 DynamoDB 应用程序中保留尽可能少的表。</p>
+<p>只需要一个表，<br>
+例外是涉及大量时间序列数据的情况或具有明显不同的访问模式的数据集 — 但这些都是例外。具有反向索引的单个表通常可启用简单查询来创建和检索应用程序所需的复杂层次数据结构。</p>
+</li>
+<li>
+<p>使用排序顺序</p>
+<p>可将相关项目组织起来并进行有效查询，前提是它们的键设计可促使它们一起排序</p>
+</li>
+<li>
+<p>分发查询</p>
+<p>您应该设计数据键以跨尽可能多的分区均匀分发流量，从而避免“热点”。</p>
+</li>
+<li>
+<p>使用全局二级索引</p>
+<p>通过创建特定的全局二级索引，可启用主表支持的查询以外的查询</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="设计并高效使用分区键的最佳实践">设计并高效使用分区键的最佳实践</h2>
+<p>项目主键可以是仅分区键<br>
+也可以是分区键+排序键</p>
+<h3 id="高效使用突增容量">高效使用突增容量</h3>
+<p>DynamoDB 当前可将未使用的读取和写入容量保留最多五分钟 (300 秒)<br>
+当读取或写入突增导致容量不足时使用。</p>
+<h3 id="dynamodb适应性容量">DynamoDB适应性容量</h3>
+<p>DynamoDB 适应性容量 允许您的应用程序继续不受限地对热分区进行读写操作，前提是流量未超出表的配置的总容量或分区最大容量。自适应容量的工作原理是，自动增加分区的吞吐量容量来接收更多流量</p>
+<p>示例表配置了 400 个写入容量单位 (WCU)，这些容量单位均匀分布在 4 个分区中，每个分区每秒可以接收最多 100 个 WCU。分区 1、2 和 3 每秒接收的写入流量为 50 个 WCU。分区 4 每秒接收 150 个 WCU。此热分区可以在接受写入流量的同时仍具有未利用的突增容量，但是，它最终会限制每秒超过 100 个 WCU 的流量。</p>
+<p>DynamoDB 适应性容量通过增加分区 4 的容量来做出响应，因此分区 4 可以接收 150 WCU/秒的更高工作负载，而不会受到限制。</p>
+<h3 id="设计分区键以均匀分发工作负载">设计分区键以均匀分发工作负载</h3>
+<p>表的主键的分区键用来确定数据存储在哪个物理分区</p>
+<p>每个物理分区均分读取和写入容量</p>
+<p>合理设计分区键，避免出现“热点” (请求频率非常高的) 分区键值而导致整体性能降低。</p>
+<p>好的<br>
+用户 ID</p>
+<p>差的<br>
+状态代码 项目创建日期（时间段）</p>
+<h3 id="使用写入分片均匀分发工作负载">使用写入分片均匀分发工作负载</h3>
+<p>跨分区键空间写入是一种比较好的方式</p>
+<p>比如：分区键是日期，现在有1w条数据，日期均分在100天，不好的方式是按时间插入，这样会在短时间内产生 热键</p>
+<ul>
+<li>
+<p>使用随机后缀分区</p>
+<p>将随机数字添加到分区键值的末尾。然后跨更大型的空间随机化写入。</p>
+<p>例如，对于表示当天日期的分区键，可能会选择介于 1 和 200 之间的随机数并将它作为后缀连接到该日期。这将生成分区键值 (如 2014-07-09.1、2014-07-09.2，以此类推，直到 2014-07-09.200)。由于随机化分区键，因此将跨多个分区均匀分布每天对表的写入。这将提高并行度和总体吞吐量。</p>
+<p>问题：读取困难</p>
+</li>
+<li>
+<p>使用计算得出的后缀分区</p>
+<p>不使用随机数在分区间分发项目，而是使用可根据查询内容计算出的数字。</p>
+<p>例如：表在分区键中使用当天日期。现在假设每个项目都有可访问的 OrderId 属性，并且除了日期，还最常需要按订单 ID 查找项目。在应用程序将项目写入表之前，它可根据订单 ID 计算得出一个哈希后缀并将此后缀追加到分区键日期。此计算可能生成一个介于 1 和 200 之间、分发甚是均匀的数字 (类似于随机策略所生成的数字)。</p>
+</li>
+</ul>
+<h3 id="在数据上传期间有效分发写入活动">在数据上传期间有效分发写入活动</h3>
+<p>例如，假设要将用户消息上传至使用复合主键（其中 UserID 作为主键，MessageID 作为排序键）的 DynamoDB 表。</p>
+<p>在后台，DynamoDB 将跨多台服务器为表数据分区。要充分利用为表配置的所有吞吐容量，必须跨分区键值分发工作负载。</p>
+<p>可分发上传工作，方式为使用排序键通过每个分区键值加载一个项目，然后通过每个分区键值加载另一个项目，以此类推</p>
+<p>此序列中的每次上传都使用不同的分区键值，以便能够同时使用更多 DynamoDB 服务器，从而提高吞吐量性能</p>
+<h2 id="使用排序键整理数据的最佳实践">使用排序键整理数据的最佳实践</h2>
+<p>精心设计的排序键具有两个主要好处：</p>
+<p>它们将相关信息聚集在一个位置，以便进行高效查询。利用精心设计的排序键，您可以使用带运算符 (如 starts-with、between、&gt;、&lt; 等) 的范围查询检索通常需要的相关项目组。<br>
+利用组合排序键，可以在数据中定义可在任何层次结构级别查询的层次 (一对多) 关系。<br>
+例如，在列出地理位置的表中，可按如下所示构建排序键：<br>
+[country]#[region]#[state]#[county]#[city]#[neighborhood]</p>
+<h3 id="使用排序键进行版本控制">使用排序键进行版本控制</h3>
+<p>http://docs.amazonaws.cn/amazondynamodb/latest/developerguide/bp-sort-keys.html</p>
+<p>请为每个新项目创建两个副本：一个副本在排序键的开头应具有版本号前缀零 (如 v0_)，一个应具有版本号前缀 1 (如 v001_)。<br>
+每次更新项目时，请在已更新版本的排序键中使用下一个更高的版本前缀，并将更新后的内容复制到版本前缀为零的项目中。这意味着，可使用前缀零轻松找到所有项目的最新版本。</p>
+<h2 id="在dynamodb中使用二级索引的最佳实践">在DynamoDB中使用二级索引的最佳实践</h2>
+<p>本地二级索引和表一起创建，不能修改，<br>
+全局二级索引可以在后期更新创建修改，<br>
+上限都是5个</p>
+<h3 id="索引类型">索引类型</h3>
+<ul>
+<li>
+<p>全局二级索引</p>
+<ul>
+<li>
+<p>分区键和排序键可与基表中的这些键不同的索引。</p>
+<p>全局二级索引之所以称为“全局”，这是因为该索引上的查询可跨过所有分区，涵盖基表中的所有数据。全局二级索引没有大小限制且具有其自己的读取和写入活动的预配置吞吐量设置，这些设置独立于表的相应设置。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>本地二级索引</p>
+<ul>
+<li>
+<p>分区键与基表相同但排序键不同的索引。</p>
+<p>本地二级索引之所以称为“本地”，是因为该索引的每个分区的范围都限定为具有相同分区键值的基表分区。因此，对于任何一个分区键值，索引项目的大小总和不得超过 10GB。此外，本地二级索引与其索引的表共享用于读取和写入活动的预配置吞吐量设置。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="dynamodb中二级索引的一般准则">DynamoDB中二级索引的一般准则</h3>
+<ul>
+<li>
+<p>高效使用索引</p>
+<ul>
+<li>
+<p>最大程度的减少索引数量</p>
+<p>很少使用的索引会增加存储和 I/O 成本，而且无法提高应用程序性能。</p>
+</li>
+<li>
+<p>对于写入活动工作量大的表，避免使用索引</p>
+<p>在数据捕获应用程序中，要在具有极高写入负载的表上维护索引所需的 I/O 操作，成本非常高。如果您需要为此类表中的数据编制索引，可能更有效的方法是将数据复制到具有必要索引的另外一个表，并对其进行查询。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>慎重选择投影</p>
+<p>相较于查询整个表，索引越小，性能优势越明显。如果您的查询通常只返回很少一部分属性，并且这些属性的总和远远少于整个项目的大小，那么您应当只投影经常请求的属性。</p>
+<ul>
+<li>
+<p>请尽量减少投影属性的数量，以最大程度减少写入索引的项目大小</p>
+<p>但是，这仅在投影属性的大小大于单个写入容量单位 (1 KB) 时适用。</p>
+<p>例如，如果索引条目的大小仅为 200 字节，则 DynamoDB 会将其向上取整为 1 KB。也就是说，如果索引项目很小的话，您可以投影更多属性，而不会额外增加成本。</p>
+</li>
+<li>
+<p>避免投影您知道在查询中极少需要的属性。</p>
+<p>每次更新在索引中投影的属性时，也会因更新索引而额外产生成本</p>
+</li>
+<li>
+<p>只有当您需要让查询返回按不同的排序键排序的整个表项目时，才应指定 ALL。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>优化频繁查询以避免抓取</p>
+<ul>
+<li>
+<p>频繁使用的属性需要投影，已避免重复抓取</p>
+<p>例如，如果索引只投影了 属性A B，<br>
+但是查询结果会经常使用属性C</p>
+<p>只能再次查询表来抓取属性C</p>
+</li>
+</ul>
+</li>
+<li>
+<p>创建本地二级索引时注意项目集合大小限制</p>
+<p>对于任何一个分区键值，索引项目的大小总和不得超过 10GB</p>
+<p>例如表有一个特定的分区键 A，该表有3个本地索引。增加一个新项目时，二级索引也会同步创建，三个二级索引可能会创建3个数据备份。</p>
+<p>最严重的情况是，同一个数据可能会占用4倍数据的空间。</p>
+<p>可能，在分区数据在2.5G大小的时候，索引就已经到达了10G。</p>
+</li>
+</ul>
+<h3 id="利用稀疏索引">利用稀疏索引</h3>
+<ul>
+<li>
+<p>对于表中的任何项目，DynamoDB 仅当项目中存在索引排序键值时才会写入相应的索引条目。如果排序键并未出现在每个表项目中，则这种索引称为稀疏 索引。</p>
+<p>稀疏索引对于查询表的小型子部分非常有用。例如，假设您有一个存储您的所有客户订单的表，该表具有以下键属性：</p>
+<p>分区键：CustomerId<br>
+排序键: OrderId</p>
+<p>要跟踪未结订单，可以在尚未发运的订单项目中插入一个名为 isOpen 的布尔值。然后，在该订单发运后，您可以删除该属性。然后，如果对 CustomerId (分区键) 和 isOpen (排序键) 创建索引，则只有定义为 isOpen 的订单才显示在其中。如果有数以千计的订单，其中只有少量订单处于未结状态，则查询未结订单的索引要比扫描整个表更快速且更便宜。</p>
+<p>布尔值不能做索引</p>
+<p>可以使用具有在索引中生成有用的排序顺序的值的属性，而不是使用布尔类型的属性，如 isOpen。<br>
+例如，可以使用 OrderOpenDate 属性设置为下每个订单的日期，然后在订单完成后将其删除。这样，在查询稀疏索引时，会返回按下每个订单的日期排序的项目。</p>
+</li>
+<li>
+<p>全局二级索引应用稀疏索引后，可以使用比基表低的吞吐配置实现高性能查询</p>
+</li>
+</ul>
+<h3 id="使用全局二级索引进行具体化聚合查询">使用全局二级索引进行具体化聚合查询</h3>
+<p>https://docs.aws.amazon.com/zh_cn/amazondynamodb/latest/developerguide/bp-gsi-aggregation.html</p>
+<h3 id="重载全局二级索引">重载全局二级索引</h3>
+<p>https://docs.aws.amazon.com/zh_cn/amazondynamodb/latest/developerguide/bp-gsi-overloading.html</p>
+<h3 id="对选择性表查询使用全局二级索引写入分片">对选择性表查询使用全局二级索引写入分片</h3>
+<p>例如： 有遍历表的需求</p>
+<p>此时如果分区键平均分布，只能使用scan 操作，操作昂贵</p>
+<p>也可以使用特定的分区键，但是容易产生热键</p>
+<p>可以利用全局索引，要在整个键空间中启用选择性查询，可使用写入分片，方式是向用于全局二级索引分区键的每个项目添加一个包含 (0-N) 值的属性。</p>
+<p>通过使用此架构设计，事件项目将分布在 GSI 上的 0-N 分区中，从而允许在复合键上使用排序条件来执行分散读取，以便检索指定时间段内具有给定状态的所有项目。</p>
+<p>此架构模式以最低的成本交付一个高度选择性的结果集，而无需表扫描。</p>
+<h3 id="使用全局二级索引创建一致性副本">使用全局二级索引创建一致性副本</h3>
+<p>最终一致</p>
+<ul>
+<li>全局二级索引副本支持功能
+<ul>
+<li>为不同的读取器设置不同的预置读取容量</li>
+<li>完全消除对表的读取</li>
+</ul>
+</li>
+</ul>
+<h2 id="存储大型项目和属性的最佳实践">存储大型项目和属性的最佳实践</h2>
+<p>DynamoDB 当前限制存储在表中的每个项目的大小</p>
+<p>DynamoDB 中的项目大小上限为 400 KB，包括属性名称二进制长度（UTF-8 长度）和属性值长度（同为二进制长度）。属性名称也包含在此大小限制之内。</p>
+<p>具有本地二级索引的表的项目大小</p>
+<p>对于表上的每个local secondary index，以下对象的总大小有 400 KB 的限制：</p>
+<p>表中项目数据的大小。<br>
+与该项目对应的local secondary index条目的大小，包括其键值和投影属性。</p>
+<h3 id="压缩大型属性值">压缩大型属性值</h3>
+<p>压缩大型属性值可以让属性值符合 DynamoDB 中的项目限制并降低存储成本。压缩算法 (如 GZIP 或 LZO) 将生成之后可存储在 Binary 属性类型中的二进制输出。</p>
+<p>比如表中一个属性包含长文本，这些内容就适合压缩处理</p>
+<h3 id="在s3中存储大型属性值">在S3中存储大型属性值</h3>
+<p>可以将它们作为对象存储在 Amazon S3 中，然后将对象标识符存储在 DynamoDB 项目中。</p>
+<p>实施此策略时，请记住以下几点：</p>
+<p>DynamoDB 不支持跨 Amazon S3 和 DynamoDB 的事务。因此，应用程序必须处理任何故障，其中可能包括清理孤立的 Amazon S3 对象。<br>
+Amazon S3 限制对象标识符的长度。因此必须通过不会生成过长对象标识符或违反其他 Amazon S3 约束的方式组织数据。</p>
+<h2 id="在dynamodb中处理时间序列数据的最佳实践">在DynamoDB中处理时间序列数据的最佳实践</h2>
+<h3 id="时间序列数据的设计模式">时间序列数据的设计模式</h3>
+<p>考虑您想跟踪大量活动的典型时间序列场景。写入访问模式即要记录的所有事件都具有今日日期。读取访问模式读取今日事件的频率最高，读取昨日事件的频率小很多，而读取更早事件的频率是最低的。</p>
+<p>一种处理方式是将当前日期和时间构建成主键。</p>
+<ul>
+<li>
+<p>以日期为主键</p>
+</li>
+<li>
+<p>以日期或时间间隔创建不同的表</p>
+<p>每个时间段创建一个表，并为表预置所需的读取和写入容量以及所需的索引。<br>
+在每个时间段结束之前，为下一个时间段预构建表。在当前时间段结束时，事件流量将定向至新表。可以为这些表分配名称以指明这些表所记录的时间段。</p>
+<p>只要表不再被写入，就将其预置的写入容量降至较低的值（例如，1 WCU）并预置适当的读取容量。随着时间推移，降低早期表的预置读取容量。可以选择存档或删除极少或根本不需要其内容的表。</p>
+<p>这种做法的目的是将所需的资源分配给承受最高流量的当前时间段，同时降低使用不活跃的旧表的预置资源，从而节省成本。根据您的业务需求，您可能需要考虑写入分片，以将流量均匀地分配到逻辑分区键。</p>
+</li>
+</ul>
+<h2 id="管理多对多关系的最佳实践">管理多对多关系的最佳实践</h2>
+<h3 id="相邻列表设计模式">相邻列表设计模式</h3>
+<p>相邻列表是一种设计模式，有助于在 Amazon DynamoDB 中为多对多关系建模。一般地说，它们提供在 DynamoDB 中表示图表数据 (节点和边缘) 的方式。</p>
+<p>当应用程序的不同实体之间具有多对多关系时，此关系可建模为相邻列表。<br>
+在此模式中，所有顶级实体 (与图表模型中的节点同义) 都是使用分区键表示的。通过将排序键的值设置为目标实体 ID (目标节点)，与其他实体 (图表中的边缘) 的任何关系都将表示为分区内的项目。</p>
+<p>例如存储关注信息：</p>
+<p>用户A ID_A 为分区键，用户 A 的关注者ID 为排序键<br>
+查询用户A 的所关注的所有人可按ID_A 筛选<br>
+查询用户A 被谁关注可以加一个全局二级索引 索引分区键为表排序键，排序键为表分区键</p>
+<p>此模式的优势包括数据重复率最低和精简的查询模式 ，以便查找与目标实体 (让边缘作为目标节点) 相关的所有实体 (节点)。</p>
+<ul>
+<li>关注关系</li>
+<li>好友关系</li>
+</ul>
+<h3 id="具体化图标模式">具体化图标模式</h3>
+<h2 id="实现混合数据库系统的最佳实践">实现混合数据库系统的最佳实践</h2>
+<h3 id="不是所有数据都迁移到dynamodb">不是所有数据都迁移到DynamoDB</h3>
+<h3 id="如何实现混合系统">如何实现混合系统</h3>
+<p>可利用 DynamoDB 流和 AWS Lambda 与一个或多个现有关系数据库系统无缝集成</p>
+<p>集成 DynamoDB 流和 AWS Lambda 的系统可提供若干好处：</p>
+<p>它可作为具体化视图的持久化缓存运行。<br>
+它可设置为在查询数据时以及在 SQL 系统中修改数据时逐渐填充所查询和所修改数据。这意味着整个视图无需预先填充，这反过来意味着高效利用预置的吞吐容量的可能性更高。<br>
+它的管理成本低并且高度可用和可靠。</p>
+<ul>
+<li>
+<p>增量填充 DynamoDB 缓存</p>
+<p>需要某个项目时，首先在 DynamoDB 中查找它。如果它不在此处，则在 SQL 系统中查找它，然后将它加载到 DynamoDB 中</p>
+</li>
+<li>
+<p>通过 DynamoDB 缓存写入</p>
+<p>当客户更改 DynamoDB 中的值时，将触发 Lambda 函数以将新数据写回 SQL 系统</p>
+</li>
+<li>
+<p>通过 SQL 系统更新 DynamoDB</p>
+<p>当内部流程（如库存管理或定价）更改 SQL 系统中的值时，将触发存储过程以将更改传播至 DynamoDB 具体化视图。</p>
+</li>
+</ul>
+<h2 id="在dynamodb为关系数据建模的最佳实践">在DynamoDB为关系数据建模的最佳实践</h2>
+<h3 id="为关系型数据建模的初始步骤">为关系型数据建模的初始步骤</h3>
+<ul>
+<li>对于新应用程序，查看有关活动和目标的用户案例。记录确定的各种使用案例，然后分析这些案例需要的访问模式。</li>
+<li>对于现有应用程序，分析查询日志以了解人们目前使用该系统的方式以及密钥访问模式有哪些。</li>
+<li>DynamoDB 架构设计的常见方法是确定应用程序层实体并使用反规范化和复合键聚合来降低查询复杂性。</li>
+</ul>
+<h3 id="为关系数据建模的示例">为关系数据建模的示例</h3>
+<ul>
+<li>https://docs.aws.amazon.com/zh_cn/amazondynamodb/latest/developerguide/bp-relational-modeling.html</li>
+</ul>
+<h3 id="关系型数据库缺陷">关系型数据库缺陷</h3>
+<ul>
+<li>它规范化数据并将其存储在需要多个查询以写入磁盘的多个表中</li>
+<li>它通常会产生与 ACID 兼容的事务系统的性能成本</li>
+<li>它使用成本高昂的联接来重组查询结果的所需视图</li>
+</ul>
+<h3 id="dynamodb的优点">DynamoDB的优点</h3>
+<ul>
+<li>架构灵活性让 DynamoDB 存储单个项目内的复杂层次数据</li>
+<li>复合键设计让其将相关项目靠近存储在相同表中</li>
+</ul>
+<h2 id="针对查询和扫描数据的最佳实践">针对查询和扫描数据的最佳实践</h2>
+<h3 id="扫描的性能注意事项">扫描的性能注意事项</h3>
+<ul>
+<li>Scan 操作的效率低于其他操作。Scan 操作始终扫描整个表或二级索引</li>
+<li>应避免对大型表或索引使用带有会删除很多结果的筛选条件的 Scan 操作</li>
+</ul>
+<h3 id="利用并行扫面">利用并行扫面</h3>
+<ul>
+<li>如果满足以下条件，就可以选择并行扫描
+<ul>
+<li>表的大小为 20 GB 或更大。</li>
+<li>表的预置读取吞吐量尚未完全利用。</li>
+<li>按顺序执行的 Scan 操作速度过慢。</li>
+</ul>
+</li>
+</ul>
+<h3 id="避免读取活动陡增">避免读取活动陡增</h3>
+<ul>
+<li>
+<p>设置读取和写入容量单位要求</p>
+<p>读取容量单位通过每秒强一致性 4 KB 数据读取请求的数量表示。一个最终一致性读取容量单位是每秒 2 个 4 KB 读取请求。默认情况下，<code>Scan</code> 操作执行最终一致性读取，可返回最多 1 MB（一页）数据。因此，单个 <code>Scan</code> 请求可占用（1 MB 页面大小/4 KB 项目大小）/2（最终一致性读取）= 128 个读取操作。如果改为请求强一致性读取，则 <code>Scan</code> 操作占用的吞吐量是预置吞吐量的两倍 — 如 256 次读取操作。</p>
+<p>问题不仅仅在于 <code>Scan</code> 使用的容量单位陡增。由于扫描请求的读取项目在分区中彼此相邻，因此扫描还可能会占用同一分区中的所有容量单位。这意味着，请求一直调用相同的分区，导致该分区的所有容量单位用尽，进而限制该分区中的其他请求。如果读取数据请求分布在多个分区之中，则此操作不会给特定分区带来限制。</p>
+</li>
+<li>
+<p>查询技巧</p>
+<ul>
+<li>
+<p>减小页面大小</p>
+<p>由于扫描操作会读取整个页面（默认情况下为 1 MB），因此，您可以通过设置较小的页面大小来降低扫描操作的影响。您可以使用 <code>Scan</code> 操作提供的 <em>Limit</em> 参数设置请求的页面大小。设置了较小的页面大小后，每个 <code>Query</code> 或 <code>Scan</code>请求都会使用更少的读取操作，并会在每个请求之间“停顿”。例如，假设每个项目为 4 KB，并且您将页面大小设置为 40 个项目。之后，<code>Query</code> 请求仅使用 20 次最终一致性读取操作或 40 次强一致性读取操作。如果占用较小容量单位的 <code>Query</code> 或 <code>Scan</code> 操作数量较多，您就可以成功完成其他重要请求而不会受到限制。</p>
+</li>
+<li>
+<p>隔离扫描操作</p>
+<p>应用程序可以创建多个表以彼此区分，甚至多个表可能会复制彼此的内容。您可能会在没有“关键任务型”流量的表中执行扫描。某些应用程序会每小时在两个表之间轮换流量来处理此负载 — 一个用于关键流量，另一个用于计账。其他应用程序可通过让每次写入都在两个表（“关键任务型”表和“影子”表）中执行来实现这一目的。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="使用全局表的最佳实践">使用全局表的最佳实践</h2>
+<p><em>XMind: ZEN - Trial Version</em></p>
+<h2 id="思维导图">思维导图</h2>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/5HvoP9-Hbod2k-btCPDBBj5aiegMfO6awp3w9-DqxTpNUnJhQr4ZyEX7maG-HtRv" alt="best practice" loading="lazy"></figure>
+<h2 id="xmind-zen-trial-version"><em>XMind: ZEN - Trial Version</em></h2>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E9%9D%A2%E5%90%91dynamodb%E7%9A%84nosql%E8%AE%BE%E8%AE%A1">面向DynamoDB的NoSQL设计</a>
+<ul>
+<li><a href="#%E5%85%B3%E7%B3%BB%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E5%92%8Cnosql%E4%B9%8B%E9%97%B4%E7%9A%84%E5%B7%AE%E5%BC%82">关系数据库设计和NoSQL之间的差异</a></li>
+<li><a href="#nosql%E8%AE%BE%E8%AE%A1%E7%9A%84%E4%B8%A4%E4%B8%AA%E5%85%B3%E9%94%AE%E6%A6%82%E5%BF%B5">NoSQL设计的两个关键概念</a></li>
+<li><a href="#%E4%BA%86%E8%A7%A3nosql%E8%AE%BE%E8%AE%A1">了解NoSQL设计</a></li>
+</ul>
+</li>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E5%B9%B6%E9%AB%98%E6%95%88%E4%BD%BF%E7%94%A8%E5%88%86%E5%8C%BA%E9%94%AE%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">设计并高效使用分区键的最佳实践</a>
+<ul>
+<li><a href="#%E9%AB%98%E6%95%88%E4%BD%BF%E7%94%A8%E7%AA%81%E5%A2%9E%E5%AE%B9%E9%87%8F">高效使用突增容量</a></li>
+<li><a href="#dynamodb%E9%80%82%E5%BA%94%E6%80%A7%E5%AE%B9%E9%87%8F">DynamoDB适应性容量</a></li>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E5%88%86%E5%8C%BA%E9%94%AE%E4%BB%A5%E5%9D%87%E5%8C%80%E5%88%86%E5%8F%91%E5%B7%A5%E4%BD%9C%E8%B4%9F%E8%BD%BD">设计分区键以均匀分发工作负载</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E5%86%99%E5%85%A5%E5%88%86%E7%89%87%E5%9D%87%E5%8C%80%E5%88%86%E5%8F%91%E5%B7%A5%E4%BD%9C%E8%B4%9F%E8%BD%BD">使用写入分片均匀分发工作负载</a></li>
+<li><a href="#%E5%9C%A8%E6%95%B0%E6%8D%AE%E4%B8%8A%E4%BC%A0%E6%9C%9F%E9%97%B4%E6%9C%89%E6%95%88%E5%88%86%E5%8F%91%E5%86%99%E5%85%A5%E6%B4%BB%E5%8A%A8">在数据上传期间有效分发写入活动</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E6%8E%92%E5%BA%8F%E9%94%AE%E6%95%B4%E7%90%86%E6%95%B0%E6%8D%AE%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">使用排序键整理数据的最佳实践</a>
+<ul>
+<li><a href="#%E4%BD%BF%E7%94%A8%E6%8E%92%E5%BA%8F%E9%94%AE%E8%BF%9B%E8%A1%8C%E7%89%88%E6%9C%AC%E6%8E%A7%E5%88%B6">使用排序键进行版本控制</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9C%A8dynamodb%E4%B8%AD%E4%BD%BF%E7%94%A8%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">在DynamoDB中使用二级索引的最佳实践</a>
+<ul>
+<li><a href="#%E7%B4%A2%E5%BC%95%E7%B1%BB%E5%9E%8B">索引类型</a></li>
+<li><a href="#dynamodb%E4%B8%AD%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95%E7%9A%84%E4%B8%80%E8%88%AC%E5%87%86%E5%88%99">DynamoDB中二级索引的一般准则</a></li>
+<li><a href="#%E5%88%A9%E7%94%A8%E7%A8%80%E7%96%8F%E7%B4%A2%E5%BC%95">利用稀疏索引</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E5%85%A8%E5%B1%80%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95%E8%BF%9B%E8%A1%8C%E5%85%B7%E4%BD%93%E5%8C%96%E8%81%9A%E5%90%88%E6%9F%A5%E8%AF%A2">使用全局二级索引进行具体化聚合查询</a></li>
+<li><a href="#%E9%87%8D%E8%BD%BD%E5%85%A8%E5%B1%80%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95">重载全局二级索引</a></li>
+<li><a href="#%E5%AF%B9%E9%80%89%E6%8B%A9%E6%80%A7%E8%A1%A8%E6%9F%A5%E8%AF%A2%E4%BD%BF%E7%94%A8%E5%85%A8%E5%B1%80%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95%E5%86%99%E5%85%A5%E5%88%86%E7%89%87">对选择性表查询使用全局二级索引写入分片</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E5%85%A8%E5%B1%80%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95%E5%88%9B%E5%BB%BA%E4%B8%80%E8%87%B4%E6%80%A7%E5%89%AF%E6%9C%AC">使用全局二级索引创建一致性副本</a></li>
+</ul>
+</li>
+<li><a href="#%E5%AD%98%E5%82%A8%E5%A4%A7%E5%9E%8B%E9%A1%B9%E7%9B%AE%E5%92%8C%E5%B1%9E%E6%80%A7%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">存储大型项目和属性的最佳实践</a>
+<ul>
+<li><a href="#%E5%8E%8B%E7%BC%A9%E5%A4%A7%E5%9E%8B%E5%B1%9E%E6%80%A7%E5%80%BC">压缩大型属性值</a></li>
+<li><a href="#%E5%9C%A8s3%E4%B8%AD%E5%AD%98%E5%82%A8%E5%A4%A7%E5%9E%8B%E5%B1%9E%E6%80%A7%E5%80%BC">在S3中存储大型属性值</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9C%A8dynamodb%E4%B8%AD%E5%A4%84%E7%90%86%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97%E6%95%B0%E6%8D%AE%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">在DynamoDB中处理时间序列数据的最佳实践</a>
+<ul>
+<li><a href="#%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97%E6%95%B0%E6%8D%AE%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F">时间序列数据的设计模式</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AE%A1%E7%90%86%E5%A4%9A%E5%AF%B9%E5%A4%9A%E5%85%B3%E7%B3%BB%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">管理多对多关系的最佳实践</a>
+<ul>
+<li><a href="#%E7%9B%B8%E9%82%BB%E5%88%97%E8%A1%A8%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F">相邻列表设计模式</a></li>
+<li><a href="#%E5%85%B7%E4%BD%93%E5%8C%96%E5%9B%BE%E6%A0%87%E6%A8%A1%E5%BC%8F">具体化图标模式</a></li>
+</ul>
+</li>
+<li><a href="#%E5%AE%9E%E7%8E%B0%E6%B7%B7%E5%90%88%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">实现混合数据库系统的最佳实践</a>
+<ul>
+<li><a href="#%E4%B8%8D%E6%98%AF%E6%89%80%E6%9C%89%E6%95%B0%E6%8D%AE%E9%83%BD%E8%BF%81%E7%A7%BB%E5%88%B0dynamodb">不是所有数据都迁移到DynamoDB</a></li>
+<li><a href="#%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E6%B7%B7%E5%90%88%E7%B3%BB%E7%BB%9F">如何实现混合系统</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9C%A8dynamodb%E4%B8%BA%E5%85%B3%E7%B3%BB%E6%95%B0%E6%8D%AE%E5%BB%BA%E6%A8%A1%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">在DynamoDB为关系数据建模的最佳实践</a>
+<ul>
+<li><a href="#%E4%B8%BA%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BB%BA%E6%A8%A1%E7%9A%84%E5%88%9D%E5%A7%8B%E6%AD%A5%E9%AA%A4">为关系型数据建模的初始步骤</a></li>
+<li><a href="#%E4%B8%BA%E5%85%B3%E7%B3%BB%E6%95%B0%E6%8D%AE%E5%BB%BA%E6%A8%A1%E7%9A%84%E7%A4%BA%E4%BE%8B">为关系数据建模的示例</a></li>
+<li><a href="#%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93%E7%BC%BA%E9%99%B7">关系型数据库缺陷</a></li>
+<li><a href="#dynamodb%E7%9A%84%E4%BC%98%E7%82%B9">DynamoDB的优点</a></li>
+</ul>
+</li>
+<li><a href="#%E9%92%88%E5%AF%B9%E6%9F%A5%E8%AF%A2%E5%92%8C%E6%89%AB%E6%8F%8F%E6%95%B0%E6%8D%AE%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">针对查询和扫描数据的最佳实践</a>
+<ul>
+<li><a href="#%E6%89%AB%E6%8F%8F%E7%9A%84%E6%80%A7%E8%83%BD%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9">扫描的性能注意事项</a></li>
+<li><a href="#%E5%88%A9%E7%94%A8%E5%B9%B6%E8%A1%8C%E6%89%AB%E9%9D%A2">利用并行扫面</a></li>
+<li><a href="#%E9%81%BF%E5%85%8D%E8%AF%BB%E5%8F%96%E6%B4%BB%E5%8A%A8%E9%99%A1%E5%A2%9E">避免读取活动陡增</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E5%85%A8%E5%B1%80%E8%A1%A8%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">使用全局表的最佳实践</a></li>
+<li><a href="#%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE">思维导图</a></li>
+<li><a href="#xmind-zen-trial-version"><em>XMind: ZEN - Trial Version</em></a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/weekly-01/">
+              <h3 class="post-title">
+                每周分享第1期-常用表情包收录
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

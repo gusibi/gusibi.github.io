@@ -1,0 +1,375 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Amazon DynamoDB 入门1：配置（本地）及python示例 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Amazon DynamoDB 入门1：配置（本地）及python示例 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="本节主要介绍AmazonDynamoDB 安装配置及Python开发示例&quot;
+什么是 Amazon DynamoDB
+Amazon DynamoDB 是一种完全托管的 NoSQL 数据库服务，提供快速而可预测的性能，能够实现无缝扩展..." />
+    <meta name="keywords" content="python,DynamoDB,nosql,database,AWS" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Amazon DynamoDB 入门1：配置（本地）及python示例
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-01-07
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/BG0jvEzhDF/" class="post-tag">
+                  # DynamoDB
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/vnysOkbn9w/" class="post-tag">
+                  # nosql
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/SS95MaqZ5J/" class="post-tag">
+                  # database
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/8Np8k9SC3Nz/" class="post-tag">
+                  # AWS
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h3 id="本节主要介绍amazondynamodb-安装配置及python开发示例">本节主要介绍AmazonDynamoDB 安装配置及Python开发示例&quot;</h3>
+<h2 id="什么是-amazon-dynamodb">什么是 Amazon DynamoDB</h2>
+<p>Amazon DynamoDB 是一种完全托管的 NoSQL 数据库服务，提供快速而可预测的性能，能够实现无缝扩展。使用 DynamoDB，您可以免除操作和扩展分布式数据库的管理工作负担，因而无需担心硬件预置、设置和配置、复制、软件修补或集群扩展等问题。</p>
+<p>使用 DynamoDB，您可以创建数据库表来存储和检索任意量级的数据，并提供任意级别的请求流量。您可以扩展或缩减您的表的吞吐容量，而不会导致停机或性能下降，还可以使用 AWS 管理控制台来监控资源使用情况和各种性能指标。</p>
+<p>HUGOMORE42</p>
+<h2 id="amazon-dynamodb-特点">Amazon DynamoDB 特点</h2>
+<p>DynamoDB 会自动将数据和流量分散到足够数量的服务器上，以满足吞吐量和存储需求，同时保持始终如一的高性能。所有数据均存储在固态硬盘 (SSD) 中，并会自动复制到 AWS 区域中的多个可用区中，从而提供内置的高可用性和数据持久性。</p>
+<p>DynamoDB 是 NoSQL 数据库并且无架构，这意味着，与主键属性不同，无需在创建表时定义任何属性或数据类型。与此相对，关系数据库要求在创建表时定义每个列的名称和数据类型。</p>
+<h2 id="amazon-dynamodb-使用">Amazon DynamoDB 使用</h2>
+<h3 id="aws-配置">AWS 配置</h3>
+<ol>
+<li>注册 Amazon Web Services 并创建访问密钥</li>
+<li>创建 AWS 凭证文件</li>
+<li>开启DynamoDB 服务</li>
+</ol>
+<h3 id="在计算机上运行-dynamodb">在计算机上运行 DynamoDB</h3>
+<p>除了 Amazon DynamoDB Web 服务之外，AWS 还提供可本地运行的可下载版本的 DynamoDB。<br>
+使用本地版本，在开发应用程序时无需 Internet 连接。</p>
+<h4 id="方法1-直接在计算机上安装">方法1 直接在计算机上安装</h4>
+<blockquote>
+<p>需要安装java环境</p>
+</blockquote>
+<ol>
+<li>下载 DynamoDB</li>
+<li>解压，并将解压后的目录复制到某个位置</li>
+<li>打开命令提示符窗口，打开 DynamoDBLocal.jar 的目录，并输入以下命令：</li>
+</ol>
+<pre><code>java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb
+</code></pre>
+<p>现在就可以使用了</p>
+<p><strong>命令行选项</strong></p>
+<p>DynamoDB 接受以下命令参数：</p>
+<ul>
+<li>-cors value - 启用适用于 JavaScript 的 CORS 支持（跨源资源共享）。您必须提供特定域的逗号分隔“允许”列表。-cors 的默认设置是星号 (*)，这将允许公开访问。</li>
+<li>-dbPath value - DynamoDB 将用于写入其数据库文件的目录。如果不指定此选项，则文件将写入当前目录。请注意，不能同时指定 -dbPath 和 -inMemory。</li>
+<li>-delayTransientStatuses - 使 DynamoDB 为某些操作引入延迟。DynamoDB 几乎可以即时执行某些任务，例如，对表和索引执行创建/更新/删除操作；但是，实际 DynamoDB 服务需要更多时间才能完成这些任务。设置此参数有助于 DynamoDB 更逼真地模拟 Amazon DynamoDB Web 服务的行为。（目前，此参数仅为处于 CREATING 或 DELETING 状态的global secondary index引入延迟。）</li>
+<li>-help – 打印使用摘要和选项。</li>
+<li>-inMemory – DynamoDB 将在内存中运行，而不使用数据库文件。停止 DynamoDB 时，不会保存任何数据。请注意，不能同时指定 -dbPath 和 -inMemory。</li>
+<li>-optimizeDbBeforeStartup – 在计算机上启动 DynamoDB 之前优化底层数据库表。使用此参数时，必须还要指定 -dbPath。</li>
+<li>-port value - DynamoDB 将用于与应用程序通信的端口号。如果不指定此选项，则默认端口是 8000</li>
+<li>-sharedDb - DynamoDB 将使用单个数据库文件，而不是针对每个证书和区域使用不同的文件。如果指定 -sharedDb，那么所有 DynamoDB 客户端都将与同一组表交互，无论其区域和证书配置如何。</li>
+</ul>
+<p><a href="http://docs.aws.amazon.com/zh_cn/amazondynamodb/latest/developerguide/DynamoDBLocal.html?shortFooter=true">详细配置可参考官方文档</a></p>
+<h4 id="方法2-使用docker安装">方法2 使用docker安装</h4>
+<blockquote>
+<p>需要安装docker</p>
+</blockquote>
+<p>方法一需要我们手动配置，操作也麻烦，如果喜欢docker，可以直接使用docker快速搭建本地环境</p>
+<pre><code>1. 下载镜像
+
+docker pull ryanratcliff/dynamodb
+
+2. 启动
+
+docker run -d -p 8000:8000 ryanratcliff/dynamodb
+
+</code></pre>
+<p><a href="https://github.com/RyanRatcliff/docker_dynamodb">详细配置可参考</a></p>
+<h3 id="python-使用-dynamodb">Python 使用 DynamoDB</h3>
+<p>我们可以使用适用于 Python (Boto 3) 的 AWS 开发工具包进行开发。</p>
+<ol>
+<li>安装boto3</li>
+</ol>
+<pre><code>pip install boto3
+</code></pre>
+<ol start="2">
+<li>使用 AWS CLI 配置秘钥</li>
+</ol>
+<pre><code># 安装awscli
+sudo pip install awscli
+# 测试awscli 安装
+aws help
+# 输入命令
+aws configure
+# 配置 Access Key ID 和 Secret Access Key
+
+AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
+AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+Default region name [None]: us-west-2
+Default output format [None]: ENTER
+# 要更新任何设置，只需再次运行 aws configure 并根据需要输入新值。
+</code></pre>
+<p>CLI 将使用 aws configure 指定的证书存储在您主目录中名为 .aws 的文件夹中名为 credentials 的本地文件中<br>
+可以使用 以下命令列出 .aws 文件夹内容：<br>
+Linux, OS X, or Unix</p>
+<pre><code>$ ls  ~/.aws
+</code></pre>
+<p><a href="http://docs.aws.amazon.com/zh_cn/cli/latest/userguide/cli-chap-getting-started.html?shortFooter=true">具体配置参考官方文档</a></p>
+<ol start="3">
+<li>使用以下代码测试 DynamoDB 是否可用</li>
+</ol>
+<pre><code>import boto3
+db3 = boto3.resource('dynamodb', endpoint_url='http://localhost:8000', aws_secret_access_key='ticTacToeSampleApp', aws_access_key_id='ticTacToeSampleApp', region_name='us-west-2')
+
+db3.meta.client.list_tables()
+
+# output
+
+{
+	'ResponseMetadata': {
+	    'HTTPHeaders': {
+	    	'content-length': '32',
+            'content-type': 'application/x-amz-json-1.0',
+            'server': 'Jetty(8.1.12.v20130726)',
+            'x-amz-crc32': '2024476575',
+            'x-amzn-requestid': '5f0a974a-8900-470d-8b28-a4207247c65e'
+	    },
+        'HTTPStatusCode': 200,
+        'RequestId': '5f0a974a-8900-470d-8b28-a4207247c65e',
+        'RetryAttempts': 0
+	},
+    'TableNames': []
+}
+
+</code></pre>
+<p>如果输出以上内容，则说明DynamoDB 正常。</p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzAwNjI5MjAzNw==&amp;mid=2655751935&amp;idx=1&amp;sn=21e6b4ebe22a18b65c6f5e7b457782f9&amp;chksm=80b0b9d5b7c730c308ef87f324b814d9bdfd573bfdfc68c4c3b9e9f014f68b2bb19d87cdc06b#rd">原文链接</a></p>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E6%9C%AC%E8%8A%82%E4%B8%BB%E8%A6%81%E4%BB%8B%E7%BB%8Damazondynamodb-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E5%8F%8Apython%E5%BC%80%E5%8F%91%E7%A4%BA%E4%BE%8B">本节主要介绍AmazonDynamoDB 安装配置及Python开发示例&quot;</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AF-amazon-dynamodb">什么是 Amazon DynamoDB</a></li>
+<li><a href="#amazon-dynamodb-%E7%89%B9%E7%82%B9">Amazon DynamoDB 特点</a></li>
+<li><a href="#amazon-dynamodb-%E4%BD%BF%E7%94%A8">Amazon DynamoDB 使用</a>
+<ul>
+<li><a href="#aws-%E9%85%8D%E7%BD%AE">AWS 配置</a></li>
+<li><a href="#%E5%9C%A8%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8A%E8%BF%90%E8%A1%8C-dynamodb">在计算机上运行 DynamoDB</a>
+<ul>
+<li><a href="#%E6%96%B9%E6%B3%951-%E7%9B%B4%E6%8E%A5%E5%9C%A8%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%8A%E5%AE%89%E8%A3%85">方法1 直接在计算机上安装</a></li>
+<li><a href="#%E6%96%B9%E6%B3%952-%E4%BD%BF%E7%94%A8docker%E5%AE%89%E8%A3%85">方法2 使用docker安装</a></li>
+</ul>
+</li>
+<li><a href="#python-%E4%BD%BF%E7%94%A8-dynamodb">Python 使用 DynamoDB</a></li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/Amazon-DynamoDB-Delete-Item/">
+              <h3 class="post-title">
+                Amazon DynamoDB 入门8：删除项目
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,555 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>微信公号DIY：训练聊天机器人&amp;公号变身图片上传工具 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="微信公号DIY：训练聊天机器人&amp;公号变身图片上传工具 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="上一篇 一小时搭建微信聊天机器人 介绍了如何搭建一个可用的聊天机器人，但是和机器人聊完你会发现，聊天机器人实在是太傻了，来回就那么几句。这是因为我们给聊天机器人的数据太少，他只能在我们给的训练集中找它认为最合适的。那么，如何导入更多的训练数..." />
+    <meta name="keywords" content="tutorial,python,公众号,weixin" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              微信公号DIY：训练聊天机器人&amp;公号变身图片上传工具
+            </h2>
+            <div class="post-info">
+              <span>
+                2017-07-08
+              </span>
+              <span>
+                11 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/JjoHj10VdB/" class="post-tag">
+                  # tutorial
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/Vo0Pk96Rxe/" class="post-tag">
+                  # 公众号
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/hHHzJqiTzdW/" class="post-tag">
+                  # weixin
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>上一篇 <a href="http://blog.gusibi.site/post/wechat-chatbot-step-by-step/">一小时搭建微信聊天机器人</a> 介绍了如何搭建一个可用的聊天机器人，但是和机器人聊完你会发现，聊天机器人实在是太傻了，来回就那么几句。这是因为我们给聊天机器人的数据太少，他只能在我们给的训练集中找它认为最合适的。那么，如何导入更多的训练数据呢？<br>
+我能想到最简单的方法是找对话的数据，然后把这些数据作为训练数据训练机器人。</p>
+<p>感谢 candlewill 已经收集好了大量的训练数据，<a href="https://github.com/candlewill/Dialog_Corpus">dialog_corpus https://github.com/candlewill/Dialog_Corpus</a> 。</p>
+<p>HUGOMORE42</p>
+<p>这个库中包含电影台词、中英文短信息、自然语言处理相关的数据集、小黄鸡语料等。这里我选择电影台词语料。</p>
+<blockquote>
+<p>语料地址为：<a href="https://github.com/rustch3n/dgk_lost_conv">dgk_lost_conv：https://github.com/rustch3n/dgk_lost_conv</a></p>
+</blockquote>
+<h2 id="chatterbot-训练逻辑处理模块">chatterbot 训练逻辑处理模块</h2>
+<p>这个模块提供训练机器人的方法，chatterbot自带了通过输入list来训练（[&quot;你好&quot;, &quot;你好啊&quot;] 后者是前者的回答）以及通过导入Corpus格式文件来训练的方式。</p>
+<p>这里我们选择使用第一种，通过输入list来训练机器人。</p>
+<h3 id="处理训练数据">处理训练数据</h3>
+<p>首先下载数据集：</p>
+<pre><code class="language-sh">wget https://codeload.github.com/rustch3n/dgk_lost_conv/zip/master
+# 解压
+$ unzip dgk_lost_conv-master.zip
+</code></pre>
+<p>我们先打开一个文件看下数据结构：</p>
+<pre><code class="language-sh">E
+M 你得想想办法 我弟弟是无辜的
+M 他可是美国公民啊
+M 对此我也无能为力
+M 你当然能
+M 再去犯罪现场看看 定能证实清白
+M 你看 我不过是个夜间办事员而已
+M 你若真想解决问题
+M 最好等领事来
+M 他早上才上班
+M 我很抱歉
+E
+M 那我自己来搞定
+M 你兄弟
+M 关在哪个监狱?
+M 索纳监狱
+E
+M 怎么了?
+M 那里关的都是最穷凶极恶的罪犯
+M 别的监狱都不收
+</code></pre>
+<p>.conv 语料文件中：E 是分隔符 M 表示会话。因为我是使用输入list 的方式训练数据，这时我可以以分隔符E为分隔，将一段对话放入一个list中，那么上述例子中的训练数据应该被格式化为：</p>
+<pre><code class="language-python">convs = [
+    [
+       '你得想想办法 我弟弟是无辜的',
+       '他可是美国公民啊',
+       '对此我也无能为力',
+       '你当然能',
+       '再去犯罪现场看看 定能证实清白',
+       '你看 我不过是个夜间办事员而已',
+       '你若真想解决问题',
+       '最好等领事来',
+       '他早上才上班',
+       '我很抱歉'
+    ],
+    [
+       '那我自己来搞定',
+       '你兄弟',
+       '关在哪个监狱?',
+       '索纳监狱',
+    ],
+    [
+       '怎么了?',
+       '那里关的都是最穷凶极恶的罪犯',
+       '别的监狱都不收',
+    ]
+]
+</code></pre>
+<p>导入训练数据的脚本如下：</p>
+<pre><code class="language-python">from chatterbot import ChatBot
+from chatterbot.trainers import ListTrainer
+
+# 初始化聊天机器人
+momo = ChatBot(
+    'Momo',
+    storage_adapter='chatterbot.storage.MongoDatabaseAdapter', # 使用mongo存储数据
+    logic_adapters=[ # 指定逻辑处理模块
+            &quot;chatterbot.logic.BestMatch&quot;,
+            &quot;chatterbot.logic.MathematicalEvaluation&quot;,
+            &quot;chatterbot.logic.TimeLogicAdapter&quot;,
+        ],
+    input_adapter='chatterbot.input.VariableInputTypeAdapter',
+    output_adapter='chatterbot.output.OutputAdapter',
+    database='chatterbot', # 指定数据库
+    read_only=True
+)
+
+# 读取.conv 数据文件，因为我服务器配置较低，所以选择了一个内容较少的文件
+# 这个函数是一个生成器
+def read_conv(filename='prisonb.conv'):
+    with open(filename, 'rt') as f:
+        conv = []
+        # 逐行读取
+        for line in f:
+            _line = line.replace('\n', '').strip()  # 预处理字符串 去掉首位空格
+            if _line == 'E':  # 如果是分隔符 表示对话结束 返回对话列表
+                yield conv
+                conv = []  # 重置对话列表
+            else:  # 不是分隔符则将内容加入对话列表
+                c = _line.split()[-1]  # 其实这里如果对话中包含空格 对话数据会不完整，应该只去掉M和开头的空格
+                conv.append(c)
+
+
+def traine_momo():
+    for conv in read_conv():
+        print(conv)
+        momo.set_trainer(ListTrainer) # 指定训练方式
+        momo.train(conv) # 训练数据
+
+
+def main():
+    traine_momo()
+
+
+if __name__ == '__main__':
+    main()
+
+</code></pre>
+<p>这个脚本比较简单，只是简单的将数据从对话文件中读取出来，然后拼接为对话列表输入聊天机器人。</p>
+<blockquote>
+<p>由于这里对话大部分都是多行数据，聊天机器人匹配结果时运算量会大幅提升，我单核cpu的服务器在导入一个700k 的语料文件后每次聊天都会让cpu飚到100%！🤦‍ 无奈之下只能删掉大半数据。</p>
+</blockquote>
+<p>对话示例如图:</p>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/kF27RcGVBL3xDf4kKhJQCbXAB3qgc_HXpYy28ykdfudK0B52Z5nvm63m0wbiKlCA" alt="使用电影台词训练后的聊天截图" loading="lazy"></figure>
+<p>导入电影台词后，虽然训练数据大幅提升，但是你会发现聊天机器人开始答非所问了，这是因为聊天数据噪音太大，对白也有点问题。</p>
+<h3 id="使用图灵机器人训练">使用图灵机器人训练</h3>
+<p>之前在对比聊天机器人实现方案的时候，我试用过 <a href="http://www.tuling123.com">图灵机器人</a>，他们号称中文语境下智能渡最高的机器人大脑。他们的对话比我自己的搭建的靠谱很多，那么我们是不是可以利用一下他的数据呢？</p>
+<p>我的方案是这样的，在图灵机器人新建两个机器人教练A 和 教练B，让两个机器人互相对话，然后把训练数据导入chatterbot。</p>
+<ol>
+<li>打开 <a href="http://www.tuling123.com">http://www.tuling123.com</a>，注册账号</li>
+<li>新建两个机器人（免费用户最多可以创建5个，每个机器人每天最多请求5000次）</li>
+<li>调用对话API，让两个机器人互相聊天</li>
+</ol>
+<p>建好机器人后的界面：</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/3WZasRFKofxaVIV55WJy2TNRYeUlf7qcD5ijEpYZqwJctWzuAqu3HRBi8VRZSFYz" alt="机器人示例🤖" loading="lazy"></figure>
+<p>训练示例代码如下：</p>
+<pre><code class="language-python"># tuling_trainer.py
+import sys
+from time import sleep
+
+from chatterbot import ChatBot
+from chatterbot.trainers import ListTrainer
+
+import requests
+
+API_URL = &quot;http://www.tuling123.com/openapi/api&quot;
+API_KEY0 = &quot;&quot;  # 机器人1 的key
+API_KEY1 = &quot;&quot;  # 机器人2 的key
+
+# 初始化chatterbot
+momo = ChatBot(
+    'Momo',
+    storage_adapter='chatterbot.storage.MongoDatabaseAdapter',
+    logic_adapters=[
+            &quot;chatterbot.logic.BestMatch&quot;,
+            &quot;chatterbot.logic.MathematicalEvaluation&quot;,
+            &quot;chatterbot.logic.TimeLogicAdapter&quot;,
+        ],
+    input_adapter='chatterbot.input.VariableInputTypeAdapter',
+    output_adapter='chatterbot.output.OutputAdapter',
+    database='chatterbot',
+    read_only=True
+)
+
+# 请求图灵机器人接口
+def ask(question, key, name):
+    params = {
+        &quot;key&quot;: key,
+        &quot;userid&quot;: name,
+        &quot;info&quot;: question,
+    }
+    res = requests.post(API_URL, json=params)
+    result = res.json()
+    answer = result.get('text')
+    return answer
+
+
+def A(bsay):
+    # 打印 A 和 B 的对话内容
+    print('B:', bsay)
+    answer = ask(bsay, API_KEY0, 'momo123')
+    print('A:', answer)
+    return answer
+
+
+def B(asay):
+    print('A:', asay)
+    answer = ask(asay, API_KEY1, 'momo456')
+    print('B', answer)
+    return answer
+
+
+def tariner(asay):
+    momo.set_trainer(ListTrainer)  # 设置处理方式
+    while True:  # 两个机器人训练的主循环
+        conv = []
+        conv.append(asay) # 先把 A 说的第一句加入到对话列表
+        bsay = B(asay)  # A 先问 B
+        conv.append(bsay) # 将B 的回答加入到对话列表
+        momo.train(conv) # 将对话用于训练
+        print(conv)
+        conv = []
+        conv.append(bsay) # 用B的对话 去问 A 步骤和上述方式一致
+        asay = A(bsay)
+        conv.append(asay)
+        momo.train(conv)
+        print(conv)
+        sleep(5)  # 控制频率
+
+
+def main(asay):
+    tariner(asay)
+
+
+if __name__ == '__main__':
+    main(*sys.argv[1:])  # 接收参数作为开始的第一句话
+    
+# 执行脚本
+# python tuling_trainer.py 你好？
+
+</code></pre>
+<p>使用图灵聊天机器人训练的时候是需要监测的，因为如果两个机器人说的内容一样的时候，机器人可能会一直重复同一句话，直到调用次数耗尽，你需要看一下两个机器人的对话是否陷入了僵局。</p>
+<p>当然也可以在程序中加入判断，先多设定几个开始打招呼的句子，如果一句话连续出现多次的时候，换下一个句子纠正他们。</p>
+<p>以下是我训练了两天之后的结果：</p>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/wNM0i84JsmsgldhxUjV1TMHr_YwwM726brHr0tmSYS_cxAYWWIHQEvG-eTmBIRjJ" alt="对话示例" loading="lazy"></figure>
+<p>虽然还是答非所问，但是已经比之前像样了。</p>
+<blockquote>
+<p>图灵聊天机器人免费版每天可调用5000 次，如果觉得次数太少可以多新建几个轮流使用</p>
+</blockquote>
+<p>聊天机器人的配置及训练方式就到这里了，接下来介绍个更实用的功能，如何让微信公号变成图床。</p>
+<h2 id="如何让微信公号化身图片上传助手">如何让微信公号化身图片上传助手</h2>
+<p>在使用 <code>markdown</code> 格式来写文章的过程中，发现图片地址是一个比较麻烦的事情，每次贴图获取图片URL都是一个比较麻烦的过程。<br>
+以我使用的七牛为例，获取图片地址的步骤如下：</p>
+<ol>
+<li>登录七牛网站，打开存储空间&gt;内容管理</li>
+<li>上传文件</li>
+<li>返回内容管理找到刚才上传的文件，获取外链</li>
+</ol>
+<p>按照这个步骤上传一张图片至少耗时半分钟。</p>
+<p>那能不能简化这个步骤呢？</p>
+<p>答案是<code>可以！</code></p>
+<p>微信公号是可以发送图片消息的，我的做法是</p>
+<ol>
+<li>将图片发送到公号</li>
+<li>服务器获取触发图片消息的处理逻辑&gt; 将图片使用七牛提供的<code>第三方资源抓取</code>API<code>另存到</code>，七牛存储空间</li>
+<li>将设定好的图片地址返回给微信，发送到公号消息对话中</li>
+</ol>
+<p>示例如下图所示：</p>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/Eg5Idjmp3nLyufBVU2hzp6jNMdNoSWEYgKTqNG9BbqD6VrM4U5oN-gmJw3PaN-Yh" alt="上传图片到七牛" loading="lazy"></figure>
+<h3 id="实现步骤">实现步骤</h3>
+<ul>
+<li>注册个七牛账号</li>
+<li>新建存储空间</li>
+<li>在个人中心秘钥管理获取 AccessKey 和 SecreKey</li>
+<li>pip install qiniu</li>
+</ul>
+<p>代码实现如下：</p>
+<pre><code class="language-python"># media.py
+# 图片抓取逻辑处理
+from qiniu import Auth, BucketManager
+
+from momo.settings import Config
+
+def qiniu_auth():
+    access_key = str(Config.QINIU_ACCESS_TOKEN)
+    secret_key = str(Config.QINIU_SECRET_TOKEN)
+    auth = Auth(access_key, secret_key)
+    return auth
+    
+def media_fetch(media_url, media_id):
+    '''抓取url的资源存储在库'''
+    auth = qiniu_auth()
+    bucket = BucketManager(auth)
+    bucket_name = Config.QINIU_BUCKET  # 存储空间名称
+    ret, info = bucket.fetch(media_url, bucket_name, media_id) # 参数依次是第三方图片地址，空间名称，目标文件名
+    if info.status_code == 200:
+        return True, media_id # 如果上传成功，返回文件名
+    return False, None
+</code></pre>
+<p>抓取第三方图片文档地址为：<a href="https://developer.qiniu.com/kodo/api/1263/fetch">第三方资源抓取 https://developer.qiniu.com/kodo/api/1263/fetch</a>。</p>
+<p>微信图片消息处理逻辑代码：</p>
+<pre><code class="language-python">class WXResponse(_WXResponse):
+
+    def _image_msg_handler(self):
+        media_id = self.data['MediaId']
+        picurl = None
+        if not picurl:
+            picurl = self.data['PicUrl']  # 从消息中获取图片地址
+        is_succeed, media_key = media_fetch(picurl, media_id) # 使用图片抓取接口将图片存储到七牛并获取图片文件名
+        if is_succeed:
+            qiniu_url = '{host}/{key}'.format(host=Config.QINIU_HOST, key=media_key) # 拼接图片地址
+        else:
+            qiniu_url = '图片上传失败，请重新上传'
+        self.reply_params['content'] = qiniu_url # 返回图片地址
+        self.reply = TextReply(**self.reply_params).render()
+</code></pre>
+<p>代码已开源道github，详细代码逻辑参考 <a href="https://github.com/gusibi/momo/blob/chatterbot/momo/views/mweixin.py">gusibi/momo: https://github.com/gusibi/momo/tree/chatterbot</a></p>
+<p>欢迎试用体验：</p>
+<ul>
+<li>请不要上传高清图片，微信会压缩损坏图片质量</li>
+<li>也不要上传太个人的图片，毕竟内容我能看到</li>
+</ul>
+<h2 id="总结">总结</h2>
+<p>这一篇主要提供了两个训练 chatterbot 的思路，以及使用公号作为图片上传客户端提高上传图片的效率的解决方法。<br>
+接下来公号还是继续开发，准备给公号加一个记账功能，促使自己养成记账的习惯。</p>
+<h3 id="预告">预告</h3>
+<p>下一篇的公号DIY 将介绍 <code>记账的功能设计以及实现思路</code>。</p>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="5"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="6"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#chatterbot-%E8%AE%AD%E7%BB%83%E9%80%BB%E8%BE%91%E5%A4%84%E7%90%86%E6%A8%A1%E5%9D%97">chatterbot 训练逻辑处理模块</a>
+<ul>
+<li><a href="#%E5%A4%84%E7%90%86%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE">处理训练数据</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E5%9B%BE%E7%81%B5%E6%9C%BA%E5%99%A8%E4%BA%BA%E8%AE%AD%E7%BB%83">使用图灵机器人训练</a></li>
+</ul>
+</li>
+<li><a href="#%E5%A6%82%E4%BD%95%E8%AE%A9%E5%BE%AE%E4%BF%A1%E5%85%AC%E5%8F%B7%E5%8C%96%E8%BA%AB%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%8A%A9%E6%89%8B">如何让微信公号化身图片上传助手</a>
+<ul>
+<li><a href="#%E5%AE%9E%E7%8E%B0%E6%AD%A5%E9%AA%A4">实现步骤</a></li>
+</ul>
+</li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a>
+<ul>
+<li><a href="#%E9%A2%84%E5%91%8A">预告</a></li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/weixin_chatbot_step_by_step/">
+              <h3 class="post-title">
+                微信公号DIY：一小时搭建微信聊天机器人
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

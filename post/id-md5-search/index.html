@@ -1,0 +1,346 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>如何通过MD5反查身份证号？ | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="如何通过MD5反查身份证号？ | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+题目：设计一个身份证查询系统，将身份证号md5 之后存储，输入md5值查询对应的身份证号。
+要求：成本低，查询速度快
+
+设计思路：
+
+将所有可能的身份证号做一个简单的统计计算数据量
+根据数据量选择存储方式
+查询
+
+身份证生成规则：
+身份号..." />
+    <meta name="keywords" content="教程,工具,golang" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              如何通过MD5反查身份证号？
+            </h2>
+            <div class="post-info">
+              <span>
+                2019-08-18
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/Ez7OfGV-oL/" class="post-tag">
+                  # 教程
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/FYxmHEtUvJ/" class="post-tag">
+                  # 工具
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/dE3Sy1WOcy/" class="post-tag">
+                  # golang
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p><strong>题目</strong>：设计一个身份证查询系统，将身份证号md5 之后存储，输入md5值查询对应的身份证号。<br>
+<strong>要求：成本低，查询速度快</strong></p>
+</blockquote>
+<h3 id="设计思路">设计思路：</h3>
+<ol>
+<li>将所有可能的身份证号做一个简单的统计计算数据量</li>
+<li>根据数据量选择存储方式</li>
+<li>查询</li>
+</ol>
+<h3 id="身份证生成规则">身份证生成规则：</h3>
+<p>身份号码是特征组合码，由前十七位数字本体码和最后一位数字校验码组成。排列顺序从左至右依次为六位数字地址码，八位数字出生日期码，三位数字顺序码和一位数字校验码。</p>
+<p><strong>地址码</strong>： 表示编码对象常住户口所在县(市、旗、区)的行政区划代码。对于新生儿，该地址码为户口登记地行政区划代码。需要没说明的是，随着行政区划的调整，同一个地方进行户口登记的可能存在地址码不一致的情况。行政区划代码按GB/T2260的规定执行。</p>
+<p><strong>出生日期码</strong>：表示编码对象出生的年、月、日，年、月、日代码之间不用分隔符，格式为YYYYMMDD，如19880328。按GB/T 7408的规定执行。原15位身份证号码中出生日期码还有对百岁老人特定的标识，其中999、998、997、996分配给百岁老人。</p>
+<p><strong>顺序码</strong>： 表示在同一地址码所标识的区域范围内，对同年、同月、同日出生的人编定的顺序号，顺序码的奇数分配给男性，偶数分配给女性。</p>
+<p><strong>校验码</strong>： 根据本体码，通过采用ISO 7064:1983,MOD 11-2校验码系统计算出校验码。算法可参考下文。前面有提到数字校验码，我们知道校验码也有X的，实质上为罗马字符X，相当于10.</p>
+<h4 id="校验码算法">校验码算法</h4>
+<p>将本体码各位数字乘以对应加权因子并求和，除以11得到余数，根据余数通过校验码对照表查得校验码。</p>
+<p><strong>加权因子表</strong>：</p>
+<pre><code class="language-sh">+-----------------------------------------------------------+ 
+|位置序号|1 |2 |3 |4 |5 |6 |7 |8 |9 |10|11|12|13|14|15|16|17| 
++-----------------------------------------------------------+ 
+|加权因子|7 |9 |10|5 |8 |4 |2 |1 |6 |3 |7 |9 |10|5 |8 |4 |2 | 
++-----------------------------------------------------------+ 
+</code></pre>
+<p><strong>校验码表</strong>:</p>
+<pre><code class="language-sh">+----------------------------------------------------+ 
+| 余数  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 
++----------------------------------------------------+ 
+| 校验码| 1 | 0 | X | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2  | 
++----------------------------------------------------+ 
+</code></pre>
+<h4 id="算法举例">算法举例：</h4>
+<p>本体码为11010519491231002</p>
+<ul>
+<li>第一步：各位数与对应加权因子乘积求和1* 7+1 * 9+0 * 10+1 * 5+ *** =167</li>
+<li>第二步：对求和进行除11得余数167%11=2</li>
+<li>第三步：根据余数2对照校验码得X</li>
+</ul>
+<p>**因此完整身份证号为：11010519491231002X **</p>
+<h3 id="预估数据量">预估数据量：</h3>
+<ol>
+<li>身份证号18位，前六位为地区码，中间八位为日期，日期后三位为顺序码，最后一位为校验位，占32个字节</li>
+<li>md5值为32位，占32个字节</li>
+<li>计算最近100年数据，大约数据量为：<code>3465x100x365x999=126346027500</code></li>
+<li>数据以字符串存储，每条数据<code>32+18=50B</code></li>
+<li>则数据量为 `126346027500 x 50=6317301375000B=6169239624k=6024648M=5883G=5.74T ``</li>
+</ol>
+<blockquote>
+<p>存储方式有文件存储、关系型数据库存储和es存储等。从结果可以看到有接近6T的数据，如果存入数据库或es<strong>成本较高</strong>，这里选择以文件的方式存储。</p>
+</blockquote>
+<p><strong>那有没有方式压缩存储空间呢？</strong></p>
+<ol>
+<li>身份证号最后一位为校验位，可以不存储，省略掉这一位会节约1/50点空间</li>
+<li>不以字符串的方式存储，将身份证号以uint64存储，md5值也转化成两个uint64存储。uint64占8阁字节空间，这样一条数据的空间由50降为了 24。最终数据量为2.74T，节约一半多的空间。</li>
+</ol>
+<p><strong>那现在有一个问题，每个文件多大合适呢？</strong></p>
+<p>如果文件太大，每次将文件读取到内存中耗时较长，如果文件太小，则会生成太多的文件可能超出系统的文件数限制。</p>
+<p>这里可以参考数据库索引的存储方式，设定每个数据文件的大小（2.8T数据可以设置每个数据文件1G左右。</p>
+<h3 id="数据生成后如何查询">数据生成后如何查询？</h3>
+<ol>
+<li>遍历，依次读取文件，查找数据，效率太低</li>
+<li>这里参考数据库索引的查询方式，首先将数据按md5值排序后存储多个文件，记录每个文件中md5值的范围，输入md5值确定文件，再读取文件使用二分查找。</li>
+<li>这时查找数据只需要读取一个文件，但是每个文件都有几百兆的数据，查询效率还是太低，再参考一下数据库索引，这里将文件内部再分页，记录每页的范围，和文件所自身记录的起始值一起生成索引，索引结构如图所示：</li>
+</ol>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/id2md5index.png" alt="89b91ea63b15a762099ccc0a6fdaf412.png" loading="lazy"></figure>
+<p>索引数据结构为：</p>
+<pre><code class="language-python"># 为了简化存储，这里file1、file2、file3、file4 为该文件第一条数据的md5值，也是对应的文件名
+# 页的大小固定，所以二级索引只需要按顺序记录每页的第一个md5值即可
+
+indexes = { 
+    &quot;file1&quot;: [&quot;md51&quot;, &quot;md52&quot;, &quot;md53&quot;, &quot;...&quot;],
+    &quot;file2&quot;: [&quot;md51&quot;, &quot;md52&quot;, &quot;md53&quot;, &quot;...&quot;], 
+    &quot;file3&quot;: [&quot;md51&quot;, &quot;md52&quot;, &quot;md53&quot;, &quot;...&quot;], 
+    &quot;file4&quot;: [&quot;md51&quot;, &quot;md52&quot;, &quot;md53&quot;, &quot;...&quot;],  
+} 
+</code></pre>
+<p>第一层索引为文件索引，首先通过md5值判断md5值所在文件，比如输入的 start1 &gt; md5 &gt; start1，可以判断结果可能在file1 中；</p>
+<p>第二层为文件内索引，通过md5值判断所在的页，读取根据offset读取该页的全部数据，再通过二分查找找到对应的身份证号。</p>
+<p>代码实现源码地址：https://github.com/gusibi/oneplus/tree/master/idgenerator</p>
+<p>使用方式：</p>
+<pre><code class="language-sh">1. go run main.go
+2. curl http://127.0.0.1:8080/search?md5={id md5}
+</code></pre>
+<h2 id="参考链接">参考链接：</h2>
+<ul>
+<li><a href="https://github.com/gusibi/oneplus/tree/master/idgenerator">源码地址</a></li>
+</ul>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF">设计思路：</a></li>
+<li><a href="#%E8%BA%AB%E4%BB%BD%E8%AF%81%E7%94%9F%E6%88%90%E8%A7%84%E5%88%99">身份证生成规则：</a>
+<ul>
+<li><a href="#%E6%A0%A1%E9%AA%8C%E7%A0%81%E7%AE%97%E6%B3%95">校验码算法</a></li>
+<li><a href="#%E7%AE%97%E6%B3%95%E4%B8%BE%E4%BE%8B">算法举例：</a></li>
+</ul>
+</li>
+<li><a href="#%E9%A2%84%E4%BC%B0%E6%95%B0%E6%8D%AE%E9%87%8F">预估数据量：</a></li>
+<li><a href="#%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90%E5%90%8E%E5%A6%82%E4%BD%95%E6%9F%A5%E8%AF%A2">数据生成后如何查询？</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接：</a>
+<ul>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/weekly-04/">
+              <h3 class="post-title">
+                每周分享第4期
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

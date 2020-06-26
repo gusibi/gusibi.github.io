@@ -1,0 +1,343 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>python设计模式-适配器模式 | 顾斯比</title>
+<link rel="shortcut icon" href="http://blog.gusibi.site/favicon.ico?v=1593195803130">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://blog.gusibi.site/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="python设计模式-适配器模式 | 顾斯比 - Atom Feed" href="http://blog.gusibi.site/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-76238744-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-76238744-1');
+</script>
+
+
+    <meta name="description" content="
+问题：假设有一个软件系统，你希望它能在不改变现有代码的前提下和一个新的厂商类库搭配使用，但是这个新厂商所设计出来的接口不同于旧厂商的接口
+
+
+这个问题和下图的问题类似
+
+美国标准的插头🔌无法在欧洲标准的插座上使用，通常的做法是什么呢？
+..." />
+    <meta name="keywords" content="读书笔记,python,设计模式" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://blog.gusibi.site">
+  <img class="avatar" src="http://blog.gusibi.site/images/avatar.png?v=1593195803130" alt="">
+  </a>
+  <h1 class="site-title">
+    顾斯比
+  </h1>
+  <p class="site-description">
+    这个人很懒
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/gusibi" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/amazing_gs" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              python设计模式-适配器模式
+            </h2>
+            <div class="post-info">
+              <span>
+                2018-11-03
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="http://blog.gusibi.site/tag/R03AJFQeGg/" class="post-tag">
+                  # 读书笔记
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/CsxMxAMxzZ/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="http://blog.gusibi.site/tag/tWtXVJcNMyg/" class="post-tag">
+                  # 设计模式
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <blockquote>
+<p><code>问题</code>：假设有一个软件系统，你希望它能在不改变现有代码的前提下和一个新的厂商类库搭配使用，但是这个新厂商所设计出来的接口不同于旧厂商的接口</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="http://media.gusibi.mobi/ggjMjkbHdiBnU8YUY0iNQe3I9XXxZ_OYE0o7uI2Gxw8CXzOP1_WyHjcVrbXiDvcc" alt="" loading="lazy"></figure>
+<p><strong>这个问题和下图的问题类似</strong></p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/TWyhF3_0rCaiR4WVmmmVQN05VLUR0pVgbHL28bV4ce2Kim_i74yFICJDqEnoVi2L" alt="" loading="lazy"></figure>
+<p>美国标准的插头🔌无法在欧洲标准的插座上使用，通常的做法是什么呢？</p>
+<blockquote>
+<p>添加一个插头适配器，适配器的作用是将欧式插头转换成美式插座，以便于让美式插头可以使用。</p>
+</blockquote>
+<h3 id="解决方案">解决方案</h3>
+<p>所以，面对一个有全新接口的类库而又不能改变现有代码时，最先想到的做法是，在这两个系统之间添加一个适配器。</p>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/VxXkkbIoWmKptVX2qSd_WNGrO2KdVgnrmMpe_sPdhuMk6xeVqLnJd3TN2qTY7k1q" alt="" loading="lazy"></figure>
+<h3 id="简单的例子">简单的例子</h3>
+<blockquote>
+<p>有一个系统，需要一个鸭子🦆对象，但是现在只有一个火鸡🦃对象。鸭子和火鸡对象的功能简单描述如下：</p>
+</blockquote>
+<pre><code class="language-python">
+# 鸭子的简单描述
+class Duck:
+    def quack(self):
+        # 会呱呱叫
+        print(&quot;Quack&quot;)
+    
+    def fly(self):
+        # 飞的能力
+        print(&quot;I'm flying&quot;)
+        
+# 火鸡的简单描述
+class Turkey:
+    def gobble(self):
+        # 不会呱呱叫，只会咯咯叫
+        print(&quot;Gobble gobble&quot;)
+    
+    def fly(self):
+        # 飞的能力 但是飞不远
+        print(&quot;I'm flying a short distance&quot;)
+    
+</code></pre>
+<p>因为现在没有鸭子对象，只能那火鸡对象冒充。由于鸭子对象和火鸡对象功能不同，不能直接拿来用，现在就需要使用适配器来完成这个功能：</p>
+<pre><code class="language-python">class TurkeyAdapter(Duck):
+    turkey = Turkey()  # 这里实际使用的是火鸡对象
+    
+    # 实现鸭子对象拥有的quack方法
+    def quack(self):
+        self.turkey.gobble()
+    
+    def fly(self):
+        # 假设火鸡比鸭子飞的短，为了模拟鸭子的动作，多飞几次
+        for i in range(5):
+            turkey.fly()
+</code></pre>
+<p>接下来调用就可以像使用鸭子对象一样使用火鸡适配后的对象。</p>
+<pre><code class="language-python"># test
+
+duck = Duck()
+duck.quack()
+duck.fly()
+
+turkey_adapter = Duck()
+turkey_adapter.quack()
+turkey_adapter.fly()
+</code></pre>
+<p><strong>现在再来看一下适配器使用的过程：</strong></p>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/Y5ID_UHcjlr0row8knQGM5vb8KNtRSlH_-6k-SrVOgvbAsE-iH7kweMC-mgvIGnM" alt="" loading="lazy"></figure>
+<ol>
+<li>客户通过被适配者实现的接口调用适配器</li>
+<li>适配器将请求转换为被适配者可以响应的请求</li>
+<li>被适配者响应，把结果返回给适配器，然后适配器再将结果响应给客户。</li>
+</ol>
+<p>通过这个例子，接下来看一下适配器模式的正式定义</p>
+<h3 id="定义">定义</h3>
+<blockquote>
+<p><code>适配器模式：</code>将一个类的接口，转换成客户期望的另一个接口。适配器让原本接口不兼容的类可以合作。</p>
+</blockquote>
+<h4 id="优点">优点</h4>
+<ul>
+<li>可以通过创建适配器进行接口转换，让不兼容的接口兼容，让客户从实现的接口的解耦。</li>
+<li>使用对象组合，以修改的接口包装被适配者</li>
+<li>被适配的子类可以搭配着适配器使用</li>
+<li>满足开放/封闭原则（open/close principle）</li>
+</ul>
+<blockquote>
+<p><code>开放/封闭原则</code>是面向对象设计的基本原则之一，声明一个软件实体应该对扩展是开放的，对修改是关闭的。</p>
+</blockquote>
+<h3 id="真实世界中的适配器">真实世界中的适配器</h3>
+<ul>
+<li>xmltodict 可以将 xml 转换为 json</li>
+<li>grpc 也可以认为是一种适配器，提供了跨语言调用能力</li>
+<li>sqlalchemy 可以在不改变代码的情况下对接多种数据库</li>
+</ul>
+<blockquote>
+<p>本文例子来自《Head First 设计模式》。</p>
+</blockquote>
+<hr>
+<p><strong>最后，感谢女朋友支持和包容，比❤️</strong></p>
+<p>也可以在公号输入以下关键字获取历史文章：<code>公号&amp;小程序</code> | <code>设计模式</code> | <code>并发&amp;协程</code></p>
+<figure data-type="image" tabindex="5"><img src="http://media.gusibi.mobi/zHqNew3j1brVxSoTkjOerslhnB_ZpchcOXf60lFUxiZ5YtnCHs5HrJNOP14go6Ea" alt="扫码关注" loading="lazy"></figure>
+<hr>
+<h3 id="内推时间">内推时间</h3>
+<figure data-type="image" tabindex="6"><img src="http://media.gusibi.mobi/5FzreeM6IYt55JSQMAV63INPIvuPik75FlJAbP1e7Zdlg1WPe6BrHI-q0jkXskGf" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88">解决方案</a></li>
+<li><a href="#%E7%AE%80%E5%8D%95%E7%9A%84%E4%BE%8B%E5%AD%90">简单的例子</a></li>
+<li><a href="#%E5%AE%9A%E4%B9%89">定义</a>
+<ul>
+<li><a href="#%E4%BC%98%E7%82%B9">优点</a></li>
+</ul>
+</li>
+<li><a href="#%E7%9C%9F%E5%AE%9E%E4%B8%96%E7%95%8C%E4%B8%AD%E7%9A%84%E9%80%82%E9%85%8D%E5%99%A8">真实世界中的适配器</a></li>
+<li><a href="#%E5%86%85%E6%8E%A8%E6%97%B6%E9%97%B4">内推时间</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://blog.gusibi.site/post/solidity-sample-guide-0x001/">
+              <h3 class="post-title">
+                Solidity 简易教程0x001
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/disqusjs@1.1/dist/disqusjs.css">
+<script src="https://unpkg.com/disqusjs@1.1/dist/disqus.js"></script>
+
+<div id="disqus_thread"></div>
+
+<script>
+
+var options = {
+  shortname: 'gu-si-bi',
+  apikey: '',
+}
+if ('') {
+  options.api = ''
+}
+var dsqjs = new DisqusJS(options)
+
+</script>
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://blog.gusibi.site/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
