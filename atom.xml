@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://blog.gusibi.site</id>
     <title>顾斯比</title>
-    <updated>2020-07-09T15:23:29.006Z</updated>
+    <updated>2020-08-16T15:30:46.166Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="http://blog.gusibi.site"/>
     <link rel="self" href="http://blog.gusibi.site/atom.xml"/>
@@ -19,6 +19,342 @@ var _hmt = _hmt || [];
     <logo>http://blog.gusibi.site/images/avatar.png</logo>
     <icon>http://blog.gusibi.site/favicon.ico</icon>
     <rights>All rights reserved 2020, 顾斯比</rights>
+    <entry>
+        <title type="html"><![CDATA[【译】golang 可变参数函数终极指南]]></title>
+        <id>http://blog.gusibi.site/post/Ultimate-Guide-to-Go-Variadic-Functions/</id>
+        <link href="http://blog.gusibi.site/post/Ultimate-Guide-to-Go-Variadic-Functions/">
+        </link>
+        <updated>2020-08-16T15:02:05.000Z</updated>
+        <content type="html"><![CDATA[<figure data-type="image" tabindex="1"><img src="http://blog.gusibi.site/post-images/1597590154875.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>使用常用模式学习关于go语言可变参数函数的一切</p>
+</blockquote>
+<p><a href="https://blog.learngoprogramming.com/golang-variadic-funcs-how-to-patterns-369408f19085">Ultimate Guide to Go Variadic Functions 原文地址</a></p>
+<h1 id="什么是可变参数函数">什么是可变参数函数？</h1>
+<p>可变参数函数是指传入参数是可变数量（0到更多）的函数。在输入的变量类型前面的省略号(三点)前缀即构成一个有效的变量。</p>
+<figure data-type="image" tabindex="2"><img src="http://media.gusibi.mobi/-kn_OQyfZYXrKDs4rz2CYh3wtwEQUaEa5gjqqcZd1Db8S-Bm1UtlS3R5Pg_7wT-j" alt="2" loading="lazy"></figure>
+<blockquote>
+<p>声明一个可变参数名为“ names”，类型为string 的可变参数函数</p>
+</blockquote>
+<h2 id="一个简单的可变参数函数">一个简单的可变参数函数</h2>
+<p>这个 func 以字符串的形式返回传递的参数，字符串之间用空格分隔。</p>
+<pre><code class="language-golang">
+func toFullname(names ...string) string {
+  return strings.Join(names, &quot; &quot;)
+}
+</code></pre>
+<p><img src="https://miro.medium.com/max/10000/1*_rdOI_SbL9m07QBcKMqz5Q.png" alt="Image for post" loading="lazy"> You can pass zero or more params</p>
+<h2 id="你可以传入零个或多个参数">你可以传入零个或多个参数</h2>
+<pre><code class="language-go">toFullname(&quot;carl&quot;, &quot;sagan&quot;)// output: &quot;carl sagan&quot;
+toFullname(&quot;carl&quot;)// output: &quot;carl&quot;
+toFullname()// output: &quot;&quot;
+</code></pre>
+<h2 id="什么时候使用可变参数函数">什么时候使用可变参数函数？</h2>
+<ul>
+<li><em>省略创建仅作为函数参数创建临时 slice 变量</em></li>
+<li><em>当输入参数的长度未知时</em></li>
+<li><em>表达你增加可读性的意图</em></li>
+</ul>
+<h2 id="例子">例子:</h2>
+<p>看看 <code>Go Stdlib</code> 的 <code>fmt. Println</code> 函数，就会明白它是如何使自己变得易于使用的。</p>
+<p>它使用可变参数函数接受可选的输入参数数目。</p>
+<pre><code class="language-go">func Println(a ...interface{})
+</code></pre>
+<p>如果它不是一个可变参数函数，它看起来会是这样的:</p>
+<pre><code class="language-go">func Println(params []interface{})
+</code></pre>
+<p>你需要传递一个 slice 才能使用它ーー verbose，是的! :</p>
+<pre><code class="language-go">fmt.Println([]interface{}{&quot;hello&quot;, &quot;world&quot;})
+</code></pre>
+<p>相比而言，在可变参数函数形式中，它的使用是简单的:</p>
+<pre><code class="language-go">fmt.Println(&quot;hello&quot;, &quot;world&quot;)
+fmt.Println(&quot;hello&quot;)
+fmt.Println()
+</code></pre>
+<blockquote>
+<p>在这之后的部分，将会介绍一些关于 可变参数函数 的细节和常用模式的例子。</p>
+</blockquote>
+<h1 id="切片与可变参数函数">切片与可变参数函数</h1>
+<p>可变参数在函数中会被转换为“新的”切片。可变参数实际上是 slice 类型的参数的语法糖。</p>
+<figure data-type="image" tabindex="3"><img src="http://media.gusibi.mobi/ELkTXYrLqO41gRC0fl7rz971NPHdCcS0yExDtNqgFCNMjNigJGgDik0XI-tXw3wi" alt="3" loading="lazy"></figure>
+<h2 id="不传入参数">不传入参数</h2>
+<p>如果不向其传递任何值，就相当于向可变参数函数传递了 nil 切片。</p>
+<figure data-type="image" tabindex="4"><img src="http://media.gusibi.mobi/9RBDcXhqLuLBy4oZOANH_3w6Bez2l5vTYpZounxZna8HaWhiaPXtg9o2g_3dYpgC" alt="4" loading="lazy"></figure>
+<p>所有非空切片都有内建数组，而 nil 片则没有。</p>
+<pre><code class="language-go">func toFullname(names ...string) []string {
+  return names
+}
+
+// names 内建数组为: nil
+</code></pre>
+<p>但是，当你向可变参数函数添加参数时，它将创建一个与你传入参数相关联的数组，而不再是一个空切片。</p>
+<p>go语言内置函数<code>append</code> 将参数追加到现有的slice，并返回。<code>append</code> 也是一个可变参数函数。</p>
+<pre><code class="language-go">func toFullname(names ...string) []string {
+  return append(names, &quot;hey&quot;, &quot;what's up?&quot;)
+}
+
+toFullname()
+
+// output: [hey what's up?]
+</code></pre>
+<h2 id="如何传递一个切片">如何传递一个切片？</h2>
+<p>通过将可变参数运算符<code>...</code> 加在现有切片后，可以将其传递给可变参数运算符。</p>
+<pre><code class="language-go">names := []string{&quot;carl&quot;, &quot;sagan&quot;)}
+
+toFullname(names...)// output: &quot;carl sagan&quot;
+</code></pre>
+<p>这等同于以下调用:</p>
+<pre><code class="language-go">toFullname(&quot;carl&quot;, &quot;sagan&quot;)
+</code></pre>
+<p><strong>但是，有一点不同：</strong> ，在函数中将直接使用传入的切片而不是创建新的切片。关于这一点，请参阅以下内容。</p>
+<figure data-type="image" tabindex="5"><img src="http://media.gusibi.mobi/I78AMp2oauglKBaN-v2vInPqqOddUZSAnsOLwqI-nOQUu1tUZq5E6H2kb_ksQems" alt="5" loading="lazy"></figure>
+<p>像下面这样，你也可以将数组作为可变参数函数的参数:</p>
+<pre><code class="language-go">names := [2]string{&quot;carl&quot;, &quot;sagan&quot;}
+toFullname(names[:]...)
+</code></pre>
+<h2 id="passed-slices-spooky-action-at-a-distance">Passed slice’s spooky action at a distance</h2>
+<blockquote>
+<p>标题不知道怎么翻译...</p>
+</blockquote>
+<p>假设你将一个 slice 作为参数传给一个可变参数函数:</p>
+<pre><code class="language-go">dennis := []string{&quot;dennis&quot;, &quot;ritchie&quot;}
+toFullname(dennis...)
+</code></pre>
+<p>再假设你修改了函数中变量参数的第一项:</p>
+<pre><code class="language-go">func toFullname(names ...string) string {
+  names[0] = &quot;guy&quot;
+  return strings.Join(names, &quot; &quot;)
+}
+</code></pre>
+<p>修改它也会影响原始的切片。“ dennis”切片现在变成了:</p>
+<pre><code class="language-go">[]string{&quot;guy&quot;, &quot;ritchie&quot;}
+</code></pre>
+<p>而不是原始值:</p>
+<pre><code class="language-go">[]string{&quot;dennis&quot;, &quot;ritchie&quot;}
+</code></pre>
+<p>因为传入的 slice 与 func 内部的 slice 共享相同的底层数组，所以在 func 内部改变 slice 的值也会影响传入的 slice:</p>
+<figure data-type="image" tabindex="6"><img src="http://media.gusibi.mobi/AbFuGA5LzxztjxBQ_D7oWHdkh-AZifMm4m1_E-iGRbezqRmO3ZeT-siWIfoYBnWc" alt="6" loading="lazy"></figure>
+<p>如果你直接传递参数(不使用切片) ，就不会发生这种情况。</p>
+<h2 id="动态传递多个切片">动态传递多个切片</h2>
+<p>假设你想在 slice 传递给 func 之前，在 slice 前面添加“ mr. ”。</p>
+<pre><code class="language-go">names := []string{&quot;carl&quot;, &quot;sagan&quot;}
+</code></pre>
+<p>首先<code>append</code> 函数会创建一个新的切片，然后将names展开， 然后将值依次添加到新创建的切片上，然后再将展开的结果传给 <code>toFullname</code> 函数:</p>
+<pre><code class="language-go">toFullname(append([]string{&quot;mr.&quot;}, names...)...)
+
+// output: &quot;mr. carl sagan&quot;
+</code></pre>
+<p>这和下面的代码一样:</p>
+<pre><code class="language-go">names = append([]string{&quot;mr.&quot;}, &quot;carl&quot;, &quot;sagan&quot;)
+toFullname(names...)
+
+// or with this:
+toFullname([]string{&quot;mr.&quot;, &quot;carl&quot;, &quot;sagan&quot;}...)
+
+// or with this—except passing an existing slice:
+toFullname(&quot;mr.&quot;, &quot;carl&quot;, &quot;sagan&quot;)
+</code></pre>
+<h2 id="返回传入的切片">返回传入的切片</h2>
+<p>不能使用可变参数作为返回结果类型，但是可以将其作为片返回。</p>
+<pre><code class="language-go">func f(nums ...int) []int {
+  nums[1] = 10
+  return nums
+}
+</code></pre>
+<p>当你将一个 slice 作为参数传入 f 时，它将返回一个相同的新 slice。传入和返回的切片是相关联的。两个中任意一个改变都会影响到另一个。</p>
+<pre><code class="language-go">nums  := []int{23, 45, 67}
+nums2 := f(nums...)
+</code></pre>
+<p>这里，nums 和 nums2有相同的元素，因为它们都指向相同的底层数组。</p>
+<pre><code class="language-go">nums  = []int{10, 45, 67}
+nums2 = []int{10, 45, 67}
+</code></pre>
+<p>👉 <a href="https://play.golang.org/p/Jun14DYWvq">这段代码</a> 包含关于 slice 基础数组的详细说明</p>
+<h2 id="扩展操作符反模式">扩展操作符反模式</h2>
+<p>如果你有一个 funcs，它们唯一的用途就是接受可变数量的参数，那么最好使用可变参数函数代替使用 slice。</p>
+<pre><code class="language-go">// Don't do this
+toFullname([]string{&quot;rob&quot;, &quot;pike&quot;}...)
+
+// Do this
+toFullname(&quot;rob&quot;, &quot;pike&quot;)
+</code></pre>
+<p><a href="https://play.golang.org/p/oKQjwotLC_">运行代码</a></p>
+<h2 id="使用可变参数的长度">使用可变参数的长度</h2>
+<p>你可以使用可变参数的长度来改变函数的行为。</p>
+<pre><code class="language-go">func ToIP(parts ...byte) string {
+  parts = append(parts, make([]byte, 4-len(parts))...)  
+  
+  return fmt.Sprintf(&quot;%d.%d.%d.%d&quot;, 
+    parts[0], parts[1], parts[2], parts[3])
+}
+</code></pre>
+<p>ToIP func 将“ parts”作为可变参数，并使用 parts param 的长度返回默认值为0的字符串形式的 IP 地址。</p>
+<pre><code class="language-go">ToIP(255)   // 255.0.0.0
+ToIP(10, 1) // 10.1.0.0
+ToIP(127, 0, 0, 1) // 127.0.0.1
+</code></pre>
+<p><a href="https://play.golang.org/p/j9RcLvbs3K">运行代码</a></p>
+<h1 id="变量函数的签名">✪ 变量函数的签名</h1>
+<p>尽管可变参数函数是一种语法糖，但它的签名<a href="https://golang.org/ref/spec#Type_identity">类型标识</a>与接受切片的函数是不同的。</p>
+<p>举个例子看一下字符串切片和 ...字符串的区别是什么？</p>
+<p><em><strong>一个可变参数函数的签名:</strong></em></p>
+<pre><code class="language-go">func PrintVariadic(msgs ...string)// signature: func(msgs ...string)
+</code></pre>
+<p><em><strong>非可变参数函数的签名:</strong></em></p>
+<pre><code class="language-go">func PrintSlice(msgs []string)// signature: func([]string)
+</code></pre>
+<p><em>它们的类型标识不一样，我们把它们赋值给变量:</em></p>
+<pre><code class="language-go">variadic := PrintVariadic   // variadic is a func(...string)
+slicey := PrintSlice       // slice is a func([]string)
+</code></pre>
+<p>因此，其中一个不能替代另一个:</p>
+<pre><code class="language-go">slicey = variadic// error: type mismatch
+</code></pre>
+<p><a href="https://play.golang.org/p/fsZYGgTyvF">运行代码</a></p>
+<h1 id="混合变量和非可变参数">混合变量和非可变参数</h1>
+<p>你可以通过把非可变参数放在可变参数之前，将非可变参数与可变参数混合。</p>
+<pre><code class="language-go">func toFullname(id int, names ...string) string {
+  return fmt.Sprintf(&quot;#%02d: %s&quot;, id, strings.Join(names, &quot; &quot;))
+}
+
+toFullname(1, &quot;carl&quot;, &quot;sagan&quot;)// output: &quot;#01: carl sagan&quot;
+</code></pre>
+<p>但是，你不能将非可变参数放到可变参数之后:</p>
+<pre><code class="language-go">func toFullname(id int, names ...string, age int) string {}// error
+</code></pre>
+<p><a href="https://play.golang.org/p/TlbDYapOCD">运行代码</a></p>
+<h2 id="接受变量类型的参数">接受变量类型的参数</h2>
+<p>例如，<a href="https://golang.org/src/fmt/print.go#L189"><em>Go Stdlib 的 Printf</em></a> 函数，使用空接口类型接受任何类型的输入参数。你还可以使用空接口接受任意类型和任意数量的参数。</p>
+<pre><code class="language-go">func Printf(format string, a ...interface{}) (n int, err error) {
+    /* this is a pass-through with a... */  
+    return Fprintf(os.Stdout, format, a...)
+}
+
+fmt.Printf(&quot;%d %s %f&quot;, 1, &quot;string&quot;, 3.14)    // output: &quot;1 string 3.14&quot;
+</code></pre>
+<h2 id="为什么-printf-只接受一个变量参数">为什么 Printf 只接受一个变量参数？</h2>
+<p>查看 Printf 的签名时，会发现它接受一个名为 format 的字符串和一个可变参数。</p>
+<pre><code class="language-go">func Printf(format string, a ...interface{})
+</code></pre>
+<p>这是因为format是必需的参数。Printf 强制您提供它，否则代码将无法编译。</p>
+<p>如果它通过一个可变参数接收所有参数，那么调用方可能没有提供必要的格式化程序参数，或者从可读性角度来看，它不会像这个参数那么明确。<em>它清楚地标明了 Printf 需要什么</em>。</p>
+<p>此外，调用时不传人变量参数“a”，它将防止 <em>Printf</em> 在 函数中创建一个不必要的切片，一个值为 nil 切片。<em>This may not be a clear win for Printf but it can be for you in your own code</em>。</p>
+<p>你也可以在自己的代码中使用相同的模式。</p>
+<h2 id="注意空接口类型">注意空接口类型</h2>
+<p><code>interface{}</code>类型也称为空接口类型，这意味着它绕过了自身的 Go 静态类型语义检查。不必要地使用它会给你带来弊大于利的后果。</p>
+<p>例如，它可能强制你使用<a href="https://blog.golang.org/laws-of-reflection"><em>reflection</em></a>，这是一个运行时特性(<em>instead of fast and safe — compile-time)</em>。你可能需要自己查找类型错误，而不是依赖于编译器帮你找到它们。</p>
+<blockquote>
+<p>在使用空接口之前要仔细考虑，依靠显式类型和接口来实现所需的行为。</p>
+</blockquote>
+<h2 id="将切片传递给具有空接口的可变参数">将切片传递给具有空接口的可变参数</h2>
+<p>你不能将一个普通的切片传递给一个具有空接口类型的可变参数。具体原因<a href="https://golang.org/doc/faq#convert_slice_of_interface">请阅读这里</a>。</p>
+<pre><code class="language-go">hellos := []string{&quot;hi&quot;, &quot;hello&quot;, &quot;merhaba&quot;}
+</code></pre>
+<p><em>You expect this to work, but it doesn’t:</em></p>
+<p>你可能期望这能生效，但事实并非如此:</p>
+<pre><code class="language-go">fmt.Println(hellos...)
+</code></pre>
+<p>因为，hello 是一个字符串，而不是一个空接口切片。可变参数或切片只能属于一种类型。</p>
+<p>首先需要将 <em>hellos</em> slice 转换为一个空接口 slice:</p>
+<pre><code class="language-go">var ihellos []interface{} = make([]interface{}, len(hello))for i, hello := range hellos {
+  ihellos[i] = hello
+}
+</code></pre>
+<p><em>Now, the expansion operator will work:</em></p>
+<p>现在，扩展运算符将开始生效:</p>
+<pre><code class="language-go">fmt.Println(ihellos...)
+// output: [hi hello merhaba]
+</code></pre>
+<p><a href="https://play.golang.org/p/8uRHsHFKSx">运行代码</a></p>
+<h1 id="函数式编程方面">函数式编程方面</h1>
+<p>你还可以使用可变参数函数接受可变数目的函数。让我们声明一个新的 formatter func 类型。格式化程序 func 获取并返回一个字符串:</p>
+<pre><code class="language-go">type formatter func(s string) string
+</code></pre>
+<p>让我们声明一个可变参数函数，它接受一个字符串和数量可选的可格式化的类型，以便使用一些pipeline来格式化字符串。</p>
+<pre><code class="language-go">func format(s string, fmtrs ...formatter) string {
+  for _, fmtr := range fmtrs {
+    s = fmtr(s)
+  }  return s
+}
+
+format(&quot; alan turing &quot;, trim, last, strings.ToUpper)// output: TURING
+</code></pre>
+<p><a href="https://play.golang.org/p/kCOP6_5h-t">运行代码</a></p>
+<p>您还可以使用channels、structs等来代替这种链式模式的函数。看* <a href="https://golang.org/pkg/io/#MultiReader"><em>这里</em></a> <em>或者</em> <a href="https://golang.org/src/text/template/parse/parse.go?s=1642:1753#L41"><em>这里</em></a> <em>查看示例.</em></p>
+<h2 id="使用结果为slice的函数作为可变参数">使用结果为slice的函数作为可变参数</h2>
+<p>让我们重复使用上面的“format func”来创建一个可重用的格式化管道构建器:</p>
+<pre><code class="language-go">func build(f string) []formatter {
+  switch f {
+    case &quot;lastUpper&quot;:
+      return []formatter{trim, last, strings.ToUpper}
+    case &quot;trimUpper&quot;:
+      return []formatter{trim, strings.ToUpper}
+    // ...etc
+    default:
+      return identityFormatter
+  }
+}
+</code></pre>
+<p>然后使用 expand 运算符运行它，最后将结果提供给格式 func:</p>
+<pre><code class="language-go">format(&quot; alan turing &quot;, build(&quot;lastUpper&quot;)...)// output: TURING
+</code></pre>
+<h2 id="可变参数选项模式">可变参数选项模式</h2>
+<p><em>You may have already been familiar with this pattern from other OOP langs and this has been re-popularized again in Go by Rob Pike</em> <a href="https://commandcenter.blogspot.com.tr/2014/01/self-referential-functions-and-design.html"><em>here</em></a> <em>back in 2014. It’s like the</em> <a href="https://en.wikipedia.org/wiki/Visitor_pattern"><em>visitor pattern</em></a><em>.</em></p>
+<p>你可能已经熟悉这种来自其他 OOP 语言的模式，这种<a href="https://commandcenter.blogspot.com.tr/2014/01/self-referential-functions-and-design.html">模式</a>在2014年 Rob Pike 的 Go 中再次流行起来。这就像是<a href="https://en.wikipedia.org/wiki/Visitor_pattern">访客模式</a>。</p>
+<p>这个例子对你来说可能有点难。如果有不理解的请及时提问&lt;作者不在，查看原文链接提问吧😂&gt;。</p>
+<p>让我们创建一个 Logger，可以使用可选模式在运行时更改详细程度和前缀:</p>
+<pre><code class="language-go">type Logger struct {
+  verbosity
+  prefix string
+}
+</code></pre>
+<p>使用一个可变的选项参数来改变logger的行为:</p>
+<pre><code class="language-go">func (lo *Logger) SetOptions(opts ...option) {
+  for _, applyOptTo := range opts {
+    applyOptTo(lo)
+  }
+}
+</code></pre>
+<p>我们创建一些返回配置方法的函数，它们在一个闭包中改变 Logger 的操作行为：</p>
+<pre><code class="language-go">func HighVerbosity() option {
+  return func(lo *Logger) {
+    lo.verbosity = High
+  }
+}
+
+func Prefix(s string) option {
+  return func(lo *Logger) {
+    lo.prefix = s
+  }
+}
+</code></pre>
+<p>现在，让我们用默认选项创建一个新的 Logger:</p>
+<pre><code class="language-go">logger := &amp;Logger{}
+</code></pre>
+<p>然后通过变量参数向记录器提供选项:</p>
+<pre><code class="language-go">logger.SetOptions(
+  HighVerbosity(), 
+  Prefix(&quot;ZOMBIE CONTROL&quot;),
+)
+</code></pre>
+<p>现在让我们检查一下输出:</p>
+<pre><code class="language-go">logger.Critical(&quot;zombie outbreak!&quot;)
+// [ZOMBIE CONTROL] CRITICAL: zombie outbreak!
+
+logger.Info(&quot;1 second passed&quot;)
+// [ZOMBIE CONTROL] INFO: 1 second passed
+</code></pre>
+<p><a href="https://play.golang.org/p/X2XHSdYgdq">运行代码</a></p>
+<h1 id="无穷无尽的精神食粮">✪ 无穷无尽的精神食粮！</h1>
+<ul>
+<li>在 Go 2中，有一些可变函数的行为的计划*<a href="https://github.com/golang/go/issues/15209"><em>这里</em></a><em>,</em> <a href="https://github.com/golang/go/issues/18605"><em>here 这里</em></a><em>,及</em><a href="https://github.com/golang/go/issues/19218"><em>这里</em></a><em>.</em></li>
+<li><em>你可以在 Go 语言标准文档里找到更正式的可变参数函数指南,</em><a href="https://golang.org/ref/spec#Passing_arguments_to_..._parameters"><em>这里</em></a><em>,</em> <a href="https://golang.org/ref/spec#Appending_and_copying_slices"><em>这里</em></a><em>,</em> <a href="https://golang.org/ref/spec#Appending_and_copying_slices"><em>这里</em></a> <em>及</em><a href="https://golang.org/ref/spec#Type_identity"><em>这里</em></a><em>.</em></li>
+<li><a href="https://sunzenshen.github.io/tutorials/2015/05/09/cgotchas-intro.html"><em>使用来自 c 的可变函数</em></a><em>.</em></li>
+<li><em>你可以找到很多语言的可变参数函数声明</em><a href="https://rosettacode.org/wiki/Variadic_function"><em>这里</em></a><em>.自由探索吧</em></li>
+</ul>
+<p>好了，就到这了。谢谢你们的阅读。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[鱼香肉丝]]></title>
         <id>http://blog.gusibi.site/post/yu-xiang-rou-si/</id>
